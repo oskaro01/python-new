@@ -1,129 +1,132 @@
 """
 =============================================
-  21 - CLASSES - BASICS
+  21 - CLASSES (PYTHON)
 =============================================
-  From: quickref.me/python
-  Object-oriented programming in Python.
+  Python equivalent of JavaScript Classes.
+  
+  Topics covered:
+    • Class definition
+    • Constructor (__init__)
+    • Methods
+    • Factory functions
+    • Getters and setters (@property)
 =============================================
 """
 
 # ===========================================
-# Simple Class Definition
+# 1. Class Definition & Constructor
 # ===========================================
-print("=== SIMPLE CLASS ===")
+print("=== CLASS & CONSTRUCTOR ===")
 
-class MyNewClass:
-    """A simple example class."""
-    pass  # 'pass' means "do nothing" — placeholder
+class Song:
+    """A class representing a song."""
 
-# Create an instance (object) of the class
-my = MyNewClass()
-print(f"Instance: {my}")
-print(f"Type: {type(my)}")
+    def __init__(self, title="", artist=""):
+        """Constructor — like JS constructor()."""
+        self.title = title
+        self.artist = artist
 
-# ===========================================
-# Constructor (__init__)
-# ===========================================
-print("\n=== CONSTRUCTOR ===")
+    def play(self):
+        """Instance method — like JS play()."""
+        print("Song playing!")
 
-class Animal:
-    def __init__(self, voice):
-        """Constructor — called when creating a new Animal."""
-        self.voice = voice  # Instance variable
+    def stop(self):
+        """Instance method — like JS stop()."""
+        print("Stopping!")
 
-# Creating instances
-cat = Animal('Meow')
-dog = Animal('Woof')
-
-print(f"cat.voice = '{cat.voice}'")
-print(f"dog.voice = '{dog.voice}'")
+# Create an instance (like JS `new Song()`)
+my_song = Song("Bohemian Rhapsody", "Queen")
+print(f"my_song.title  = '{my_song.title}'")    # => Bohemian Rhapsody
+print(f"my_song.artist = '{my_song.artist}'")    # => Queen
+my_song.play()   # => Song playing!
+my_song.stop()   # => Stopping!
 
 # ===========================================
-# Instance Methods
+# 2. Methods & 'self' (like JS 'this')
 # ===========================================
-print("\n=== INSTANCE METHODS ===")
+print("\n=== METHODS & self (like JS this) ===")
 
 class Dog:
     def __init__(self, name):
-        self.name = name
+        self._name = name  # _name by convention (like JS _name)
 
-    def bark(self):
-        """Instance method — 'self' refers to the instance."""
-        print(f"{self.name} says: Ham-Ham!")
+    def introduce(self):
+        """Instance method — 'self' refers to the instance (like JS 'this')."""
+        print("This is " + self._name + " !")
 
-# Creating and using the object
-charlie = Dog("Charlie")
-charlie.bark()
-
-# ===========================================
-# Class Variables (shared across all instances)
-# ===========================================
-print("\n=== CLASS VARIABLES ===")
-
-class MyClass:
-    class_variable = "A class variable!"  # Shared by ALL instances
-
-    def __init__(self, name):
-        self.instance_variable = name  # Unique to each instance
-
-# Access directly from the class
-print(f"MyClass.class_variable = '{MyClass.class_variable}'")
-
-# Also accessible from instances
-x = MyClass("instance X")
-y = MyClass("instance Y")
-print(f"x.class_variable = '{x.class_variable}'")
-print(f"x.instance_variable = '{x.instance_variable}'")
-print(f"y.instance_variable = '{y.instance_variable}'")
+my_dog = Dog("Buster")
+my_dog.introduce()  # => This is Buster !
 
 # ===========================================
-# __repr__ — How the object is displayed
+# 3. Factory Functions (like JS factory functions)
 # ===========================================
-print("\n=== __repr__ METHOD ===")
+print("\n=== FACTORY FUNCTIONS ===")
 
-class Employee:
-    def __init__(self, name):
-        self.name = name
+def dog_factory(name, age, breed):
+    """A factory function that returns a dog object."""
 
-    def __repr__(self):
-        """Controls how the object is printed."""
-        return f"Employee('{self.name}')"
+    class Dog:
+        def __init__(self, name, age, breed):
+            self.name = name
+            self.age = age
+            self.breed = breed
 
-john = Employee('John')
-print(f"repr: {john}")  # Now says something useful!
+        def bark(self):
+            print("Woof!")
+
+        def __repr__(self):
+            return f"Dog({self.name}, {self.age}, {self.breed})"
+
+    return Dog(name, age, breed)
+
+my_dog = dog_factory("Buster", 3, "Labrador")
+print(f"Dog: {my_dog}")
+my_dog.bark()  # => Woof!
+
+# Simpler factory — returns a namedtuple-like dict
+def simple_dog_factory(name, age, breed):
+    return {
+        "name": name,
+        "age": age,
+        "breed": breed,
+        "bark": lambda: print("Woof!")
+    }
+
+dog2 = simple_dog_factory("Max", 5, "Beagle")
+print(f"Simple factory: {dog2['name']}, {dog2['breed']}")
+dog2["bark"]()
 
 # ===========================================
-# Properties (getters/setters)
+# 4. Getters and Setters (@property)
 # ===========================================
-print("\n=== PROPERTIES ===")
+print("\n=== GETTERS & SETTERS ===")
 
-class Temperature:
-    def __init__(self, celsius):
-        self._celsius = celsius
+class MyCat:
+    def __init__(self):
+        self._name = "Dottie"  # Private by convention (_ prefix)
 
     @property
-    def celsius(self):
-        return self._celsius
+    def name(self):
+        """Getter — like JS get name()."""
+        return self._name
 
-    @property
-    def fahrenheit(self):
-        return (self._celsius * 9/5) + 32
+    @name.setter
+    def name(self, new_name):
+        """Setter — like JS set name(newName)."""
+        self._name = new_name
 
-    @celsius.setter
-    def celsius(self, value):
-        if value < -273.15:
-            raise ValueError("Below absolute zero!")
-        self._celsius = value
+my_cat = MyCat()
 
-temp = Temperature(25)
-print(f"Temp: {temp.celsius}°C = {temp.fahrenheit:.1f}°F")
+# Reference invokes the getter (no parentheses needed!)
+print(f"my_cat.name = '{my_cat.name}'")  # => Dottie
 
-temp.celsius = 30
-print(f"After change: {temp.celsius}°C = {temp.fahrenheit:.1f}°F")
+# Assignment invokes the setter
+my_cat.name = "Yankee"
+print(f"my_cat.name = '{my_cat.name}'")  # => Yankee
 
 # ===========================================
 # 🧪 TRY IT YOURSELF:
-#   1. Create a 'Book' class with title and author
-#   2. Add a method that prints book info
-#   3. Add a __repr__ method for nice printing
+#   1. Create a 'Book' class with title, author, and a method
+#   2. Add a getter and setter for a 'rating' property
+#   3. Write a factory function that creates 'Car' objects
 # ===========================================

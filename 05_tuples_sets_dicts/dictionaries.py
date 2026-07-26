@@ -1,127 +1,182 @@
 """
 =============================================
-  15 - DICTIONARIES
+  15 - DICTIONARIES (PYTHON OBJECTS)
 =============================================
-  From: quickref.me/python
-  Key-Value pairs — like a real dictionary!
-  (Or JSON objects, if you know those.)
+  Python equivalent of JavaScript Objects.
+  
+  Topics covered:
+    • Accessing properties
+    • Valid/invalid key names
+    • Non-existent properties (KeyError vs .get())
+    • Mutable — add, update, delete
+    • Destructuring / unpacking
+    • Pass by reference
+    • Factory functions
+    • Methods in dicts (lambdas)
 =============================================
 """
 
 # ===========================================
-# Creating Dictionaries
+# Accessing Properties (like JS objects)
 # ===========================================
-print("=== CREATING DICTIONARIES ===")
+print("=== ACCESSING PROPERTIES ===")
 
-# With curly braces
-a = {"one": 1, "two": 2, "three": 3}
-print(f"a = {a}")
-
-# Using dict() constructor
-b = dict(one=1, two=2, three=3)
-print(f"b = {b}")
-
-# Empty dictionary
-empty = {}
-print(f"empty = {empty}")
-
-# ===========================================
-# Accessing Values
-# ===========================================
-print("\n=== ACCESSING VALUES ===")
-print(f"a['one'] = {a['one']}")
-
-# .get() is safer (returns None if key doesn't exist)
-print(f"a.get('one') = {a.get('one')}")
-print(f"a.get('four') = {a.get('four')}")  # No error!
-print(f"a.get('four', 'NOT FOUND') = {a.get('four', 'NOT FOUND')}")
-
-# Accessing with [] on missing key raises KeyError
-# print(a['four'])  # KeyError: 'four'
-
-# ===========================================
-# Getting All Keys and Values
-# ===========================================
-print("\n=== KEYS & VALUES ===")
-print(f"a.keys():   {a.keys()}")
-print(f"a.values(): {a.values()}")
-print(f"a.items():  {a.items()}")  # Key-value pairs as tuples
-
-# Iterate over keys
-for key in a:
-    print(f"  Key: {key} -> Value: {a[key]}")
-
-# Iterate over key-value pairs
-for key, value in a.items():
-    print(f"  {key}: {value}")
-
-# ===========================================
-# Adding and Updating
-# ===========================================
-print("\n=== ADDING & UPDATING ===")
-person = {"name": "John", "age": 30}
-print(f"Original: {person}")
-
-# Add a new key-value pair
-person["city"] = "New York"
-print(f"After adding 'city': {person}")
-
-# Update an existing value
-person["age"] = 31
-print(f"After updating 'age': {person}")
-
-# Update multiple pairs at once
-person.update({"job": "Engineer", "hobby": "Guitar"})
-print(f"After update(): {person}")
-
-# ===========================================
-# Removing Items
-# ===========================================
-print("\n=== REMOVING ===")
-
-# pop() — remove and return a value
-age = person.pop("age")
-print(f"pop('age') returned: {age}")
-print(f"After pop: {person}")
-
-# del — delete by key
-del person["hobby"]
-print(f"After del person['hobby']: {person}")
-
-# popitem() — remove and return the last inserted item
-last = person.popitem()
-print(f"popitem() returned: {last}")
-print(f"After popitem: {person}")
-
-# ===========================================
-# Checking if a Key Exists
-# ===========================================
-print("\n=== CHECKING KEYS ===")
-print(f"'name' in person: {'name' in person}")
-print(f"'age' in person: {'age' in person}")
-
-# ===========================================
-# Practical Example
-# ===========================================
-print("\n=== PRACTICAL EXAMPLE ===")
-student = {
-    "name": "Alice",
-    "grades": [85, 92, 78],
-    "active": True,
-    "address": {
-        "city": "Boston",
-        "state": "MA"
+apple = {
+    "color": "Green",
+    "price": {
+        "bulk": "$3/kg",
+        "smallQty": "$4/kg"
     }
 }
 
-print(f"Student: {student}")
-print(f"Name: {student['name']}")
-print(f"Average grade: {sum(student['grades']) / len(student['grades']):.1f}")
-print(f"City: {student['address']['city']}")
+print(f"apple['color'] = '{apple['color']}'")            # => Green
+print(f"apple['price']['bulk'] = '{apple['price']['bulk']}'")  # => $3/kg
+
+# ===========================================
+# Valid / Invalid Key Names
+# ===========================================
+print("\n=== KEY NAMES ===")
+
+# ✅ Valid: strings, numbers, tuples
+train_schedule = {
+    "platform num": 10,   # String keys can have spaces
+    42: "answer",          # Numbers work as keys
+    (1, 2): "tuple key"    # Tuples work as keys
+}
+print(f"train_schedule: {train_schedule}")
+
+# ❌ Invalid (uncomment to see errors):
+# train_schedule = { 40 - 10 + 2: 30 }    # Expressions are evaluated first
+# train_schedule = { +compartment: 'C' }  # + alone is invalid
+
+# ===========================================
+# Non-existent Properties
+# ===========================================
+print("\n=== NON-EXISTENT KEYS ===")
+
+class_election = {
+    "date": "January 12"
+}
+
+# Using .get() returns None (like JS undefined) — no error!
+print(f"class_election.get('place') = {class_election.get('place')}")
+
+# Using [] raises KeyError (uncomment to see):
+# print(class_election['place'])  # KeyError!
+
+# ===========================================
+# Shorthand Object Creation
+# ===========================================
+print("\n=== SHORTHAND CREATION ===")
+
+# JS: const activity = 'Surfing'; const beach = { activity };
+# Python doesn't have this shorthand — you must repeat the key:
+activity = 'Surfing'
+beach = { 'activity': activity }
+print(f"beach = {beach}")  # => {'activity': 'Surfing'}
+
+# ===========================================
+# Methods Inside Dicts (like JS object methods)
+# ===========================================
+print("\n=== METHODS INSIDE DICTS ===")
+
+engine = {
+    "start": lambda adverb: print(f"The engine starts up {adverb}..."),
+    "sputter": lambda: print("The engine sputters...")
+}
+
+engine["start"]("noisily")  # => The engine starts up noisily...
+engine["sputter"]()          # => The engine sputters...
+
+# ===========================================
+# Mutable — Dictionaries Can Change
+# ===========================================
+print("\n=== MUTABLE ===")
+
+student = {
+    "name": "Sheldon",
+    "score": 100,
+    "grade": "A"
+}
+print(f"Before: {student}")
+
+del student["score"]   # Delete a key (like JS delete)
+student["grade"] = "F" # Update a value
+
+print(f"After:  {student}")
+
+# ===========================================
+# Destructuring / Unpacking
+# ===========================================
+print("\n=== DESTRUCTURING (UNPACKING) ===")
+
+person = {
+    "name": "Tom",
+    "age": "22"
+}
+
+# Python unpacking — similar to JS destructuring
+name, age = person["name"], person["age"]
+print(f"name = '{name}'")  # => Tom
+print(f"age  = '{age}'")   # => 22
+
+# Or unpack all values at once:
+name, age = person.values()
+print(f"Unpacked: name='{name}', age='{age}'")
+
+# ===========================================
+# Pass by Reference (Objects as Arguments)
+# ===========================================
+print("\n=== PASS BY REFERENCE ===")
+
+orig_num = 8
+orig_obj = {"color": "blue"}
+
+def change_it_up(num, obj):
+    num = 7               # Won't affect the original (int is immutable)
+    obj["color"] = "red"  # WILL affect the original (dict is mutable)
+
+change_it_up(orig_num, orig_obj)
+
+print(f"orig_num = {orig_num}")            # => 8 (unchanged)
+print(f"orig_obj['color'] = '{orig_obj['color']}'")  # => red (changed!)
+
+# ===========================================
+# Factory Functions
+# ===========================================
+print("\n=== FACTORY FUNCTIONS ===")
+
+# JS: const dogFactory = (name, age, breed) => { return { name, age, breed, bark() { ... } } }
+def dog_factory(name, age, breed):
+    """Factory function — returns a customized dog dict."""
+    return {
+        "name": name,
+        "age": age,
+        "breed": breed,
+        "bark": lambda: print("Woof!")
+    }
+
+my_dog = dog_factory("Buster", 3, "Labrador")
+print(f"Dog: {my_dog['name']}, {my_dog['age']} years old, {my_dog['breed']}")
+my_dog["bark"]()  # => Woof!
+
+# ===========================================
+# Getters and Setters ( __getitem__ / __setitem__ )
+# ===========================================
+print("\n=== GETTERS & SETTERS (dict style) ===")
+
+# With plain dicts, just access directly:
+cat = {"_name": "Dottie"}
+print(f"cat['_name'] = '{cat['_name']}'")    # Get
+
+cat["_name"] = "Yankee"                       # Set
+print(f"cat['_name'] = '{cat['_name']}'")    # => Yankee
+
+# For true getter/setter behavior, see 08_classes/basics.py
 
 # ===========================================
 # 🧪 TRY IT YOURSELF:
-#   1. Create a dictionary about yourself (name, age, city, hobby)
-#   2. Add a new key 'languages' with a list of languages you know
-#   3. Loop through and print all keys and values
+#   1. Create a dict about yourself (name, age, city, hobby)
+#   2. Delete one key using `del`
+#   3. Write a factory function that creates "car" dicts
 # ===========================================
