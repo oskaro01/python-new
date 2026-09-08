@@ -17,43 +17,37 @@ name = "John"     # name is automatically 'str'
 height = 5.9      # height is automatically 'float'
 is_student = True # is_student is automatically 'bool'
 
-print("Name:", name)
-print("Age:", age)
-print("Height:", height)
-print("Is student:", is_student)
+print(f"Name: {name} | Age: {age} | Height: {height} | Is student: {is_student}")
 
 # ===========================================
 # You can check the type of any variable
 # ===========================================
-print("\n--- Type Checking ---")
-print("type(age):", type(age))       # <class 'int'>
-print("type(name):", type(name))     # <class 'str'>
-print("type(height):", type(height))  # <class 'float'>
-print("type(is_student):", type(is_student))  # <class 'bool'>
+print(f"""type(age):        {type(age)}
+type(name):       {type(name)}
+type(height):     {type(height)}
+type(is_student): {type(is_student)}""")
 
 # ===========================================
 # Dynamic typing: a variable can change type!
 # ===========================================
 x = 10
-print("\n--- Dynamic Typing ---")
-print("x =", x, "-> type:", type(x))
+print(f"x = {x} -> type: {type(x)}")
 
 x = "Now I'm a string!"
-print("x =", x, "-> type:", type(x))
+print(f"x = {x} -> type: {type(x)}")
 
 x = 3.14
-print("x =", x, "-> type:", type(x))
+print(f"x = {x} -> type: {type(x)}")
 
 # ===========================================
 # Multiple assignment
 # ===========================================
 a, b, c = 1, 2, 3
-print("\n--- Multiple Assignment ---")
-print("a =", a, "b =", b, "c =", c)
+print(f"a = {a} | b = {b} | c = {c}")
 
 # Same value to multiple variables
 x = y = z = 0
-print("x =", x, "y =", y, "z =", z)
+print(f"x = {x} | y = {y} | z = {z}")
 
 # ===========================================
 # Variable naming rules
