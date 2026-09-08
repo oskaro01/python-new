@@ -1,38 +1,11 @@
-import tkinter as tk
-from tkinter import filedialog
 import json
 
+from file_dialogs import choose_open_file, choose_save_file
 
-class ShoppingListApp: # The idea
+
+class ShoppingListApp:
     def __init__(self):
-        self.items = [] # This creates a blueprint for your app    # DATA
-
-    def choose_save_file(self):
-        root = tk.Tk()
-        root.withdraw()
-        root.attributes("-topmost", True)
-
-        filename = filedialog.asksaveasfilename(
-            title="Save shopping list",
-            defaultextension=".json",
-            filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
-        )
-
-        root.destroy()
-        return filename
-
-    def choose_open_file(self):
-        root = tk.Tk()
-        root.withdraw()
-        root.attributes("-topmost", True)
-
-        filename = filedialog.askopenfilename(
-            title="Open shopping list",
-            filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
-        )
-
-        root.destroy()
-        return filename
+        self.items = []
 
     def show_menu(self):
         print("\nShopping List Menu")
@@ -80,7 +53,6 @@ class ShoppingListApp: # The idea
             return
 
         self.show_list()
-
         item_number = input("Enter the number to edit: ").strip()
 
         if not item_number.isdigit():
@@ -126,7 +98,7 @@ class ShoppingListApp: # The idea
         print(f"{removed_item} removed.")
 
     def save_list(self):
-        filename = self.choose_save_file()
+        filename = choose_save_file()
 
         if filename == "":
             print("Save cancelled.")
@@ -135,7 +107,6 @@ class ShoppingListApp: # The idea
         try:
             with open(filename, "w", encoding="utf-8") as file:
                 json.dump(self.items, file, indent=4)
-                # json.dump() = Python saves a full data structure for you
 
             print(f"Shopping list saved to {filename}.")
 
@@ -143,7 +114,7 @@ class ShoppingListApp: # The idea
             print("Sorry, the file could not be saved.")
 
     def open_list(self):
-        filename = self.choose_open_file()
+        filename = choose_open_file()
 
         if filename == "":
             print("Open cancelled.")
@@ -166,7 +137,7 @@ class ShoppingListApp: # The idea
                     if item != "" and item not in clean_items:
                         clean_items.append(item)
 
-            self.items = clean_items # if opening fails, your old list does not disappear. 
+            self.items = clean_items
 
             print(f"Shopping list loaded from {filename}.")
             self.show_list()
@@ -183,7 +154,7 @@ class ShoppingListApp: # The idea
             choice = input("Choose 1, 2, 3, 4, 5, 6, or 7: ").strip()
 
             if choice == "1":
-                self.add_items() # actions = methods like self.add_items()
+                self.add_items()
             elif choice == "2":
                 self.show_list()
             elif choice == "3":
@@ -199,9 +170,3 @@ class ShoppingListApp: # The idea
                 break
             else:
                 print("Invalid choice.")
-
-
-if __name__ == "__main__": # Python “main guard”
-    # This means: only start the app when we run this file directly.
-    app = ShoppingListApp()
-    app.run()

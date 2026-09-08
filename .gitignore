@@ -1,0 +1,16 @@
+# Python cache files
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Local environment files
+.env
+
+# Personal practice output files
+words.json
+shopping_list*.txt
+my_python_work/**/*.json
