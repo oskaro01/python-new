@@ -261,6 +261,8 @@ Files:
 - `my_python_work/practical_projects/expense_tracker/main.py`
 - `my_python_work/practical_projects/expense_tracker/README.md`
 - `my_python_work/practical_projects/file_organizer/main.py`
+- `my_python_work/practical_projects/file_organizer/organizer.py`
+- `my_python_work/practical_projects/file_organizer/config.py`
 - `my_python_work/practical_projects/file_organizer/README.md`
 
 Finished:
@@ -289,12 +291,16 @@ Finished:
 - [x] Move files safely with confirmation
 - [x] Log moved files
 - [x] Undo last organization
+- [x] Preview custom folder safely
+- [x] Organize custom folder safely
+- [x] Block risky folders
+- [x] Refactor file organizer into multiple files
 
 In progress:
 
 - [ ] Add monthly report totals by category
 - [ ] Add backup/export all data
-- [ ] Let user choose a real folder safely
+- [ ] Test helper functions in a small practice test file
 
 ## Learning Queue For Later
 
@@ -305,7 +311,7 @@ Practical queue:
 - [ ] Expense tracker monthly category totals
 - [ ] Expense tracker backup/export all data
 - [x] File organizer undo/log file
-- [ ] File organizer choose custom folder
+- [x] File organizer choose custom folder
 - [ ] Personal dictionary autosave
 - [ ] Personal dictionary search by meaning/category
 - [ ] Notes manager
@@ -382,7 +388,8 @@ Start here next time:
 7. Reopen `my_python_work/practical_projects/file_organizer/main.py`.
 8. Preview the sample folder organization.
 9. Test undo after organizing sample files.
-10. Add safe custom-folder selection.
+10. Try custom-folder preview on a small safe test folder.
+11. Add a small practice test file for organizer helper functions.
 
 ## Long-Term Mastery Path
 
