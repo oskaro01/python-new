@@ -6,6 +6,12 @@ Run:
 python my_python_work/practical_projects/file_organizer/main.py
 ```
 
+Run tests:
+
+```powershell
+python my_python_work/practical_projects/file_organizer/test_organizer.py
+```
+
 This project practices:
 
 - `pathlib`
@@ -15,6 +21,7 @@ This project practices:
 - moving files safely
 - previewing before changing files
 - splitting a project into multiple Python files
+- writing simple tests with `assert`
 
 The script uses `sample_files/` by default so you can practice safely.
 
@@ -33,3 +40,4 @@ Project files:
 - `main.py`: menu, user input, and screen output
 - `organizer.py`: file organizing logic, move log, and undo
 - `config.py`: category rules and important folder paths
+- `test_organizer.py`: small checks that prove important functions still work

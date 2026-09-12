@@ -263,6 +263,7 @@ Files:
 - `my_python_work/practical_projects/file_organizer/main.py`
 - `my_python_work/practical_projects/file_organizer/organizer.py`
 - `my_python_work/practical_projects/file_organizer/config.py`
+- `my_python_work/practical_projects/file_organizer/test_organizer.py`
 - `my_python_work/practical_projects/file_organizer/README.md`
 
 Finished:
@@ -295,12 +296,15 @@ Finished:
 - [x] Organize custom folder safely
 - [x] Block risky folders
 - [x] Refactor file organizer into multiple files
+- [x] Write simple tests with `assert`
+- [x] Test organizer helper functions
+- [x] Test organize and undo with a temporary folder
 
 In progress:
 
 - [ ] Add monthly report totals by category
 - [ ] Add backup/export all data
-- [ ] Test helper functions in a small practice test file
+- [ ] Learn logging basics with the file organizer
 
 ## Learning Queue For Later
 
@@ -389,7 +393,8 @@ Start here next time:
 8. Preview the sample folder organization.
 9. Test undo after organizing sample files.
 10. Try custom-folder preview on a small safe test folder.
-11. Add a small practice test file for organizer helper functions.
+11. Run `my_python_work/practical_projects/file_organizer/test_organizer.py`.
+12. Learn logging basics with the file organizer.
 
 ## Long-Term Mastery Path
 
@@ -400,14 +405,14 @@ You can think of a small problem, choose the right data structure, write the scr
 Long-term checkpoints:
 
 - [ ] Build personal dictionary v2 with autosave
-- [ ] Build folder organizer
-- [ ] Build expense tracker
+- [x] Build folder organizer
+- [x] Build expense tracker
 - [ ] Build note manager
 - [ ] Build search/autocomplete for dictionary
 - [ ] Solve 30 beginner DS&A problems
 - [ ] Solve 30 intermediate DS&A problems
-- [ ] Write tests for one project
-- [ ] Refactor one project cleanly
+- [x] Write tests for one project
+- [x] Refactor one project cleanly
 
 ## Motivation Note
 
