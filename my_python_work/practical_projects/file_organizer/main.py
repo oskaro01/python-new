@@ -1,7 +1,13 @@
 from pathlib import Path
 
-from config import DEFAULT_TARGET_DIR
-from organizer import build_plan, get_safety_problem, organize_files, undo_last_move
+from config import CATEGORIES_FILE, DEFAULT_TARGET_DIR
+from organizer import (
+    build_plan,
+    get_safety_problem,
+    load_categories,
+    organize_files,
+    undo_last_move,
+)
 
 
 def ask_custom_folder():
@@ -30,6 +36,21 @@ def ask_custom_folder():
     return folder.resolve()
 
 
+def ask_recursive():
+    answer = input("Include subfolders? Type yes for recursive mode: ").strip().lower()
+    return answer == "yes"
+
+
+def show_categories():
+    categories = load_categories()
+
+    print(f"\nCategory rules from {CATEGORIES_FILE}:")
+
+    for category, extensions in categories.items():
+        extensions_text = ", ".join(extensions)
+        print(f"{category}: {extensions_text}")
+
+
 def show_plan(plan, folder=None):
     if len(plan) == 0:
         print("No files to organize.")
@@ -41,26 +62,36 @@ def show_plan(plan, folder=None):
     print("Organization plan:")
 
     for item in plan:
-        source_name = item["source"].name
+        source = item["source"]
         destination = item["destination"]
         category = item["category"]
 
-        print(f"{source_name} -> {category}/{destination.name}")
+        if folder is None:
+            source_text = source.name
+        else:
+            source_text = source.relative_to(folder)
+
+        print(f"{source_text} -> {category}/{destination.name}")
 
 
-def preview_folder(folder):
-    plan = build_plan(folder)
+def preview_folder(folder, recursive=False):
+    plan = build_plan(folder, recursive)
     show_plan(plan, folder)
 
 
-def organize_folder(folder):
-    plan = build_plan(folder)
+def organize_folder(folder, recursive=False):
+    plan = build_plan(folder, recursive)
     show_plan(plan, folder)
 
     if len(plan) == 0:
         return
 
-    print("Only top-level files are moved. Subfolders are ignored.")
+    if recursive:
+        print("Recursive mode includes subfolders.")
+        print("Already organized category folders are skipped.")
+    else:
+        print("Only top-level files are moved. Subfolders are ignored.")
+
     confirm = input("Move these files? Type yes: ").strip().lower()
 
     if confirm == "yes":
@@ -75,8 +106,9 @@ def show_menu():
     print("2. Organize sample folder")
     print("3. Preview custom folder")
     print("4. Organize custom folder")
-    print("5. Undo last organization")
-    print("6. Quit")
+    print("5. Show category rules")
+    print("6. Undo last organization")
+    print("7. Quit")
 
 
 def run():
@@ -84,25 +116,31 @@ def run():
 
     while True:
         show_menu()
-        choice = input("Choose 1-6: ").strip()
+        choice = input("Choose 1-7: ").strip()
 
         if choice == "1":
-            preview_folder(DEFAULT_TARGET_DIR)
+            recursive = ask_recursive()
+            preview_folder(DEFAULT_TARGET_DIR, recursive)
         elif choice == "2":
-            organize_folder(DEFAULT_TARGET_DIR)
+            recursive = ask_recursive()
+            organize_folder(DEFAULT_TARGET_DIR, recursive)
         elif choice == "3":
             folder = ask_custom_folder()
 
             if folder is not None:
-                preview_folder(folder)
+                recursive = ask_recursive()
+                preview_folder(folder, recursive)
         elif choice == "4":
             folder = ask_custom_folder()
 
             if folder is not None:
-                organize_folder(folder)
+                recursive = ask_recursive()
+                organize_folder(folder, recursive)
         elif choice == "5":
-            undo_last_move()
+            show_categories()
         elif choice == "6":
+            undo_last_move()
+        elif choice == "7":
             print("Goodbye.")
             break
         else:

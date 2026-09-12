@@ -6,6 +6,7 @@ from pathlib import Path
 DATA_FILE = Path("my_python_work/practical_projects/expense_tracker/expenses.csv")
 REPORTS_DIR = Path("my_python_work/practical_projects/expense_tracker/reports")
 FIELDNAMES = ["date", "name", "category", "amount"]
+CATEGORY_TOTAL_FIELDNAMES = ["category", "total"]
 
 
 def ensure_data_file():
@@ -65,6 +66,22 @@ def write_expenses_to_csv(filename, expenses):
         writer.writerows(expenses)
 
 
+def write_category_totals_to_csv(filename, total_by_category):
+    filename.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(filename, "w", encoding="utf-8", newline="") as file:
+        writer = csv.DictWriter(file, fieldnames=CATEGORY_TOTAL_FIELDNAMES)
+        writer.writeheader()
+
+        for category in sorted(total_by_category):
+            writer.writerow(
+                {
+                    "category": category,
+                    "total": total_by_category[category],
+                }
+            )
+
+
 def get_monthly_expenses(expenses, month):
     monthly_expenses = []
 
@@ -82,6 +99,31 @@ def calculate_total(expenses):
         total = total + expense["amount"]
 
     return total
+
+
+def calculate_total_by_category(expenses):
+    total_by_category = {}
+
+    for expense in expenses:
+        category = expense["category"]
+        amount = expense["amount"]
+
+        if category in total_by_category:
+            total_by_category[category] = total_by_category[category] + amount
+        else:
+            total_by_category[category] = amount
+
+    return total_by_category
+
+
+def show_category_totals(total_by_category):
+    if len(total_by_category) == 0:
+        print("No expenses found.")
+        return
+
+    for category in sorted(total_by_category):
+        total = total_by_category[category]
+        print(f"{category}: {total} taka")
 
 
 def get_expense_table_widths(expenses, numbered=False):
@@ -285,23 +327,8 @@ def show_total_spent():
 
 def show_total_by_category():
     expenses = read_expenses()
-    total_by_category = {}
-
-    for expense in expenses:
-        category = expense["category"]
-        amount = expense["amount"]
-
-        if category in total_by_category:
-            total_by_category[category] = total_by_category[category] + amount
-        else:
-            total_by_category[category] = amount
-
-    if len(total_by_category) == 0:
-        print("No expenses found.")
-        return
-
-    for category, total in total_by_category.items():
-        print(f"{category}: {total} taka")
+    total_by_category = calculate_total_by_category(expenses)
+    show_category_totals(total_by_category)
 
 
 def show_expenses_by_category():
@@ -348,8 +375,11 @@ def show_monthly_summary():
     show_expenses(monthly_expenses)
 
     total = calculate_total(monthly_expenses)
+    total_by_category = calculate_total_by_category(monthly_expenses)
 
     print(f"Monthly total: {total} taka")
+    print("Monthly total by category:")
+    show_category_totals(total_by_category)
 
 
 def export_monthly_report():
@@ -366,11 +396,25 @@ def export_monthly_report():
         return
 
     report_file = REPORTS_DIR / f"expenses_{month}.csv"
+    category_report_file = REPORTS_DIR / f"expenses_{month}_by_category.csv"
     write_expenses_to_csv(report_file, monthly_expenses)
 
     total = calculate_total(monthly_expenses)
+    total_by_category = calculate_total_by_category(monthly_expenses)
+    write_category_totals_to_csv(category_report_file, total_by_category)
+
     print(f"Exported {len(monthly_expenses)} expenses to {report_file}")
+    print(f"Exported category totals to {category_report_file}")
     print(f"Monthly total: {total} taka")
+
+
+def backup_all_data():
+    expenses = read_expenses()
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    backup_file = REPORTS_DIR / f"expenses_backup_{timestamp}.csv"
+
+    write_expenses_to_csv(backup_file, expenses)
+    print(f"Backed up {len(expenses)} expenses to {backup_file}")
 
 
 def edit_expense():
@@ -431,13 +475,14 @@ def show_menu():
     print("8. Delete expense")
     print("9. Monthly summary")
     print("10. Export monthly report")
-    print("11. Quit")
+    print("11. Backup all data")
+    print("12. Quit")
 
 
 def run():
     while True:
         show_menu()
-        choice = input("Choose 1-11: ").strip()
+        choice = input("Choose 1-12: ").strip()
 
         if choice == "1":
             add_expense()
@@ -460,6 +505,8 @@ def run():
         elif choice == "10":
             export_monthly_report()
         elif choice == "11":
+            backup_all_data()
+        elif choice == "12":
             print("Goodbye.")
             break
         else:

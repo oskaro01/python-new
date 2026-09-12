@@ -1,0 +1,30 @@
+{
+    "images": [
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".gif",
+        ".webp"
+    ],
+    "documents": [
+        ".pdf",
+        ".docx",
+        ".txt",
+        ".md",
+        ".csv",
+        ".xlsx"
+    ],
+    "videos": [
+        ".mp4",
+        ".mov",
+        ".mkv"
+    ],
+    "archives": [
+        ".zip",
+        ".rar",
+        ".7z"
+    ],
+    "python": [
+        ".py"
+    ]
+}

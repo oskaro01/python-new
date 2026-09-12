@@ -3,13 +3,117 @@ import os
 import shutil
 from pathlib import Path
 
-from config import CATEGORIES, DEFAULT_TARGET_DIR, LOG_FILE, PROJECT_DIR, WORKSPACE_DIR
+from config import (
+    CATEGORIES_FILE,
+    DEFAULT_CATEGORIES,
+    DEFAULT_TARGET_DIR,
+    LOG_FILE,
+    PROJECT_DIR,
+    WORKSPACE_DIR,
+)
 
 
-def get_category(file_path):
+def copy_categories(categories):
+    copied_categories = {}
+
+    for category, extensions in categories.items():
+        copied_categories[category] = extensions.copy()
+
+    return copied_categories
+
+
+def normalize_extension(extension):
+    extension = extension.strip().lower()
+
+    if extension == "":
+        return None
+
+    if not extension.startswith("."):
+        extension = "." + extension
+
+    return extension
+
+
+def normalize_category_name(category):
+    category = category.strip().lower().replace(" ", "_")
+    clean_characters = []
+
+    for character in category:
+        if character.isalnum() or character in ["_", "-"]:
+            clean_characters.append(character)
+        else:
+            clean_characters.append("_")
+
+    category = "".join(clean_characters).strip("_")
+
+    if category == "":
+        return None
+
+    return category
+
+
+def clean_categories(raw_categories):
+    if not isinstance(raw_categories, dict):
+        return copy_categories(DEFAULT_CATEGORIES)
+
+    categories = {}
+
+    for category, extensions in raw_categories.items():
+        if not isinstance(category, str):
+            continue
+
+        category = normalize_category_name(category)
+
+        if category is None or not isinstance(extensions, list):
+            continue
+
+        clean_extensions = []
+
+        for extension in extensions:
+            if not isinstance(extension, str):
+                continue
+
+            extension = normalize_extension(extension)
+
+            if extension is not None and extension not in clean_extensions:
+                clean_extensions.append(extension)
+
+        if len(clean_extensions) > 0:
+            categories[category] = clean_extensions
+
+    if len(categories) == 0:
+        return copy_categories(DEFAULT_CATEGORIES)
+
+    return categories
+
+
+def save_default_categories():
+    with open(CATEGORIES_FILE, "w", encoding="utf-8") as file:
+        json.dump(DEFAULT_CATEGORIES, file, indent=4)
+
+
+def load_categories():
+    if not CATEGORIES_FILE.exists():
+        save_default_categories()
+        return copy_categories(DEFAULT_CATEGORIES)
+
+    try:
+        with open(CATEGORIES_FILE, "r", encoding="utf-8") as file:
+            raw_categories = json.load(file)
+    except (OSError, json.JSONDecodeError):
+        print("Could not read categories.json. Using default categories.")
+        return copy_categories(DEFAULT_CATEGORIES)
+
+    return clean_categories(raw_categories)
+
+
+def get_category(file_path, categories=None):
+    if categories is None:
+        categories = load_categories()
+
     extension = file_path.suffix.lower()
 
-    for category, extensions in CATEGORIES.items():
+    for category, extensions in categories.items():
         if extension in extensions:
             return category
 
@@ -54,8 +158,11 @@ def get_safety_problem(folder):
     return None
 
 
-def get_unique_path(destination):
-    if not destination.exists():
+def get_unique_path(destination, reserved_paths=None):
+    if reserved_paths is None:
+        reserved_paths = set()
+
+    if not destination.exists() and destination not in reserved_paths:
         return destination
 
     folder = destination.parent
@@ -66,30 +173,63 @@ def get_unique_path(destination):
     while True:
         new_destination = folder / f"{stem}_{counter}{suffix}"
 
-        if not new_destination.exists():
+        if not new_destination.exists() and new_destination not in reserved_paths:
             return new_destination
 
         counter = counter + 1
 
 
-def get_files_to_organize(folder):
+def is_inside_any_folder(file_path, folders):
+    for folder in folders:
+        if is_inside(file_path, folder):
+            return True
+
+    return False
+
+
+def get_output_folders(folder, categories):
+    output_folders = []
+    category_names = list(categories.keys()) + ["others"]
+
+    for category in category_names:
+        output_folders.append((folder / category).resolve())
+
+    return output_folders
+
+
+def get_files_to_organize(folder, recursive=False, categories=None):
+    if categories is None:
+        categories = load_categories()
+
+    folder = folder.resolve()
     files = []
 
-    for item in folder.iterdir():
-        if item.is_file():
-            files.append(item)
+    if recursive:
+        output_folders = get_output_folders(folder, categories)
+
+        for item in folder.rglob("*"):
+            if item.is_file() and not is_inside_any_folder(item.resolve(), output_folders):
+                files.append(item)
+    else:
+        for item in folder.iterdir():
+            if item.is_file():
+                files.append(item)
 
     return files
 
 
-def build_plan(folder):
+def build_plan(folder, recursive=False):
+    folder = folder.resolve()
+    categories = load_categories()
     plan = []
-    files = get_files_to_organize(folder)
+    files = get_files_to_organize(folder, recursive, categories)
+    reserved_destinations = set()
 
     for file_path in files:
-        category = get_category(file_path)
+        category = get_category(file_path, categories)
         target_folder = folder / category
-        destination = get_unique_path(target_folder / file_path.name)
+        destination = get_unique_path(target_folder / file_path.name, reserved_destinations)
+        reserved_destinations.add(destination)
 
         plan.append(
             {

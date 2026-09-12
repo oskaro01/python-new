@@ -97,6 +97,7 @@ Files:
 - `my_python_work/personal_dictionary/main.py`
 - `my_python_work/personal_dictionary/dictionary_app.py`
 - `my_python_work/personal_dictionary/file_dialogs.py`
+- `my_python_work/personal_dictionary/test_dictionary_app.py`
 
 Finished:
 
@@ -112,6 +113,11 @@ Finished:
 - [x] Open dictionary from JSON
 - [x] Clean loaded data before trusting it
 - [x] Beginner comments added for readability
+- [x] Make meaning optional
+- [x] Autosave after changes
+- [x] Search by word, meaning, example, and category
+- [x] Rank search results
+- [x] Test dictionary helper behavior
 
 Important structure:
 
@@ -245,8 +251,8 @@ These are useful for daily-life scripts and real apps:
 - [x] Build a menu-based expense tracker
 - [x] Append new rows to CSV
 - [ ] Autocomplete
-- [ ] Search by word, meaning, and category
-- [ ] Ranking search results
+- [x] Search by word, meaning, and category
+- [x] Ranking search results
 - [x] Folder traversal
 - [x] File organizer
 - [x] Expense tracker
@@ -259,10 +265,12 @@ Goal: build useful scripts that feel close to real life.
 Files:
 
 - `my_python_work/practical_projects/expense_tracker/main.py`
+- `my_python_work/practical_projects/expense_tracker/test_expense_tracker.py`
 - `my_python_work/practical_projects/expense_tracker/README.md`
 - `my_python_work/practical_projects/file_organizer/main.py`
 - `my_python_work/practical_projects/file_organizer/organizer.py`
 - `my_python_work/practical_projects/file_organizer/config.py`
+- `my_python_work/practical_projects/file_organizer/categories.json`
 - `my_python_work/practical_projects/file_organizer/test_organizer.py`
 - `my_python_work/practical_projects/file_organizer/README.md`
 
@@ -286,6 +294,8 @@ Finished:
 - [x] Monthly summary
 - [x] Nicer table formatting
 - [x] Export monthly report
+- [x] Add monthly report totals by category
+- [x] Add backup/export all data
 - [x] Preview file organization plan
 - [x] Organize files by extension
 - [x] Use `pathlib`
@@ -299,12 +309,16 @@ Finished:
 - [x] Write simple tests with `assert`
 - [x] Test organizer helper functions
 - [x] Test organize and undo with a temporary folder
+- [x] Load category rules from JSON
+- [x] Show category rules from the menu
+- [x] Normalize extensions from category config
+- [x] Add recursive folder organizing mode
+- [x] Skip already organized category folders in recursive mode
+- [x] Avoid duplicate destination names in recursive mode
 
 In progress:
 
-- [ ] Add monthly report totals by category
-- [ ] Add backup/export all data
-- [ ] Learn logging basics with the file organizer
+- [ ] Choose between notes manager and next DS&A topic
 
 ## Learning Queue For Later
 
@@ -312,12 +326,14 @@ These are important, but we are not doing them right now.
 
 Practical queue:
 
-- [ ] Expense tracker monthly category totals
-- [ ] Expense tracker backup/export all data
+- [x] Expense tracker monthly category totals
+- [x] Expense tracker backup/export all data
 - [x] File organizer undo/log file
 - [x] File organizer choose custom folder
-- [ ] Personal dictionary autosave
-- [ ] Personal dictionary search by meaning/category
+- [x] File organizer custom categories from JSON
+- [x] File organizer recursive mode
+- [x] Personal dictionary autosave
+- [x] Personal dictionary search by meaning/category
 - [ ] Notes manager
 
 DS&A queue:
@@ -383,18 +399,10 @@ Use this pattern every session:
 
 Start here next time:
 
-1. Reopen `my_python_work/practical_projects/expense_tracker/main.py`.
-2. Add two expenses manually.
-3. Show totals and category totals.
-4. Test edit and delete from the menu.
-5. Test monthly summary with `YYYY-MM`.
-6. Test monthly report export.
-7. Reopen `my_python_work/practical_projects/file_organizer/main.py`.
-8. Preview the sample folder organization.
-9. Test undo after organizing sample files.
-10. Try custom-folder preview on a small safe test folder.
-11. Run `my_python_work/practical_projects/file_organizer/test_organizer.py`.
-12. Learn logging basics with the file organizer.
+1. Run the expense tracker tests.
+2. Run the file organizer tests.
+3. Run the personal dictionary tests.
+4. Choose the next branch: notes manager or DS&A binary search.
 
 ## Long-Term Mastery Path
 
@@ -404,11 +412,11 @@ You can think of a small problem, choose the right data structure, write the scr
 
 Long-term checkpoints:
 
-- [ ] Build personal dictionary v2 with autosave
+- [x] Build personal dictionary v2 with autosave
 - [x] Build folder organizer
 - [x] Build expense tracker
 - [ ] Build note manager
-- [ ] Build search/autocomplete for dictionary
+- [ ] Build autocomplete for dictionary
 - [ ] Solve 30 beginner DS&A problems
 - [ ] Solve 30 intermediate DS&A problems
 - [x] Write tests for one project
