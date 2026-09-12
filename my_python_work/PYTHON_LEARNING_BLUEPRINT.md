@@ -180,6 +180,20 @@ Files:
 - `my_python_work/dsa_practice/task10_sorting.py`
 - `my_python_work/dsa_practice/task11_filter_group.py`
 - `my_python_work/dsa_practice/task12_csv_expenses.py`
+- `my_python_work/dsa_practice/task13_binary_search.py`
+- `my_python_work/dsa_practice/task14_two_pointers.py`
+- `my_python_work/dsa_practice/task15_sliding_window.py`
+- `my_python_work/dsa_practice/task16_heap_priority_queue.py`
+- `my_python_work/dsa_practice/task17_trees.py`
+- `my_python_work/dsa_practice/task18_graphs_deeper.py`
+- `my_python_work/dsa_practice/task19_trie_autocomplete.py`
+- `my_python_work/dsa_practice/task20_fuzzy_search_deeper.py`
+- `my_python_work/dsa_practice/task21_greedy_algorithms.py`
+- `my_python_work/dsa_practice/task22_intervals.py`
+- `my_python_work/dsa_practice/task23_topological_sort.py`
+- `my_python_work/dsa_practice/task24_dynamic_programming.py`
+- `my_python_work/dsa_practice/task25_hashing_deeper.py`
+- `my_python_work/dsa_practice/task26_union_find.py`
 - `my_python_work/dsa_practice/expenses.csv`
 
 Finished:
@@ -206,6 +220,20 @@ Finished:
 - [x] Reading CSV files
 - [x] Converting CSV text values to numbers
 - [x] Summarizing totals by category
+- [x] Binary search basics
+- [x] Two pointers basics
+- [x] Sliding window basics
+- [x] Heap / priority queue basics
+- [x] Trees basics
+- [x] Graphs deeper basics
+- [x] Trie / autocomplete basics
+- [x] Fuzzy search deeper basics
+- [x] Greedy algorithms basics
+- [x] Intervals basics
+- [x] Topological sort basics
+- [x] Dynamic programming basics
+- [x] Hashing deeper basics
+- [x] Union-Find basics
 
 In progress:
 
@@ -225,16 +253,20 @@ Learn in this order:
 - [x] Linked list
 - [x] Recursion
 - [x] Sorting with custom keys
-- [ ] Binary search
-- [ ] Two pointers
-- [ ] Sliding window
-- [ ] Heap / priority queue
-- [ ] Trees
-- [ ] Graphs deeper
-- [ ] Trie / autocomplete
-- [ ] Fuzzy search deeper
-- [ ] Greedy algorithms
-- [ ] Dynamic programming basics
+- [x] Binary search
+- [x] Two pointers
+- [x] Sliding window
+- [x] Heap / priority queue
+- [x] Trees
+- [x] Graphs deeper
+- [x] Trie / autocomplete
+- [x] Fuzzy search deeper
+- [x] Greedy algorithms
+- [x] Intervals
+- [x] Topological sort
+- [x] Dynamic programming basics
+- [x] Hashing deeper
+- [x] Union-Find
 
 ## Practical Algorithms Roadmap
 
@@ -250,13 +282,13 @@ These are useful for daily-life scripts and real apps:
 - [x] Summarize expenses by category
 - [x] Build a menu-based expense tracker
 - [x] Append new rows to CSV
-- [ ] Autocomplete
+- [x] Autocomplete
 - [x] Search by word, meaning, and category
 - [x] Ranking search results
 - [x] Folder traversal
 - [x] File organizer
 - [x] Expense tracker
-- [ ] Notes manager
+- [x] Notes manager skipped because it overlaps with the dictionary app
 
 ## Phase 6: Practical Projects
 
@@ -318,7 +350,7 @@ Finished:
 
 In progress:
 
-- [ ] Choose between notes manager and next DS&A topic
+- [ ] Choose review day or next practical upgrade
 
 ## Learning Queue For Later
 
@@ -334,20 +366,24 @@ Practical queue:
 - [x] File organizer recursive mode
 - [x] Personal dictionary autosave
 - [x] Personal dictionary search by meaning/category
-- [ ] Notes manager
+- [x] Notes manager skipped because it overlaps with the dictionary app
 
 DS&A queue:
 
-- [ ] Binary search
-- [ ] Two pointers
-- [ ] Sliding window
-- [ ] Heap / priority queue
-- [ ] Trees
-- [ ] Deeper graphs
-- [ ] Trie / autocomplete
-- [ ] Fuzzy search deeper
-- [ ] Greedy algorithms
-- [ ] Dynamic programming basics
+- [x] Binary search
+- [x] Two pointers
+- [x] Sliding window
+- [x] Heap / priority queue
+- [x] Trees
+- [x] Deeper graphs
+- [x] Trie / autocomplete
+- [x] Fuzzy search deeper
+- [x] Greedy algorithms
+- [x] Intervals
+- [x] Topological sort
+- [x] Dynamic programming basics
+- [x] Hashing deeper
+- [x] Union-Find
 
 ## Thinking In Functions And Methods
 
@@ -399,10 +435,9 @@ Use this pattern every session:
 
 Start here next time:
 
-1. Run the expense tracker tests.
-2. Run the file organizer tests.
-3. Run the personal dictionary tests.
-4. Choose the next branch: notes manager or DS&A binary search.
+1. Run `my_python_work/dsa_practice/task25_hashing_deeper.py`.
+2. Run `my_python_work/dsa_practice/task26_union_find.py`.
+3. Do a review day or upgrade the personal dictionary with autocomplete.
 
 ## Long-Term Mastery Path
 
@@ -415,7 +450,7 @@ Long-term checkpoints:
 - [x] Build personal dictionary v2 with autosave
 - [x] Build folder organizer
 - [x] Build expense tracker
-- [ ] Build note manager
+- [x] Skip note manager because it overlaps with the dictionary app
 - [ ] Build autocomplete for dictionary
 - [ ] Solve 30 beginner DS&A problems
 - [ ] Solve 30 intermediate DS&A problems
