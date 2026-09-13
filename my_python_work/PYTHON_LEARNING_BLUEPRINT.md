@@ -194,6 +194,10 @@ Files:
 - `my_python_work/dsa_practice/task24_dynamic_programming.py`
 - `my_python_work/dsa_practice/task25_hashing_deeper.py`
 - `my_python_work/dsa_practice/task26_union_find.py`
+- `my_python_work/dsa_practice/task27_arrays_strings_patterns.py`
+- `my_python_work/dsa_practice/task28_hash_prefix_sliding_patterns.py`
+- `my_python_work/dsa_practice/task29_lis_and_graph_patterns.py`
+- `my_python_work/dsa_practice/task30_sql_union_vs_union_all.py`
 - `my_python_work/dsa_practice/expenses.csv`
 
 Finished:
@@ -234,6 +238,18 @@ Finished:
 - [x] Dynamic programming basics
 - [x] Hashing deeper basics
 - [x] Union-Find basics
+- [x] Rotate array right by K
+- [x] Boyer-Moore majority element
+- [x] Longest common prefix
+- [x] Product of array except self
+- [x] Two Sum with hash map
+- [x] Prefix sum + hash map
+- [x] Minimum window substring
+- [x] Longest subarray with at most K distinct
+- [x] Longest Increasing Subsequence
+- [x] Directed cycle detection with DFS colors
+- [x] Connected components with Union-Find
+- [x] SQL UNION vs UNION ALL
 
 In progress:
 
@@ -285,6 +301,9 @@ These are useful for daily-life scripts and real apps:
 - [x] Autocomplete
 - [x] Search by word, meaning, and category
 - [x] Ranking search results
+- [x] Prefix sum search patterns
+- [x] Minimum window substring
+- [x] SQL UNION vs UNION ALL
 - [x] Folder traversal
 - [x] File organizer
 - [x] Expense tracker
@@ -437,7 +456,11 @@ Start here next time:
 
 1. Run `my_python_work/dsa_practice/task25_hashing_deeper.py`.
 2. Run `my_python_work/dsa_practice/task26_union_find.py`.
-3. Do a review day or upgrade the personal dictionary with autocomplete.
+3. Run `my_python_work/dsa_practice/task27_arrays_strings_patterns.py`.
+4. Run `my_python_work/dsa_practice/task28_hash_prefix_sliding_patterns.py`.
+5. Run `my_python_work/dsa_practice/task29_lis_and_graph_patterns.py`.
+6. Run `my_python_work/dsa_practice/task30_sql_union_vs_union_all.py`.
+7. Do a review day or upgrade the personal dictionary with autocomplete.
 
 ## Long-Term Mastery Path
 
