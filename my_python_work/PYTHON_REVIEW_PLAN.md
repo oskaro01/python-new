@@ -72,6 +72,49 @@ Do not skip rest. Rest is when the brain quietly organizes the mess.
 
 This is the recommended pace. It is fast enough to feel progress, but slow enough to actually learn.
 
+## Pre-Review Bridge: OOP Deep Dive
+
+Spend: 2 to 4 days before starting the full review
+
+Files:
+
+- `my_python_work/oop_practice/01_objects_instances.py`
+- `my_python_work/oop_practice/02_encapsulation.py`
+- `my_python_work/oop_practice/03_inheritance_polymorphism.py`
+- `my_python_work/oop_practice/04_abstraction.py`
+- `my_python_work/oop_practice/05_composition.py`
+- `my_python_work/oop_practice/06_class_static_methods.py`
+- `my_python_work/oop_practice/07_oop_checkpoint_project.py`
+
+Review:
+
+- Class vs object/instance
+- Attributes
+- Methods
+- `self`
+- Encapsulation
+- Inheritance
+- Polymorphism
+- Abstraction
+- Composition
+- Class methods
+- Static methods
+
+Practice:
+
+- Run each file.
+- Explain each class in one sentence.
+- Explain what data each object stores.
+- Rewrite one small class without looking.
+- Change the checkpoint project by adding one more task type.
+
+You are ready for the ultimate review when:
+
+- You can explain class vs object.
+- You can explain why `self` exists.
+- You can explain inheritance vs composition.
+- You can recognize when a class makes code clearer.
+
 ## Week 1: Python Core And Small Scripts
 
 Spend: 5 to 7 days
@@ -133,6 +176,7 @@ Review:
 - Classes
 - Methods
 - `self`
+- OOP deep dive files
 - File reading/writing
 - JSON saving/loading
 - Windows file dialogs

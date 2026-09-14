@@ -14,9 +14,10 @@ Current phase:
 
 - [x] Python scripting basics
 - [x] Interactive scripts
-- [x] Lists, loops, functions, classes
+- [x] Lists, loops, functions, class basics
 - [x] File handling and JSON
 - [x] Practical app structure
+- [ ] OOP deep dive
 - [ ] DS&A fundamentals
 - [ ] Real-world automation projects
 - [ ] Testing and debugging discipline
@@ -160,6 +161,79 @@ Still to practice:
 Key lesson:
 
 Do not commit generated Python cache files or personal saved data.
+
+## Phase 4.5: OOP Deep Dive
+
+Goal: properly understand classes before the ultimate review session.
+
+Files:
+
+- `my_python_work/oop_practice/README.md`
+- `my_python_work/oop_practice/01_objects_instances.py`
+- `my_python_work/oop_practice/02_encapsulation.py`
+- `my_python_work/oop_practice/03_inheritance_polymorphism.py`
+- `my_python_work/oop_practice/04_abstraction.py`
+- `my_python_work/oop_practice/05_composition.py`
+- `my_python_work/oop_practice/06_class_static_methods.py`
+- `my_python_work/oop_practice/07_oop_checkpoint_project.py`
+
+To learn:
+
+- [ ] Class vs object/instance
+- [ ] Attributes
+- [ ] Methods
+- [ ] `self`
+- [ ] Encapsulation
+- [ ] `@property`
+- [ ] Inheritance
+- [ ] Polymorphism
+- [ ] Abstraction
+- [ ] Composition
+- [ ] Class methods
+- [ ] Static methods
+- [ ] When to use classes
+- [ ] When not to use classes
+
+Key lesson:
+
+Classes are useful when data and behavior belong together. OOP is not about making every script complicated; it is about organizing related ideas cleanly.
+
+## Phase 4.6: Practical Design Patterns
+
+Goal: learn common ways to organize growing apps after OOP basics feel comfortable.
+
+Status:
+
+- [ ] Do this after OOP deep dive
+
+Best patterns for our daily Python projects:
+
+- [ ] Repository pattern
+- [ ] Strategy pattern
+- [ ] Factory pattern
+- [ ] Command pattern
+- [ ] Adapter pattern
+
+Priority:
+
+1. Repository pattern
+2. Strategy pattern
+
+Why these two first:
+
+- Repository is useful because our apps save/load JSON, CSV, and files.
+- Strategy is useful because our apps search, filter, sort, and switch behavior.
+
+Example future use:
+
+```text
+PersonalDictionary uses DictionaryRepository to save/load words.
+PersonalDictionary uses search strategies for exact, fuzzy, and autocomplete search.
+```
+
+Key lesson:
+
+Design patterns are reusable organization ideas. They are most useful after classes, objects, composition, and methods make sense.
 
 ## Phase 5: DS&A Foundation
 
@@ -386,6 +460,9 @@ Practical queue:
 - [x] Personal dictionary autosave
 - [x] Personal dictionary search by meaning/category
 - [x] Notes manager skipped because it overlaps with the dictionary app
+- [ ] Learn Repository pattern after OOP
+- [ ] Learn Strategy pattern after Repository
+- [ ] Later learn Factory, Command, and Adapter patterns
 
 DS&A queue:
 
@@ -454,13 +531,14 @@ Use this pattern every session:
 
 Start here next time:
 
-1. Run `my_python_work/dsa_practice/task25_hashing_deeper.py`.
-2. Run `my_python_work/dsa_practice/task26_union_find.py`.
-3. Run `my_python_work/dsa_practice/task27_arrays_strings_patterns.py`.
-4. Run `my_python_work/dsa_practice/task28_hash_prefix_sliding_patterns.py`.
-5. Run `my_python_work/dsa_practice/task29_lis_and_graph_patterns.py`.
-6. Run `my_python_work/dsa_practice/task30_sql_union_vs_union_all.py`.
-7. Do a review day or upgrade the personal dictionary with autocomplete.
+1. Run `my_python_work/oop_practice/01_objects_instances.py`.
+2. Run `my_python_work/oop_practice/02_encapsulation.py`.
+3. Run `my_python_work/oop_practice/03_inheritance_polymorphism.py`.
+4. Run `my_python_work/oop_practice/04_abstraction.py`.
+5. Run `my_python_work/oop_practice/05_composition.py`.
+6. Run `my_python_work/oop_practice/06_class_static_methods.py`.
+7. Run `my_python_work/oop_practice/07_oop_checkpoint_project.py`.
+8. After OOP, do the ultimate review session.
 
 ## Long-Term Mastery Path
 
@@ -479,6 +557,7 @@ Long-term checkpoints:
 - [ ] Solve 30 intermediate DS&A problems
 - [x] Write tests for one project
 - [x] Refactor one project cleanly
+- [ ] Learn practical design patterns
 
 ## Motivation Note
 
