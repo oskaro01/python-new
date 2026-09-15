@@ -21,6 +21,7 @@ Current phase:
 - [ ] DS&A fundamentals
 - [ ] Real-world automation projects
 - [ ] Testing and debugging discipline
+- [ ] Full-stack Python web apps
 
 ## Phase 1: Starter Python
 
@@ -445,6 +446,67 @@ In progress:
 
 - [ ] Choose review day or next practical upgrade
 
+## Phase 7: Full-Stack Python Web Apps
+
+Goal: rebuild web app confidence with Python as the main world instead of jumping between Python and Next.js/TypeScript.
+
+Main roadmap:
+
+- `my_python_work/PYTHON_FULL_STACK_WEB_ROADMAP.md`
+
+Recommended future stack:
+
+- Django
+- PostgreSQL
+- Django templates
+- HTMX for small interactivity
+- Bootstrap first, Tailwind later if wanted
+- Django auth
+- Stripe first
+- PayPal later
+- Django email templates
+- Django Admin
+
+To learn:
+
+- [ ] Web foundations: HTTP, URLs, GET/POST, forms, cookies, sessions
+- [ ] Django project/app structure
+- [ ] URLs, views, templates, redirects, messages
+- [ ] Models, migrations, Django ORM, QuerySets
+- [ ] PostgreSQL
+- [ ] Forms and validation
+- [ ] Auth: register, login, logout, permissions
+- [ ] Static files and media uploads
+- [ ] Product catalog
+- [ ] Search, filters, sorting, pagination
+- [ ] Cart and checkout flow
+- [ ] Orders and order history
+- [ ] Inventory basics
+- [ ] Reviews
+- [ ] Coupons
+- [ ] Stripe payments
+- [ ] PayPal later
+- [ ] Payment webhooks
+- [ ] Receipt emails
+- [ ] Admin dashboard
+- [ ] CSV exports
+- [ ] Tests for models, forms, views, cart, checkout
+- [ ] Security basics
+- [ ] Deployment
+- [ ] Performance basics
+
+First future web project:
+
+- [ ] Build `mini_store` without real payments
+
+Second future web project:
+
+- [ ] Build `django_marketplace` with payments, emails, admin analytics, and deployment
+
+Key lesson:
+
+Django lets us build serious full-stack apps while keeping Python as the main language. The browser still uses HTML/CSS/JavaScript, but we do not need to live in a React/Next.js world to build useful ecommerce apps.
+
 ## Learning Queue For Later
 
 These are important, but we are not doing them right now.
@@ -463,6 +525,9 @@ Practical queue:
 - [ ] Learn Repository pattern after OOP
 - [ ] Learn Strategy pattern after Repository
 - [ ] Later learn Factory, Command, and Adapter patterns
+- [ ] Learn Django after OOP, design patterns, and ultimate review
+- [ ] Build Python `mini_store`
+- [ ] Build larger Django ecommerce app later
 
 DS&A queue:
 
@@ -558,6 +623,8 @@ Long-term checkpoints:
 - [x] Write tests for one project
 - [x] Refactor one project cleanly
 - [ ] Learn practical design patterns
+- [ ] Learn Django full-stack web development
+- [ ] Build and deploy a Python ecommerce app
 
 ## Motivation Note
 
@@ -577,5 +644,12 @@ Since then, you have built:
 - fuzzy search
 - DS&A practice files
 - stack, queue, DFS, BFS, linked list, recursion, sorting, filtering, grouping, and CSV examples
+
+Future direction:
+
+- OOP deep dive
+- Practical design patterns
+- Ultimate Python review
+- Django full-stack web apps
 
 That is real progress. The next goal is not speed. The next goal is repetition until these patterns feel natural.
