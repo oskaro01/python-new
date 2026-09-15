@@ -63,9 +63,20 @@ Do this after:
 
 Then start web slowly.
 
+Tiny early start:
+
+- `my_python_work/web_practice/01_web_foundations/simple_server.py`
+
+This file is allowed before the big review because it teaches the basic browser/server idea without adding Django complexity yet.
+
 ## Phase 1: Web Foundations
 
 Goal: understand what a web app really is.
+
+Files:
+
+- `my_python_work/web_practice/README.md`
+- `my_python_work/web_practice/01_web_foundations/simple_server.py`
 
 Learn:
 

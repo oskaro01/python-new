@@ -454,6 +454,11 @@ Main roadmap:
 
 - `my_python_work/PYTHON_FULL_STACK_WEB_ROADMAP.md`
 
+Early starter files:
+
+- `my_python_work/web_practice/README.md`
+- `my_python_work/web_practice/01_web_foundations/simple_server.py`
+
 Recommended future stack:
 
 - Django
@@ -470,6 +475,7 @@ Recommended future stack:
 To learn:
 
 - [ ] Web foundations: HTTP, URLs, GET/POST, forms, cookies, sessions
+- [ ] Run a tiny pure-Python web server
 - [ ] Django project/app structure
 - [ ] URLs, views, templates, redirects, messages
 - [ ] Models, migrations, Django ORM, QuerySets
