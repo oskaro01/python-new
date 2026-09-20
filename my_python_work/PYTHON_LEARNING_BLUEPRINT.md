@@ -502,7 +502,7 @@ Recommended future stack:
 - HTMX for small interactivity
 - Bootstrap first, Tailwind later if wanted
 - Django auth
-- Payments optional later
+- Payments optional later in a tiny checkout lab
 - Django email templates
 - Django Admin
 
@@ -535,6 +535,7 @@ To learn:
 - [ ] Private words per user
 - [ ] Import/export CSV or JSON
 - [ ] Review/practice mode
+- [ ] Optional mini checkout lab for cart/order/shipping/payment concepts
 - [ ] Receipt emails
 - [ ] Admin dashboard
 - [ ] CSV exports
@@ -549,11 +550,20 @@ First future web project:
 
 Optional later web project:
 
+- [ ] Build `mini_checkout_lab` for cart, checkout, shipping, orders, and fake payment
 - [ ] Build `django_marketplace` only if ecommerce becomes useful again
 
 Key lesson:
 
 Django lets us build serious full-stack apps while keeping Python as the main language. The browser still uses HTML/CSS/JavaScript, but our main project can stay light and personally useful: a web dictionary app.
+
+Missing ecommerce-specific concepts are not forgotten. They move into a smaller later lab:
+
+```text
+mini_checkout_lab
+```
+
+That lab covers cart, checkout, shipping address, orders, payment status, and receipt email without making the dictionary app heavy.
 
 ## Learning Queue For Later
 
@@ -575,7 +585,8 @@ Practical queue:
 - [ ] Later learn Factory, Command, and Adapter patterns
 - [ ] Learn Django after OOP, design patterns, and ultimate review
 - [ ] Build Django `django_dictionary`
-- [ ] Keep ecommerce/payments as optional later skills
+- [ ] Build `mini_checkout_lab` later for checkout/payment concepts
+- [ ] Keep full ecommerce marketplace as optional later
 
 DS&A queue:
 
@@ -673,6 +684,7 @@ Long-term checkpoints:
 - [ ] Learn practical design patterns
 - [ ] Learn Django full-stack web development
 - [ ] Build and deploy a Python dictionary web app
+- [ ] Build a tiny checkout lab for ecommerce-specific systems
 
 ## Motivation Note
 

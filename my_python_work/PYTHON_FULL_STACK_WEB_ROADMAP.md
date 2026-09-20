@@ -29,7 +29,7 @@ Our future web stack:
 - Interactivity: HTMX and small JavaScript only when needed
 - Styling: Bootstrap first, Tailwind later if wanted
 - Auth: Django auth, then Google login later
-- Payments: optional later, only if you decide to build ecommerce again
+- Payments: optional later in a tiny checkout lab, not in the main dictionary app
 - Email: Django email templates with SMTP or Resend
 - Admin: Django Admin, then custom dashboard
 
@@ -317,17 +317,18 @@ Learn:
 HTMX is useful for:
 
 - Search without full page reload
-- Add to cart without full page reload
+- Mark favorite without full page reload
+- Mark reviewed without full page reload
 - Inline edit
-- Filter product list
-- Load more products
+- Filter word list
+- Load more words
 
 Practice:
 
-- Product grid
-- Product search
+- Word grid
+- Word search
 - Category filter
-- Cart quantity update
+- Favorite/review status update
 
 You are ready to move on when:
 
@@ -404,6 +405,44 @@ You are ready to move on when:
 - You can move data in and out safely.
 - You can build a small workflow around saved records.
 
+## Phase 8.5: Optional Mini Checkout Lab
+
+Goal: learn the ecommerce-specific systems without turning our main project into a giant store.
+
+Project:
+
+```text
+mini_checkout_lab
+```
+
+Learn:
+
+- Cart
+- Checkout form
+- Shipping address
+- Billing address
+- Order model
+- Order items
+- Order status
+- Fake payment status
+- Receipt email
+- Stripe later if needed
+- Never trusting the browser for payment success
+
+Practice:
+
+- Add simple items to a cart.
+- Convert cart items into an order.
+- Save shipping/contact details.
+- Mark an order as pending/paid/cancelled.
+- Send or preview a receipt email.
+
+You are ready to move on when:
+
+- You can explain cart vs order.
+- You understand why payment confirmation must happen server-side.
+- You know how shipping/payment concepts map to database models.
+
 ## Phase 9: Email
 
 Goal: send useful transactional emails.
@@ -414,19 +453,21 @@ Learn:
 - SMTP
 - Resend later if wanted
 - Email templates
-- Purchase receipt email
+- Dictionary backup/export email
+- Review reminder email
+- Optional checkout receipt email
 - Password reset email
-- Order shipped email
 
 Practice:
 
-- Send receipt after successful order.
-- Send admin notification after new order.
+- Send a dictionary export email.
+- Send a review reminder email.
+- Send a checkout receipt later if we build `mini_checkout_lab`.
 
 You are ready to move on when:
 
 - You can send an email from Django.
-- You can render an email using order data.
+- You can render an email using saved app data.
 
 ## Phase 10: Admin And Analytics
 
@@ -440,23 +481,23 @@ Learn:
 - Filters
 - Custom admin actions
 - Dashboard views
-- Revenue summaries
-- Order summaries
-- Product performance
+- Dictionary growth summaries
+- Review progress summaries
+- Word/category performance
 - CSV export
 - Basic charts
 
 Practice:
 
-- Total revenue this month
-- Orders by status
-- Top products
-- Low-stock products
-- Sales CSV export
+- Total words added this month
+- Words by category
+- Due-for-review count
+- Most reviewed words
+- Dictionary CSV export
 
 You are ready to move on when:
 
-- You can manage products/orders from admin.
+- You can manage words/categories/review data from admin.
 - You can create a simple dashboard summary.
 
 ## Phase 11: Testing
@@ -469,17 +510,18 @@ Learn:
 - Form tests
 - View tests
 - Auth tests
-- Cart tests
-- Checkout tests
-- Payment webhook tests
+- Search tests
+- Permission tests
+- Import/export tests
+- Optional checkout tests later
 - Factory data
 
 Practice:
 
-- Test product creation.
-- Test cart total.
+- Test word creation.
+- Test private word protection.
 - Test login required pages.
-- Test order creation.
+- Test search results.
 
 You are ready to move on when:
 
@@ -510,7 +552,7 @@ Practice:
 - Move secrets into `.env`.
 - Protect admin-only views.
 - Validate uploads.
-- Check that users cannot see other users' orders.
+- Check that users cannot see other users' private words.
 
 You are ready to move on when:
 
@@ -572,8 +614,8 @@ Learn:
 
 Practice:
 
-- Add pagination to products.
-- Optimize product list queries.
+- Add pagination to words.
+- Optimize word list queries.
 - Cache category list.
 - Add backup habit.
 
@@ -595,8 +637,8 @@ Use these after OOP:
 How they fit Django:
 
 - Repository: separate data access when app logic grows
-- Strategy: choose search, discount, shipping, or payment behavior
-- Factory: create objects from form/API/payment data
+- Strategy: choose search, review, import/export, or optional payment behavior
+- Factory: create objects from form/API/import data
 - Command: organize actions like import, export, review, and backup
 - Adapter: connect external APIs like email, dictionary APIs, or Resend
 
@@ -632,6 +674,51 @@ Features:
 Do not add payments.
 
 Payments belong to a future ecommerce project, not this lightweight dictionary path.
+
+## Skill Coverage Map
+
+Main project:
+
+```text
+django_dictionary
+```
+
+Teaches:
+
+- CRUD
+- database models
+- forms and validation
+- auth and permissions
+- user-owned private data
+- search/filter/sort/pagination
+- fuzzy search
+- import/export
+- file/media uploads
+- admin dashboards
+- tests
+- deployment
+- security
+- performance
+
+Optional small lab:
+
+```text
+mini_checkout_lab
+```
+
+Teaches:
+
+- cart
+- checkout
+- shipping address
+- billing address
+- orders
+- order status
+- fake payment
+- Stripe later if needed
+- receipt email
+
+This keeps the main road light while still covering the business systems a dictionary app does not naturally need.
 
 ## Optional Ecommerce Project Later
 
