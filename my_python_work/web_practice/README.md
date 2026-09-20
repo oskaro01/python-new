@@ -12,13 +12,43 @@ We are not jumping straight into Django yet. First we learn what Django will lat
 
 ## Study Order
 
-1. `01_web_foundations/simple_server.py`
-2. Later: first Django project
+1. `01_web_foundations/01_request_response/`
+2. `01_web_foundations/02_get_query_products/`
+3. `01_web_foundations/03_post_json_guestbook/`
+4. Later: first Django project
 
 ## Run The First Server
 
 ```powershell
-python -B my_python_work/web_practice/01_web_foundations/simple_server.py
+python -B my_python_work/web_practice/01_web_foundations/01_request_response/simple_server.py
+```
+
+Then open:
+
+```text
+http://127.0.0.1:8000
+```
+
+## Run The Second Server
+
+Stop the first server with `Ctrl+C`, then run:
+
+```powershell
+python -B my_python_work/web_practice/01_web_foundations/02_get_query_products/app.py
+```
+
+Then open:
+
+```text
+http://127.0.0.1:8000/products
+```
+
+## Run The Third Server
+
+Stop the second server with `Ctrl+C`, then run:
+
+```powershell
+python -B my_python_work/web_practice/01_web_foundations/03_post_json_guestbook/app.py
 ```
 
 Then open:
@@ -36,4 +66,6 @@ http://127.0.0.1:8000
 - A form can send data back to Python.
 - `GET` usually reads data.
 - `POST` usually changes/submits data.
-
+- Query parameters are the part after `?` in a URL.
+- Search/filter pages often use `GET`.
+- Submitted data can be saved to JSON before we learn databases.

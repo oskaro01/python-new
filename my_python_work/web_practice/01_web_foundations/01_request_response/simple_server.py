@@ -13,7 +13,7 @@ This file teaches the web basics before Django:
 
 Run:
 
-    python -B my_python_work/web_practice/01_web_foundations/simple_server.py
+    python -B my_python_work/web_practice/01_web_foundations/01_request_response/simple_server.py
 
 Open:
 
