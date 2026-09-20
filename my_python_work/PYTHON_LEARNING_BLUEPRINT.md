@@ -471,6 +471,13 @@ Early starter files:
 - `my_python_work/web_practice/01_web_foundations/05_templates_static_files/templates/home.html`
 - `my_python_work/web_practice/01_web_foundations/05_templates_static_files/templates/products.html`
 - `my_python_work/web_practice/01_web_foundations/05_templates_static_files/static/styles.css`
+- `my_python_work/web_practice/01_web_foundations/06_dynamic_routes_404/README.md`
+- `my_python_work/web_practice/01_web_foundations/06_dynamic_routes_404/app.py`
+- `my_python_work/web_practice/01_web_foundations/06_dynamic_routes_404/templates/base.html`
+- `my_python_work/web_practice/01_web_foundations/06_dynamic_routes_404/templates/products.html`
+- `my_python_work/web_practice/01_web_foundations/06_dynamic_routes_404/templates/product_detail.html`
+- `my_python_work/web_practice/01_web_foundations/06_dynamic_routes_404/templates/not_found.html`
+- `my_python_work/web_practice/01_web_foundations/06_dynamic_routes_404/static/styles.css`
 
 Recommended future stack:
 
@@ -493,6 +500,7 @@ To learn:
 - [ ] Practice POST form saving with JSON
 - [ ] Practice cookies, sessions, and a tiny cart
 - [ ] Practice templates and static files
+- [ ] Practice dynamic routes and 404 pages
 - [ ] Django project/app structure
 - [ ] URLs, views, templates, redirects, messages
 - [ ] Models, migrations, Django ORM, QuerySets
