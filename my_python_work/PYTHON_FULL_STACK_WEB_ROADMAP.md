@@ -8,7 +8,7 @@ The target is:
 Python + Django + PostgreSQL + Django templates + HTMX
 ```
 
-This path can replace most of what a Next.js ecommerce app gave you, while keeping your brain mostly in Python.
+This path can teach the same serious full-stack skills you used in a Next.js ecommerce app, but through a lighter personal dictionary app that is more useful to you.
 
 ## Important Truth
 
@@ -29,7 +29,7 @@ Our future web stack:
 - Interactivity: HTMX and small JavaScript only when needed
 - Styling: Bootstrap first, Tailwind later if wanted
 - Auth: Django auth, then Google login later
-- Payments: Stripe first, PayPal later
+- Payments: optional later, only if you decide to build ecommerce again
 - Email: Django email templates with SMTP or Resend
 - Admin: Django Admin, then custom dashboard
 
@@ -227,10 +227,11 @@ Database path:
 
 Practice:
 
-- Product model
+- Word model
 - Category model
-- Review model
-- Order model
+- Tag model
+- Example sentence model
+- Review/practice history model
 
 You are ready to move on when:
 
@@ -255,10 +256,11 @@ Learn:
 
 Practice:
 
-- Product review form
+- Add word form
+- Edit word form
+- Search/filter form
 - Contact form
 - Edit profile form
-- Add to cart form
 
 You are ready to move on when:
 
@@ -333,87 +335,74 @@ You are ready to move on when:
 - You can reuse layout pieces.
 - You understand that not every interaction needs React.
 
-## Phase 7: Ecommerce Core
+## Phase 7: Personal Dictionary Core
 
-Goal: build the main store features.
+Goal: build the main dictionary features.
 
 Learn and build:
 
-- Product catalog
-- Product detail page
+- Word list
+- Word detail page
 - Categories
-- Product images
+- Tags
+- Optional word image/audio
 - Search
 - Filtering
 - Sorting
 - Pagination
-- Cart
-- Checkout
-- Order creation
-- Order status
-- Inventory
-- Reviews
-- Coupons
-- Shipping address
-- Billing address
-- Tax/shipping calculation basics
+- Fuzzy search
+- Favorites
+- Private words per user
+- Import/export
+- Review/practice mode
+- Admin word management
 
 Practice project:
 
 ```text
-django_marketplace
+django_dictionary
 ```
 
 Minimum features:
 
-- Browse products
-- View product detail
-- Add to cart
-- Update cart quantity
-- Checkout
-- Place order
-- View order history
+- Browse words
+- View word detail
+- Add/edit/delete words
+- Search and filter words
+- Mark favorites
+- Export words
+- Use Django Admin for cleanup
 
 You are ready to move on when:
 
-- You can explain the difference between cart and order.
-- You can create an order from cart items.
-- You can reduce inventory after purchase.
+- You can explain model, form, view, template, and URL flow.
+- You can protect a user's private words.
+- You can search and filter saved database records.
 
-## Phase 8: Payments
+## Phase 8: Import, Export, And Review Workflow
 
-Goal: take payment safely.
-
-Start with:
-
-- Stripe Checkout
+Goal: make the dictionary useful every day.
 
 Learn:
 
-- Payment session
-- Success URL
-- Cancel URL
-- Webhooks
-- Payment status
-- Idempotency idea
-- Never trusting the browser for payment success
-
-Later:
-
-- PayPal
-- Cash on delivery
-- Local payment methods if needed
+- CSV import
+- CSV export
+- JSON backup
+- Favorites
+- Review status
+- Due-for-review filtering
+- Safer user-owned data
 
 Practice:
 
-- Create Stripe checkout session.
-- Handle successful payment webhook.
-- Mark order as paid only after trusted confirmation.
+- Import old words from CSV or JSON.
+- Export your dictionary backup.
+- Build a simple review/practice page.
 
 You are ready to move on when:
 
-- You understand why payment confirmation should happen server-side.
-- You can connect an order to a payment status.
+- You can move data in and out safely.
+- You can build a small workflow around saved records.
 
 ## Phase 9: Email
 
@@ -608,8 +597,8 @@ How they fit Django:
 - Repository: separate data access when app logic grows
 - Strategy: choose search, discount, shipping, or payment behavior
 - Factory: create objects from form/API/payment data
-- Command: organize actions like checkout, refund, export
-- Adapter: connect external APIs like Stripe, PayPal, Resend
+- Command: organize actions like import, export, review, and backup
+- Adapter: connect external APIs like email, dictionary APIs, or Resend
 
 Most important for us:
 
@@ -622,28 +611,31 @@ Repository + Strategy
 Build this first:
 
 ```text
-mini_store
+django_dictionary
 ```
 
 Features:
 
-- Product list
-- Product detail
+- Word list
+- Word detail
+- Add/edit/delete words
 - Search
-- Category filter
-- Cart with session
-- Checkout form
-- Fake order placement
-- Order history
-- Admin product management
+- Category/tag filter
+- Fuzzy search
+- Favorites
+- User login
+- Private words per user
+- Import/export
+- Review/practice mode
+- Admin word management
 
-Do not add payments first.
+Do not add payments.
 
-Add payments only after the fake checkout flow makes sense.
+Payments belong to a future ecommerce project, not this lightweight dictionary path.
 
-## Full Ecommerce Project Later
+## Optional Ecommerce Project Later
 
-Build this after `mini_store`:
+Only build this later if you actually want ecommerce again:
 
 ```text
 django_marketplace
@@ -697,9 +689,9 @@ You are full-stack Python comfortable when you can:
 - Handle forms
 - Save data
 - Authenticate users
-- Build cart/checkout flow
+- Build a useful user-owned workflow
 - Send emails
-- Take payments
+- Import/export data
 - Write tests
 - Deploy the app
 - Debug production-style problems

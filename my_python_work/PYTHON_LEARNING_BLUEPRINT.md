@@ -502,8 +502,7 @@ Recommended future stack:
 - HTMX for small interactivity
 - Bootstrap first, Tailwind later if wanted
 - Django auth
-- Stripe first
-- PayPal later
+- Payments optional later
 - Django email templates
 - Django Admin
 
@@ -529,35 +528,32 @@ To learn:
 - [ ] Forms and validation
 - [ ] Auth: register, login, logout, permissions
 - [ ] Static files and media uploads
-- [ ] Product catalog
+- [ ] Dictionary word list/detail pages
 - [ ] Search, filters, sorting, pagination
-- [ ] Cart and checkout flow
-- [ ] Orders and order history
-- [ ] Inventory basics
-- [ ] Reviews
-- [ ] Coupons
-- [ ] Stripe payments
-- [ ] PayPal later
-- [ ] Payment webhooks
+- [ ] Add/edit/delete words
+- [ ] Favorites
+- [ ] Private words per user
+- [ ] Import/export CSV or JSON
+- [ ] Review/practice mode
 - [ ] Receipt emails
 - [ ] Admin dashboard
 - [ ] CSV exports
-- [ ] Tests for models, forms, views, cart, checkout
+- [ ] Tests for models, forms, views, search, and permissions
 - [ ] Security basics
 - [ ] Deployment
 - [ ] Performance basics
 
 First future web project:
 
-- [ ] Build `mini_store` without real payments
+- [ ] Build `django_dictionary`
 
-Second future web project:
+Optional later web project:
 
-- [ ] Build `django_marketplace` with payments, emails, admin analytics, and deployment
+- [ ] Build `django_marketplace` only if ecommerce becomes useful again
 
 Key lesson:
 
-Django lets us build serious full-stack apps while keeping Python as the main language. The browser still uses HTML/CSS/JavaScript, but we do not need to live in a React/Next.js world to build useful ecommerce apps.
+Django lets us build serious full-stack apps while keeping Python as the main language. The browser still uses HTML/CSS/JavaScript, but our main project can stay light and personally useful: a web dictionary app.
 
 ## Learning Queue For Later
 
@@ -578,8 +574,8 @@ Practical queue:
 - [ ] Learn Strategy pattern after Repository
 - [ ] Later learn Factory, Command, and Adapter patterns
 - [ ] Learn Django after OOP, design patterns, and ultimate review
-- [ ] Build Python `mini_store`
-- [ ] Build larger Django ecommerce app later
+- [ ] Build Django `django_dictionary`
+- [ ] Keep ecommerce/payments as optional later skills
 
 DS&A queue:
 
@@ -676,7 +672,7 @@ Long-term checkpoints:
 - [x] Refactor one project cleanly
 - [ ] Learn practical design patterns
 - [ ] Learn Django full-stack web development
-- [ ] Build and deploy a Python ecommerce app
+- [ ] Build and deploy a Python dictionary web app
 
 ## Motivation Note
 
