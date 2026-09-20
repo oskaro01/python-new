@@ -463,6 +463,14 @@ Early starter files:
 - `my_python_work/web_practice/01_web_foundations/02_get_query_products/app.py`
 - `my_python_work/web_practice/01_web_foundations/03_post_json_guestbook/README.md`
 - `my_python_work/web_practice/01_web_foundations/03_post_json_guestbook/app.py`
+- `my_python_work/web_practice/01_web_foundations/04_cookies_sessions_cart/README.md`
+- `my_python_work/web_practice/01_web_foundations/04_cookies_sessions_cart/app.py`
+- `my_python_work/web_practice/01_web_foundations/05_templates_static_files/README.md`
+- `my_python_work/web_practice/01_web_foundations/05_templates_static_files/app.py`
+- `my_python_work/web_practice/01_web_foundations/05_templates_static_files/templates/base.html`
+- `my_python_work/web_practice/01_web_foundations/05_templates_static_files/templates/home.html`
+- `my_python_work/web_practice/01_web_foundations/05_templates_static_files/templates/products.html`
+- `my_python_work/web_practice/01_web_foundations/05_templates_static_files/static/styles.css`
 
 Recommended future stack:
 
@@ -483,6 +491,8 @@ To learn:
 - [ ] Run a tiny pure-Python web server
 - [ ] Practice GET query parameters with product search/filtering
 - [ ] Practice POST form saving with JSON
+- [ ] Practice cookies, sessions, and a tiny cart
+- [ ] Practice templates and static files
 - [ ] Django project/app structure
 - [ ] URLs, views, templates, redirects, messages
 - [ ] Models, migrations, Django ORM, QuerySets
