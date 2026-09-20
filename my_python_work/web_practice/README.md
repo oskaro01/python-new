@@ -23,7 +23,8 @@ We are not jumping straight into Django yet. First we learn what Django will lat
 9. `01_web_foundations/09_better_search_ranking/`
 10. `01_web_foundations/10_file_uploads_media/`
 11. `02_django_basics/01_setup_django_environment/`
-12. Later: first Django project
+12. `02_django_basics/02_first_django_project/`
+13. Later: first Django app
 
 ## Run The First Server
 
@@ -165,6 +166,18 @@ python -B my_python_work/web_practice/02_django_basics/01_setup_django_environme
 
 If Django is missing, follow that lesson's README.
 
+## Run The First Django Project
+
+```powershell
+.\.venv\Scripts\python.exe my_python_work/web_practice/02_django_basics/02_first_django_project/manage.py runserver
+```
+
+Then open:
+
+```text
+http://127.0.0.1:8000/
+```
+
 ## What To Notice
 
 - A URL points to a route.
@@ -185,3 +198,4 @@ If Django is missing, follow that lesson's README.
 - Better search can rank results and handle close spellings.
 - File upload forms send file bytes with `multipart/form-data`.
 - Django needs a Python environment with Django installed before a project can run.
+- A Django project starts with `manage.py`, `settings.py`, and `urls.py`.

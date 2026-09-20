@@ -76,6 +76,7 @@ Tiny early start:
 - `my_python_work/web_practice/01_web_foundations/09_better_search_ranking/app.py`
 - `my_python_work/web_practice/01_web_foundations/10_file_uploads_media/app.py`
 - `my_python_work/web_practice/02_django_basics/01_setup_django_environment/check_setup.py`
+- `my_python_work/web_practice/02_django_basics/02_first_django_project/manage.py`
 
 These files are allowed before the big review because they teach the basic browser/server idea without adding Django complexity yet.
 
@@ -156,12 +157,17 @@ Files:
 - `my_python_work/web_practice/02_django_basics/01_setup_django_environment/README.md`
 - `my_python_work/web_practice/02_django_basics/01_setup_django_environment/check_setup.py`
 - `my_python_work/web_practice/02_django_basics/01_setup_django_environment/requirements.txt`
+- `my_python_work/web_practice/02_django_basics/02_first_django_project/README.md`
+- `my_python_work/web_practice/02_django_basics/02_first_django_project/manage.py`
+- `my_python_work/web_practice/02_django_basics/02_first_django_project/mini_site/settings.py`
+- `my_python_work/web_practice/02_django_basics/02_first_django_project/mini_site/urls.py`
 
 Learn:
 
 - Virtual environment basics
 - Installing Django
 - Checking the Django version
+- Creating the first Django project
 - Django project vs Django app
 - `settings.py`
 - `urls.py`

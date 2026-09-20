@@ -489,6 +489,10 @@ Early starter files:
 - `my_python_work/web_practice/02_django_basics/01_setup_django_environment/README.md`
 - `my_python_work/web_practice/02_django_basics/01_setup_django_environment/check_setup.py`
 - `my_python_work/web_practice/02_django_basics/01_setup_django_environment/requirements.txt`
+- `my_python_work/web_practice/02_django_basics/02_first_django_project/README.md`
+- `my_python_work/web_practice/02_django_basics/02_first_django_project/manage.py`
+- `my_python_work/web_practice/02_django_basics/02_first_django_project/mini_site/settings.py`
+- `my_python_work/web_practice/02_django_basics/02_first_django_project/mini_site/urls.py`
 
 Recommended future stack:
 
@@ -517,6 +521,7 @@ To learn:
 - [ ] Practice better search and ranking
 - [ ] Practice file uploads and media files
 - [ ] Set up Django environment
+- [ ] Create first Django project
 - [ ] Django project/app structure
 - [ ] URLs, views, templates, redirects, messages
 - [ ] Models, migrations, Django ORM, QuerySets
