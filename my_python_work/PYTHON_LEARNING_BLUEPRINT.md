@@ -484,6 +484,8 @@ Early starter files:
 - `my_python_work/web_practice/01_web_foundations/08_database_search_pagination/app.py`
 - `my_python_work/web_practice/01_web_foundations/09_better_search_ranking/README.md`
 - `my_python_work/web_practice/01_web_foundations/09_better_search_ranking/app.py`
+- `my_python_work/web_practice/01_web_foundations/10_file_uploads_media/README.md`
+- `my_python_work/web_practice/01_web_foundations/10_file_uploads_media/app.py`
 
 Recommended future stack:
 
@@ -510,6 +512,7 @@ To learn:
 - [ ] Practice SQLite database basics
 - [ ] Practice database search, filtering, and pagination
 - [ ] Practice better search and ranking
+- [ ] Practice file uploads and media files
 - [ ] Django project/app structure
 - [ ] URLs, views, templates, redirects, messages
 - [ ] Models, migrations, Django ORM, QuerySets

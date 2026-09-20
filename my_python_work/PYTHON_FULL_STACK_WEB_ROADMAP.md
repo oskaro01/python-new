@@ -74,6 +74,7 @@ Tiny early start:
 - `my_python_work/web_practice/01_web_foundations/07_sqlite_database_basics/app.py`
 - `my_python_work/web_practice/01_web_foundations/08_database_search_pagination/app.py`
 - `my_python_work/web_practice/01_web_foundations/09_better_search_ranking/app.py`
+- `my_python_work/web_practice/01_web_foundations/10_file_uploads_media/app.py`
 
 These files are allowed before the big review because they teach the basic browser/server idea without adding Django complexity yet.
 
@@ -111,6 +112,8 @@ Files:
 - `my_python_work/web_practice/01_web_foundations/08_database_search_pagination/app.py`
 - `my_python_work/web_practice/01_web_foundations/09_better_search_ranking/README.md`
 - `my_python_work/web_practice/01_web_foundations/09_better_search_ranking/app.py`
+- `my_python_work/web_practice/01_web_foundations/10_file_uploads_media/README.md`
+- `my_python_work/web_practice/01_web_foundations/10_file_uploads_media/app.py`
 
 Learn:
 
@@ -136,6 +139,7 @@ Practice:
 - Submit a form.
 - Show submitted data.
 - Store something in a session.
+- Upload and list a small file.
 
 You are ready to move on when:
 

@@ -21,7 +21,8 @@ We are not jumping straight into Django yet. First we learn what Django will lat
 7. `01_web_foundations/07_sqlite_database_basics/`
 8. `01_web_foundations/08_database_search_pagination/`
 9. `01_web_foundations/09_better_search_ranking/`
-10. Later: first Django project
+10. `01_web_foundations/10_file_uploads_media/`
+11. Later: first Django project
 
 ## Run The First Server
 
@@ -143,6 +144,16 @@ python -B my_python_work/web_practice/01_web_foundations/09_better_search_rankin
 
 Then open the URL printed in the terminal.
 
+## Run The Tenth Server
+
+Stop the ninth server with `Ctrl+C`, then run:
+
+```powershell
+python -B my_python_work/web_practice/01_web_foundations/10_file_uploads_media/app.py
+```
+
+Then open the URL printed in the terminal.
+
 ## What To Notice
 
 - A URL points to a route.
@@ -161,3 +172,4 @@ Then open the URL printed in the terminal.
 - SQLite stores growing app data in database tables.
 - Search, filter, and pagination make database lists easier to browse.
 - Better search can rank results and handle close spellings.
+- File upload forms send file bytes with `multipart/form-data`.
