@@ -71,6 +71,7 @@ Tiny early start:
 - `my_python_work/web_practice/01_web_foundations/04_cookies_sessions_cart/app.py`
 - `my_python_work/web_practice/01_web_foundations/05_templates_static_files/app.py`
 - `my_python_work/web_practice/01_web_foundations/06_dynamic_routes_404/app.py`
+- `my_python_work/web_practice/01_web_foundations/07_sqlite_database_basics/app.py`
 
 These files are allowed before the big review because they teach the basic browser/server idea without adding Django complexity yet.
 
@@ -102,6 +103,8 @@ Files:
 - `my_python_work/web_practice/01_web_foundations/06_dynamic_routes_404/templates/product_detail.html`
 - `my_python_work/web_practice/01_web_foundations/06_dynamic_routes_404/templates/not_found.html`
 - `my_python_work/web_practice/01_web_foundations/06_dynamic_routes_404/static/styles.css`
+- `my_python_work/web_practice/01_web_foundations/07_sqlite_database_basics/README.md`
+- `my_python_work/web_practice/01_web_foundations/07_sqlite_database_basics/app.py`
 
 Learn:
 
@@ -116,6 +119,7 @@ Learn:
 - Cookies
 - Sessions
 - Static files
+- SQLite database basics
 - Media uploads
 
 Practice:

@@ -14,4 +14,5 @@ env/
 words.json
 shopping_list*.txt
 my_python_work/**/*.json
+my_python_work/**/*.db
 !my_python_work/practical_projects/file_organizer/categories.json
