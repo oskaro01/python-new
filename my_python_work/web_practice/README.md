@@ -19,7 +19,9 @@ We are not jumping straight into Django yet. First we learn what Django will lat
 5. `01_web_foundations/05_templates_static_files/`
 6. `01_web_foundations/06_dynamic_routes_404/`
 7. `01_web_foundations/07_sqlite_database_basics/`
-8. Later: first Django project
+8. `01_web_foundations/08_database_search_pagination/`
+9. `01_web_foundations/09_better_search_ranking/`
+10. Later: first Django project
 
 ## Run The First Server
 
@@ -117,6 +119,30 @@ Then open:
 http://127.0.0.1:8000/products
 ```
 
+## Run The Eighth Server
+
+Stop the seventh server with `Ctrl+C`, then run:
+
+```powershell
+python -B my_python_work/web_practice/01_web_foundations/08_database_search_pagination/app.py
+```
+
+Then open:
+
+```text
+http://127.0.0.1:8000/products
+```
+
+## Run The Ninth Server
+
+Stop the eighth server with `Ctrl+C`, then run:
+
+```powershell
+python -B my_python_work/web_practice/01_web_foundations/09_better_search_ranking/app.py
+```
+
+Then open the URL printed in the terminal.
+
 ## What To Notice
 
 - A URL points to a route.
@@ -133,3 +159,5 @@ http://127.0.0.1:8000/products
 - Templates and static files keep Python, HTML, and CSS separated.
 - Dynamic routes use part of the URL as data, like `/products/1`.
 - SQLite stores growing app data in database tables.
+- Search, filter, and pagination make database lists easier to browse.
+- Better search can rank results and handle close spellings.

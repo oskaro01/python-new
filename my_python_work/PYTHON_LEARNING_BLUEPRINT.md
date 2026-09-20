@@ -480,6 +480,10 @@ Early starter files:
 - `my_python_work/web_practice/01_web_foundations/06_dynamic_routes_404/static/styles.css`
 - `my_python_work/web_practice/01_web_foundations/07_sqlite_database_basics/README.md`
 - `my_python_work/web_practice/01_web_foundations/07_sqlite_database_basics/app.py`
+- `my_python_work/web_practice/01_web_foundations/08_database_search_pagination/README.md`
+- `my_python_work/web_practice/01_web_foundations/08_database_search_pagination/app.py`
+- `my_python_work/web_practice/01_web_foundations/09_better_search_ranking/README.md`
+- `my_python_work/web_practice/01_web_foundations/09_better_search_ranking/app.py`
 
 Recommended future stack:
 
@@ -504,6 +508,8 @@ To learn:
 - [ ] Practice templates and static files
 - [ ] Practice dynamic routes and 404 pages
 - [ ] Practice SQLite database basics
+- [ ] Practice database search, filtering, and pagination
+- [ ] Practice better search and ranking
 - [ ] Django project/app structure
 - [ ] URLs, views, templates, redirects, messages
 - [ ] Models, migrations, Django ORM, QuerySets

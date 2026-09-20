@@ -72,6 +72,8 @@ Tiny early start:
 - `my_python_work/web_practice/01_web_foundations/05_templates_static_files/app.py`
 - `my_python_work/web_practice/01_web_foundations/06_dynamic_routes_404/app.py`
 - `my_python_work/web_practice/01_web_foundations/07_sqlite_database_basics/app.py`
+- `my_python_work/web_practice/01_web_foundations/08_database_search_pagination/app.py`
+- `my_python_work/web_practice/01_web_foundations/09_better_search_ranking/app.py`
 
 These files are allowed before the big review because they teach the basic browser/server idea without adding Django complexity yet.
 
@@ -105,6 +107,10 @@ Files:
 - `my_python_work/web_practice/01_web_foundations/06_dynamic_routes_404/static/styles.css`
 - `my_python_work/web_practice/01_web_foundations/07_sqlite_database_basics/README.md`
 - `my_python_work/web_practice/01_web_foundations/07_sqlite_database_basics/app.py`
+- `my_python_work/web_practice/01_web_foundations/08_database_search_pagination/README.md`
+- `my_python_work/web_practice/01_web_foundations/08_database_search_pagination/app.py`
+- `my_python_work/web_practice/01_web_foundations/09_better_search_ranking/README.md`
+- `my_python_work/web_practice/01_web_foundations/09_better_search_ranking/app.py`
 
 Learn:
 
@@ -120,6 +126,8 @@ Learn:
 - Sessions
 - Static files
 - SQLite database basics
+- Database search, filtering, and pagination
+- Better search and ranking
 - Media uploads
 
 Practice:
