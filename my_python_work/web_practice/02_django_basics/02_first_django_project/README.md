@@ -2,12 +2,14 @@
 
 This is our first tiny Django project.
 
-It is intentionally small:
+It started intentionally small:
 
 - one `manage.py`
 - one project package named `mini_site`
-- one URL route
-- one plain text response
+- one project package named `mini_site`
+- one first app named `pages`
+- simple page routes
+- plain text responses
 
 No database models yet. No templates yet. No app folder yet.
 
@@ -38,6 +40,10 @@ Stop it with `Ctrl+C`.
         urls.py
         asgi.py
         wsgi.py
+    pages/
+        apps.py
+        urls.py
+        views.py
 ```
 
 ## What Each File Means
@@ -62,6 +68,11 @@ Stop it with `Ctrl+C`.
 - server entry points
 - mostly leave them alone while learning
 
+`pages/`
+
+- first Django app
+- holds simple page views and app-specific URLs
+
 ## Check Without Starting Server
 
 ```powershell
@@ -78,5 +89,4 @@ Matching view returns response
 
 ## Next Lesson
 
-Next we will create a Django app, because real Django projects are usually split into apps.
-
+Lesson 04 added templates, so the pages app now returns HTML files from `pages/templates/pages/`.

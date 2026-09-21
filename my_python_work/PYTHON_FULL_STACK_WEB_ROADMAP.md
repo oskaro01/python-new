@@ -77,6 +77,8 @@ Tiny early start:
 - `my_python_work/web_practice/01_web_foundations/10_file_uploads_media/app.py`
 - `my_python_work/web_practice/02_django_basics/01_setup_django_environment/check_setup.py`
 - `my_python_work/web_practice/02_django_basics/02_first_django_project/manage.py`
+- `my_python_work/web_practice/02_django_basics/03_first_django_app/README.md`
+- `my_python_work/web_practice/02_django_basics/04_django_templates/README.md`
 
 These files are allowed before the big review because they teach the basic browser/server idea without adding Django complexity yet.
 
@@ -161,6 +163,14 @@ Files:
 - `my_python_work/web_practice/02_django_basics/02_first_django_project/manage.py`
 - `my_python_work/web_practice/02_django_basics/02_first_django_project/mini_site/settings.py`
 - `my_python_work/web_practice/02_django_basics/02_first_django_project/mini_site/urls.py`
+- `my_python_work/web_practice/02_django_basics/02_first_django_project/pages/apps.py`
+- `my_python_work/web_practice/02_django_basics/02_first_django_project/pages/urls.py`
+- `my_python_work/web_practice/02_django_basics/02_first_django_project/pages/views.py`
+- `my_python_work/web_practice/02_django_basics/03_first_django_app/README.md`
+- `my_python_work/web_practice/02_django_basics/02_first_django_project/pages/templates/pages/base.html`
+- `my_python_work/web_practice/02_django_basics/02_first_django_project/pages/templates/pages/home.html`
+- `my_python_work/web_practice/02_django_basics/02_first_django_project/pages/templates/pages/about.html`
+- `my_python_work/web_practice/02_django_basics/04_django_templates/README.md`
 
 Learn:
 
@@ -169,6 +179,7 @@ Learn:
 - Checking the Django version
 - Creating the first Django project
 - Django project vs Django app
+- Creating the first Django app
 - `settings.py`
 - `urls.py`
 - Views

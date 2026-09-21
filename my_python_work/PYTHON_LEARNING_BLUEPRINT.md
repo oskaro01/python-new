@@ -493,6 +493,15 @@ Early starter files:
 - `my_python_work/web_practice/02_django_basics/02_first_django_project/manage.py`
 - `my_python_work/web_practice/02_django_basics/02_first_django_project/mini_site/settings.py`
 - `my_python_work/web_practice/02_django_basics/02_first_django_project/mini_site/urls.py`
+- `my_python_work/web_practice/02_django_basics/02_first_django_project/pages/apps.py`
+- `my_python_work/web_practice/02_django_basics/02_first_django_project/pages/urls.py`
+- `my_python_work/web_practice/02_django_basics/02_first_django_project/pages/views.py`
+- `my_python_work/web_practice/02_django_basics/03_first_django_app/README.md`
+- `my_python_work/web_practice/HOW_TO_RUN_DJANGO.md`
+- `my_python_work/web_practice/02_django_basics/02_first_django_project/pages/templates/pages/base.html`
+- `my_python_work/web_practice/02_django_basics/02_first_django_project/pages/templates/pages/home.html`
+- `my_python_work/web_practice/02_django_basics/02_first_django_project/pages/templates/pages/about.html`
+- `my_python_work/web_practice/02_django_basics/04_django_templates/README.md`
 
 Recommended future stack:
 
@@ -522,6 +531,8 @@ To learn:
 - [ ] Set up Django environment
 - [ ] Create first Django project
 - [ ] Django project/app structure
+- [ ] Create first Django app
+- [ ] Render Django templates with context data
 - [ ] URLs, views, templates, redirects, messages
 - [ ] Models, migrations, Django ORM, QuerySets
 - [ ] PostgreSQL

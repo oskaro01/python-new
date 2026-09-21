@@ -24,7 +24,17 @@ We are not jumping straight into Django yet. First we learn what Django will lat
 10. `01_web_foundations/10_file_uploads_media/`
 11. `02_django_basics/01_setup_django_environment/`
 12. `02_django_basics/02_first_django_project/`
-13. Later: first Django app
+13. `02_django_basics/03_first_django_app/`
+14. `02_django_basics/04_django_templates/`
+15. Later: Django static files
+
+## Django Run Helper
+
+For activation, deactivation, running, and stopping Django:
+
+```text
+HOW_TO_RUN_DJANGO.md
+```
 
 ## Run The First Server
 
@@ -178,6 +188,12 @@ Then open:
 http://127.0.0.1:8000/
 ```
 
+The first app lesson also adds:
+
+```text
+http://127.0.0.1:8000/about/
+```
+
 ## What To Notice
 
 - A URL points to a route.
@@ -199,3 +215,5 @@ http://127.0.0.1:8000/
 - File upload forms send file bytes with `multipart/form-data`.
 - Django needs a Python environment with Django installed before a project can run.
 - A Django project starts with `manage.py`, `settings.py`, and `urls.py`.
+- A Django app is one feature area inside a project.
+- Django templates let views return HTML files with context data.

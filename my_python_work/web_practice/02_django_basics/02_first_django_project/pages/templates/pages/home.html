@@ -1,0 +1,16 @@
+{% extends "pages/base.html" %}
+
+{% block content %}
+<h1>{{ heading }}</h1>
+<p>{{ message }}</p>
+
+<section class="panel">
+    <h2>What Django Did</h2>
+    <ul>
+        {% for item in lesson_points %}
+            <li>{{ item }}</li>
+        {% endfor %}
+    </ul>
+</section>
+{% endblock %}
+

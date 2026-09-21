@@ -1,16 +1,10 @@
 """URL routes for the tiny Django project."""
 
 from django.contrib import admin
-from django.http import HttpResponse
-from django.urls import path
-
-
-def home(request):
-    return HttpResponse("Hello from Django. Your first Django route works.")
+from django.urls import include, path
 
 
 urlpatterns = [
-    path("", home, name="home"),
+    path("", include("pages.urls")),
     path("admin/", admin.site.urls),
 ]
-
