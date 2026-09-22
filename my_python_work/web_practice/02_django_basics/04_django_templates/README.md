@@ -82,5 +82,4 @@ base.html avoids repeated layout
 
 ## Next Lesson
 
-Next we will add static files so CSS can live outside the HTML.
-
+Next we will start forms, because dictionary words need add/edit pages.

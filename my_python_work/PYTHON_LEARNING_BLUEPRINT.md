@@ -501,7 +501,9 @@ Early starter files:
 - `my_python_work/web_practice/02_django_basics/02_first_django_project/pages/templates/pages/base.html`
 - `my_python_work/web_practice/02_django_basics/02_first_django_project/pages/templates/pages/home.html`
 - `my_python_work/web_practice/02_django_basics/02_first_django_project/pages/templates/pages/about.html`
+- `my_python_work/web_practice/02_django_basics/02_first_django_project/pages/static/pages/styles.css`
 - `my_python_work/web_practice/02_django_basics/04_django_templates/README.md`
+- `my_python_work/web_practice/02_django_basics/05_django_static_files/README.md`
 
 Recommended future stack:
 
@@ -533,6 +535,7 @@ To learn:
 - [ ] Django project/app structure
 - [ ] Create first Django app
 - [ ] Render Django templates with context data
+- [ ] Load Django static CSS files
 - [ ] URLs, views, templates, redirects, messages
 - [ ] Models, migrations, Django ORM, QuerySets
 - [ ] PostgreSQL

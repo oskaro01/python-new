@@ -1,32 +1,11 @@
+{% load static %}
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ title }}</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 860px;
-            margin: 40px auto;
-            padding: 0 18px;
-            line-height: 1.5;
-            color: #20242c;
-        }
-
-        nav {
-            display: flex;
-            gap: 14px;
-            margin-bottom: 18px;
-        }
-
-        .panel {
-            border: 1px solid #dddddd;
-            border-radius: 8px;
-            padding: 16px;
-            margin-top: 18px;
-        }
-    </style>
+    <link rel="stylesheet" href="{% static 'pages/styles.css' %}">
 </head>
 <body>
     <nav>
@@ -37,4 +16,3 @@
     {% block content %}{% endblock %}
 </body>
 </html>
-

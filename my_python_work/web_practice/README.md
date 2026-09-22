@@ -26,7 +26,8 @@ We are not jumping straight into Django yet. First we learn what Django will lat
 12. `02_django_basics/02_first_django_project/`
 13. `02_django_basics/03_first_django_app/`
 14. `02_django_basics/04_django_templates/`
-15. Later: Django static files
+15. `02_django_basics/05_django_static_files/`
+16. Later: Django forms
 
 ## Django Run Helper
 
@@ -217,3 +218,4 @@ http://127.0.0.1:8000/about/
 - A Django project starts with `manage.py`, `settings.py`, and `urls.py`.
 - A Django app is one feature area inside a project.
 - Django templates let views return HTML files with context data.
+- Django static files keep CSS, images, and JavaScript outside templates.

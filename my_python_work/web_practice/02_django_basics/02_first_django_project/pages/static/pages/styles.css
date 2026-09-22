@@ -1,0 +1,26 @@
+body {
+    font-family: Arial, sans-serif;
+    max-width: 860px;
+    margin: 40px auto;
+    padding: 0 18px;
+    line-height: 1.5;
+    color: #20242c;
+}
+
+nav {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+a {
+    color: #2563eb;
+}
+
+.panel {
+    border: 1px solid #dddddd;
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 18px;
+}
+
