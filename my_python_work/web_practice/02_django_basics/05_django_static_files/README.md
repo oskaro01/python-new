@@ -53,6 +53,24 @@ Check that Django can find the CSS file:
 .\.venv\Scripts\python.exe my_python_work/web_practice/02_django_basics/02_first_django_project/manage.py findstatic pages/styles.css
 ```
 
+## Visual Proof
+
+`base.html` contains this empty paragraph:
+
+```html
+<p class="static-proof"></p>
+```
+
+The CSS file fills it with text:
+
+```css
+.static-proof::before {
+    content: "Static CSS loaded from pages/styles.css";
+}
+```
+
+If you see that message in the browser, the static CSS file is loading.
+
 ## What Changed
 
 Before, `base.html` had CSS inside a `<style>` tag.
@@ -86,5 +104,4 @@ CSS goes in static/
 
 ## Next Lesson
 
-Next we will start forms, because dictionary words need add/edit pages.
-
+Next we will add a database model for dictionary words.

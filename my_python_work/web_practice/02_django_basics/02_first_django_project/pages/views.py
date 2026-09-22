@@ -2,6 +2,8 @@
 
 from django.shortcuts import render
 
+from .forms import WordForm
+
 
 def home(request):
     context = {
@@ -26,3 +28,23 @@ def about(request):
     }
     return render(request, "pages/about.html", context)
 
+
+def new_word(request):
+    submitted_word = None
+
+    if request.method == "POST":
+        form = WordForm(request.POST)
+
+        if form.is_valid():
+            submitted_word = form.cleaned_data
+    else:
+        form = WordForm()
+
+    context = {
+        "title": "New Word",
+        "heading": "Add A Dictionary Word",
+        "message": "This form validates the word data but does not save it yet.",
+        "form": form,
+        "submitted_word": submitted_word,
+    }
+    return render(request, "pages/word_form.html", context)

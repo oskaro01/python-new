@@ -24,3 +24,55 @@ a {
     margin-top: 18px;
 }
 
+.static-proof::before {
+    content: "Static CSS loaded from pages/styles.css";
+    display: inline-block;
+    padding: 6px 10px;
+    border: 1px solid #86efac;
+    border-radius: 999px;
+    background: #f0fdf4;
+    color: #166534;
+    font-size: 0.9rem;
+}
+
+.form-panel {
+    display: grid;
+    gap: 16px;
+}
+
+.field {
+    display: grid;
+    gap: 6px;
+}
+
+label {
+    font-weight: 700;
+}
+
+input,
+textarea,
+button {
+    font: inherit;
+    padding: 10px;
+}
+
+button {
+    width: fit-content;
+    cursor: pointer;
+}
+
+.help-text {
+    margin: 0;
+    color: #666666;
+}
+
+.errorlist {
+    margin: 0;
+    padding-left: 22px;
+    color: #b91c1c;
+}
+
+.success-panel {
+    border-color: #86efac;
+    background: #f0fdf4;
+}

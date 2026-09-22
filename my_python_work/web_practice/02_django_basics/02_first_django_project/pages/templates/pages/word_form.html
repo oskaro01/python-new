@@ -1,0 +1,49 @@
+{% extends "pages/base.html" %}
+
+{% block content %}
+<h1>{{ heading }}</h1>
+<p>{{ message }}</p>
+
+<form class="panel form-panel" method="post">
+    {% csrf_token %}
+
+    <div class="field">
+        <label for="{{ form.word.id_for_label }}">Word</label>
+        {{ form.word }}
+        {{ form.word.errors }}
+        <p class="help-text">{{ form.word.help_text }}</p>
+    </div>
+
+    <div class="field">
+        <label for="{{ form.meaning.id_for_label }}">Meaning</label>
+        {{ form.meaning }}
+        {{ form.meaning.errors }}
+        <p class="help-text">{{ form.meaning.help_text }}</p>
+    </div>
+
+    <div class="field">
+        <label for="{{ form.example.id_for_label }}">Example</label>
+        {{ form.example }}
+        {{ form.example.errors }}
+    </div>
+
+    <div class="field">
+        <label for="{{ form.category.id_for_label }}">Category</label>
+        {{ form.category }}
+        {{ form.category.errors }}
+    </div>
+
+    <button type="submit">Check word</button>
+</form>
+
+{% if submitted_word %}
+<section class="panel success-panel">
+    <h2>Cleaned Form Data</h2>
+    <p><strong>Word:</strong> {{ submitted_word.word }}</p>
+    <p><strong>Meaning:</strong> {{ submitted_word.meaning|default:"Not given yet" }}</p>
+    <p><strong>Example:</strong> {{ submitted_word.example|default:"Not given yet" }}</p>
+    <p><strong>Category:</strong> {{ submitted_word.category|default:"Not given yet" }}</p>
+</section>
+{% endif %}
+{% endblock %}
+

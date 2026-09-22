@@ -11,7 +11,10 @@
     <nav>
         <a href="{% url 'pages:home' %}">Home</a>
         <a href="{% url 'pages:about' %}">About</a>
+        <a href="{% url 'pages:new_word' %}">New Word</a>
     </nav>
+
+    <p class="static-proof"></p>
 
     {% block content %}{% endblock %}
 </body>
