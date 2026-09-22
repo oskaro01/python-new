@@ -10,13 +10,14 @@
 <body>
     <header class="site-header">
         <div class="header-inner">
-            <a class="brand" href="{% url 'pages:word_list' %}">Personal Dictionary</a>
+            <a class="brand" href="{% url 'pages:word_list' %}">Dictionary</a>
             <nav aria-label="Main navigation">
                 <a href="{% url 'pages:word_list' %}">Words</a>
                 <a href="{% url 'pages:new_word' %}">Add word</a>
                 <a href="{% url 'pages:about' %}">About</a>
             </nav>
         </div>
+        <div class="title-strip"><div class="title-strip-inner">Personal Dictionary</div></div>
     </header>
 
     <main class="page-shell">
