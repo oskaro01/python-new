@@ -65,6 +65,19 @@ form -> is_valid() -> cleaned_data -> Word.objects.create() -> SQLite
 SQLite -> Word.objects.all() -> template -> browser
 ```
 
+
+===========
+so migrate is like making place holders? 
+
+Yes, that’s a useful first picture. migrate builds the table structure in the database, like setting up an empty spreadsheet with columns for word, meaning, and the other fields.
+It doesn’t add your words. Saving the form adds a row to that table.
+
+      migrate                -> create the Word table
+      Save word "serene"     -> add a row to the Word table
+
+One small distinction: the table is real, not just a placeholder. It’s ready to hold data as soon as the migration finishes.
+===========
+
 ## Next Lesson
 
 Next we can give each saved word its own page, then add editing and deleting.

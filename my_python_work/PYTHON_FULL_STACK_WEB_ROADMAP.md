@@ -83,6 +83,7 @@ Tiny early start:
 - `my_python_work/web_practice/02_django_basics/06_django_forms/README.md`
 - `my_python_work/web_practice/02_django_basics/07_django_models_migrations/README.md`
 - `my_python_work/web_practice/02_django_basics/08_save_words_to_database/README.md`
+- `my_python_work/web_practice/02_django_basics/09_word_detail_404/README.md`
 
 These files are allowed before the big review because they teach the basic browser/server idea without adding Django complexity yet.
 

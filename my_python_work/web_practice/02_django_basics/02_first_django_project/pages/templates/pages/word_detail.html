@@ -1,0 +1,20 @@
+{% extends "pages/base.html" %}
+
+{% block content %}
+<p><a href="{% url 'pages:word_list' %}">Back to words</a></p>
+<h1>{{ word.word }}</h1>
+
+{% if word.meaning %}
+<h2>Meaning</h2>
+<p>{{ word.meaning }}</p>
+{% endif %}
+
+{% if word.example %}
+<h2>Example</h2>
+<p>{{ word.example }}</p>
+{% endif %}
+
+{% if word.category %}
+<p>Category: {{ word.category }}</p>
+{% endif %}
+{% endblock %}

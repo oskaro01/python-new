@@ -1,6 +1,6 @@
 """Views for simple website pages."""
 
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 
 from dictionary.models import Word
 
@@ -53,3 +53,8 @@ def new_word(request):
 def word_list(request):
     words = Word.objects.all()
     return render(request, "pages/word_list.html", {"title": "Words", "words": words})
+
+
+def word_detail(request, word_id):
+    word = get_object_or_404(Word, pk=word_id)
+    return render(request, "pages/word_detail.html", {"title": word.word, "word": word})

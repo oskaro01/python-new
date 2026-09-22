@@ -12,4 +12,5 @@ urlpatterns = [
     path("about/", views.about, name="about"),
     path("words/", views.word_list, name="word_list"),
     path("words/new/", views.new_word, name="new_word"),
+    path("words/<int:word_id>/", views.word_detail, name="word_detail"),
 ]
