@@ -84,3 +84,16 @@ def edit_word(request, word_id):
         "message": "Update this dictionary entry.",
         "form": form,
     })
+
+
+def delete_word(request, word_id):
+    word = get_object_or_404(Word, pk=word_id)
+
+    if request.method == "POST":
+        word.delete()
+        return redirect("pages:word_list")
+
+    return render(request, "pages/word_confirm_delete.html", {
+        "title": "Delete Word",
+        "word": word,
+    })

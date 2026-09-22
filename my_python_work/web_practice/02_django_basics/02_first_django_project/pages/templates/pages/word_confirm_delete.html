@@ -1,0 +1,12 @@
+{% extends "pages/base.html" %}
+
+{% block content %}
+<h1>Delete {{ word.word }}?</h1>
+<p>This will remove the word from your dictionary.</p>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">Delete word</button>
+    <a href="{% url 'pages:word_detail' word.pk %}">Cancel</a>
+</form>
+{% endblock %}

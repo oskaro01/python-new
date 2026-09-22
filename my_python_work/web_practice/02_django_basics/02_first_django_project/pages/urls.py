@@ -14,4 +14,5 @@ urlpatterns = [
     path("words/new/", views.new_word, name="new_word"),
     path("words/<int:word_id>/", views.word_detail, name="word_detail"),
     path("words/<int:word_id>/edit/", views.edit_word, name="edit_word"),
+    path("words/<int:word_id>/delete/", views.delete_word, name="delete_word"),
 ]
