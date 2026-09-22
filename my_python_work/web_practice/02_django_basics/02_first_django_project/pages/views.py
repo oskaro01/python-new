@@ -1,6 +1,7 @@
 """Views for simple website pages."""
 
 from django.db.models import Q
+from django.contrib import messages
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 
@@ -39,6 +40,7 @@ def new_word(request):
 
         if form.is_valid():
             Word.objects.create(**form.cleaned_data)
+            messages.success(request, "Word saved.")
             return redirect("pages:word_list")
     else:
         form = WordForm()
@@ -84,6 +86,7 @@ def edit_word(request, word_id):
             for field, value in form.cleaned_data.items():
                 setattr(word, field, value)
             word.save()
+            messages.success(request, "Word updated.")
             return redirect("pages:word_detail", word_id=word.pk)
     else:
         form = WordForm(initial={
@@ -106,6 +109,7 @@ def delete_word(request, word_id):
 
     if request.method == "POST":
         word.delete()
+        messages.success(request, "Word deleted.")
         return redirect("pages:word_list")
 
     return render(request, "pages/word_confirm_delete.html", {

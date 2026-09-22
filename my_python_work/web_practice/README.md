@@ -35,6 +35,7 @@ We learned web foundations first; now the Django lessons build on them:
 21. `02_django_basics/11_delete_saved_word/`
 22. `02_django_basics/12_search_filter_words/`
 23. `02_django_basics/13_paginate_words/`
+24. `02_django_basics/14_django_messages/`
 
 ## Django Run Helper
 
@@ -236,3 +237,4 @@ http://127.0.0.1:8000/words/
 - A confirmation page can delete a row only after a POST request.
 - QuerySets can search saved words, meanings, and examples.
 - Django's Paginator can show a few filtered words per page.
+- Django messages show one-time feedback after a redirect.

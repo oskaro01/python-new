@@ -96,3 +96,9 @@ button {
     gap: 16px;
     margin: 24px 0;
 }
+
+.notice {
+    border-left: 4px solid #15803d;
+    background: #f0fdf4;
+    padding: 10px 14px;
+}

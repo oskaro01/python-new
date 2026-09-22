@@ -17,6 +17,14 @@
 
     <p class="static-proof"></p>
 
+    {% if messages %}
+    <div aria-live="polite">
+        {% for notice in messages %}
+        <p class="notice">{{ notice }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     {% block content %}{% endblock %}
 </body>
 </html>

@@ -517,6 +517,7 @@ Early starter files:
 - `my_python_work/web_practice/02_django_basics/11_delete_saved_word/README.md`
 - `my_python_work/web_practice/02_django_basics/12_search_filter_words/README.md`
 - `my_python_work/web_practice/02_django_basics/13_paginate_words/README.md`
+- `my_python_work/web_practice/02_django_basics/14_django_messages/README.md`
 
 Recommended future stack:
 
@@ -557,6 +558,7 @@ To learn:
 - [ ] Delete a saved word after confirmation
 - [ ] Search saved words and meanings with QuerySets
 - [ ] Paginate filtered words while preserving GET search values
+- [ ] Show one-time success messages after save, edit, and delete
 - [ ] URLs, views, templates, redirects, messages
 - [ ] Models, migrations, Django ORM, QuerySets
 - [ ] PostgreSQL
