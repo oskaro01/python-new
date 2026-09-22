@@ -1,6 +1,7 @@
 """Views for simple website pages."""
 
 from django.db.models import Q
+from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 
 from dictionary.models import Word
@@ -65,9 +66,10 @@ def word_list(request):
     if category:
         words = words.filter(category__iexact=category)
 
+    page = Paginator(words, 5).get_page(request.GET.get("page"))
     return render(request, "pages/word_list.html", {
         "title": "Words",
-        "words": words,
+        "words": page,
         "query": query,
         "category": category,
     })

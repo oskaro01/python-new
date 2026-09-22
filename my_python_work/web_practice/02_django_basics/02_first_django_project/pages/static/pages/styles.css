@@ -89,3 +89,10 @@ button {
     min-width: 0;
     flex: 1 1 140px;
 }
+
+.pagination {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 24px 0;
+}

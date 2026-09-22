@@ -87,6 +87,7 @@ Tiny early start:
 - `my_python_work/web_practice/02_django_basics/10_edit_saved_word/README.md`
 - `my_python_work/web_practice/02_django_basics/11_delete_saved_word/README.md`
 - `my_python_work/web_practice/02_django_basics/12_search_filter_words/README.md`
+- `my_python_work/web_practice/02_django_basics/13_paginate_words/README.md`
 
 These files are allowed before the big review because they teach the basic browser/server idea without adding Django complexity yet.
 
