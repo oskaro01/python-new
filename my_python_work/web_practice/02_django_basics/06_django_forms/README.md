@@ -1,5 +1,8 @@
 # Django Basics 06: Forms
 
+Review note: this lesson used a plain `forms.Form` first. Lesson 16 later
+changed the live `WordForm` to a `ModelForm`, so current code looks simpler.
+
 Now we start the dictionary direction.
 
 This lesson adds a simple "new word" form.

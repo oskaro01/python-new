@@ -90,6 +90,7 @@ Tiny early start:
 - `my_python_work/web_practice/02_django_basics/13_paginate_words/README.md`
 - `my_python_work/web_practice/02_django_basics/14_django_messages/README.md`
 - `my_python_work/web_practice/02_django_basics/15_django_admin/README.md`
+- `my_python_work/web_practice/02_django_basics/16_django_modelform/README.md`
 
 These files are allowed before the big review because they teach the basic browser/server idea without adding Django complexity yet.
 
@@ -219,16 +220,16 @@ Learn:
 Practice project:
 
 ```text
-mini_notes_site
+personal_dictionary (our learning Django project)
 ```
 
 Features:
 
 - Home page
-- Notes list
-- Add note form
-- Detail page
-- Delete note
+- Words list and search
+- Add and edit word forms
+- Word detail page
+- Confirmed word deletion
 
 You are ready to move on when:
 

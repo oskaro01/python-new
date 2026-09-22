@@ -37,6 +37,7 @@ We learned web foundations first; now the Django lessons build on them:
 23. `02_django_basics/13_paginate_words/`
 24. `02_django_basics/14_django_messages/`
 25. `02_django_basics/15_django_admin/`
+26. `02_django_basics/16_django_modelform/`
 
 ## Django Run Helper
 
@@ -240,3 +241,4 @@ http://127.0.0.1:8000/words/
 - Django's Paginator can show a few filtered words per page.
 - Django messages show one-time feedback after a redirect.
 - Django admin can manage registered Word rows with an admin account.
+- ModelForm connects Word fields, validation, and saving.

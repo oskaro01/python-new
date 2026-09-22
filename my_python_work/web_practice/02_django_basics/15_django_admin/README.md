@@ -57,4 +57,5 @@ Word model -> registered in admin.py -> /admin/ manages Word rows
 
 ## Next Lesson
 
-Next: user accounts and which words each user is allowed to change.
+Lesson 16 closes our forms gap with `ModelForm`; accounts and permissions
+follow after that.

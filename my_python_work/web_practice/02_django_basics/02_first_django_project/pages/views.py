@@ -39,7 +39,7 @@ def new_word(request):
         form = WordForm(request.POST)
 
         if form.is_valid():
-            Word.objects.create(**form.cleaned_data)
+            form.save()
             messages.success(request, "Word saved.")
             return redirect("pages:word_list")
     else:
@@ -81,20 +81,13 @@ def edit_word(request, word_id):
     word = get_object_or_404(Word, pk=word_id)
 
     if request.method == "POST":
-        form = WordForm(request.POST)
+        form = WordForm(request.POST, instance=word)
         if form.is_valid():
-            for field, value in form.cleaned_data.items():
-                setattr(word, field, value)
-            word.save()
+            form.save()
             messages.success(request, "Word updated.")
             return redirect("pages:word_detail", word_id=word.pk)
     else:
-        form = WordForm(initial={
-            "word": word.word,
-            "meaning": word.meaning,
-            "example": word.example,
-            "category": word.category,
-        })
+        form = WordForm(instance=word)
 
     return render(request, "pages/word_form.html", {
         "title": "Edit Word",

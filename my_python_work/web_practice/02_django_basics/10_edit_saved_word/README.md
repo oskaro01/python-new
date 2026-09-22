@@ -1,5 +1,9 @@
 # Django Basics 10: Edit A Saved Word
 
+Review note: this lesson first used `initial` and copied cleaned fields by
+hand. Lesson 16 changed the live view to `WordForm(instance=word)` and
+`form.save()`.
+
 Lesson 09 opened one saved word by ID. Now that page has an **Edit word**
 link. The edit page reuses `WordForm` from the add page.
 

@@ -519,6 +519,7 @@ Early starter files:
 - `my_python_work/web_practice/02_django_basics/13_paginate_words/README.md`
 - `my_python_work/web_practice/02_django_basics/14_django_messages/README.md`
 - `my_python_work/web_practice/02_django_basics/15_django_admin/README.md`
+- `my_python_work/web_practice/02_django_basics/16_django_modelform/README.md`
 
 Recommended future stack:
 
@@ -561,6 +562,7 @@ To learn:
 - [ ] Paginate filtered words while preserving GET search values
 - [ ] Show one-time success messages after save, edit, and delete
 - [ ] Use Django admin to manage Word rows
+- [ ] Use ModelForm to create and edit Word rows
 - [ ] URLs, views, templates, redirects, messages
 - [ ] Models, migrations, Django ORM, QuerySets
 - [ ] PostgreSQL

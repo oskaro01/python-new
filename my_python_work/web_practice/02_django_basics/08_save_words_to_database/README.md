@@ -1,5 +1,8 @@
 # Django Basics 08: Save Words To The Database
 
+Review note: this is the original manual-save approach. Lesson 16 changed
+the live view to use `ModelForm.save()` for the same result.
+
 Lesson 07 described the Word table. This lesson uses it: the New Word form
 saves an entry, and the Words page reads saved entries back.
 
