@@ -4,9 +4,9 @@
 <h1>Delete {{ word.word }}?</h1>
 <p>This will remove the word from your dictionary.</p>
 
-<form method="post">
+<form method="post" class="action-group">
     {% csrf_token %}
-    <button type="submit">Delete word</button>
-    <a href="{% url 'pages:word_detail' word.pk %}">Cancel</a>
+    <button type="submit" class="button-danger-solid">Delete word</button>
+    <a class="button" href="{% url 'pages:word_detail' word.pk %}">Cancel</a>
 </form>
 {% endblock %}

@@ -55,21 +55,11 @@ Check that Django can find the CSS file:
 
 ## Visual Proof
 
-`base.html` contains this empty paragraph:
-
-```html
-<p class="static-proof"></p>
-```
-
-The CSS file fills it with text:
-
-```css
-.static-proof::before {
-    content: "Static CSS loaded from pages/styles.css";
-}
-```
-
-If you see that message in the browser, the static CSS file is loading.
+The original lesson showed a temporary CSS-loaded label on every page. We
+removed that label when the dictionary received its finished layout. To
+verify static files now, run `findstatic` above, then open a page and check
+that the header and form styles appear. In browser Developer Tools, the
+Network tab should show `/static/pages/styles.css` with status 200.
 
 ## What Changed
 

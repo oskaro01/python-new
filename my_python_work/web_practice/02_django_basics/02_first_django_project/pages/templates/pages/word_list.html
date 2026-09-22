@@ -1,30 +1,38 @@
 {% extends "pages/base.html" %}
 
 {% block content %}
-<h1>Your Words</h1>
-<p><a href="{% url 'pages:new_word' %}">Add a word</a></p>
+<div class="page-heading">
+    <div>
+        <h1>Your words</h1>
+        <p class="muted">Your saved vocabulary, in one place.</p>
+    </div>
+    <a class="button button-primary" href="{% url 'pages:new_word' %}">Add word</a>
+</div>
 
 <form method="get" class="search-form">
     <label for="word-search">Search</label>
-    <input id="word-search" type="search" name="q" value="{{ query }}">
+    <input id="word-search" type="search" name="q" value="{{ query }}" placeholder="Word, meaning, or example">
     <button type="submit">Search</button>
     {% if query %}<a href="{% url 'pages:word_list' %}">Clear</a>{% endif %}
 </form>
 
+<div class="word-list">
 {% for entry in words %}
-<article class="panel">
-    <h2><a href="{% url 'pages:word_detail' entry.pk %}">{{ entry.word }}</a></h2>
-    {% if entry.meaning %}<p>{{ entry.meaning }}</p>{% endif %}
-    {% if entry.example %}<p><em>{{ entry.example }}</em></p>{% endif %}
-    {% if entry.category %}<p>Category: {{ entry.category }}</p>{% endif %}
+<article class="word-row">
+    <div>
+        <h2><a href="{% url 'pages:word_detail' entry.pk %}">{{ entry.word }}</a></h2>
+        {% if entry.meaning %}<p>{{ entry.meaning }}</p>{% else %}<p class="muted">No meaning added</p>{% endif %}
+    </div>
+    {% if entry.category %}<span class="word-category">{{ entry.category }}</span>{% endif %}
 </article>
 {% empty %}
 {% if query %}
-<p>No words match your search.</p>
+<p class="empty-state">No words match your search.</p>
 {% else %}
-<p>No words saved yet.</p>
+<p class="empty-state">No words saved yet. Add your first word to begin.</p>
 {% endif %}
 {% endfor %}
+</div>
 
 {% if words.paginator.num_pages > 1 %}
 <div class="pagination">

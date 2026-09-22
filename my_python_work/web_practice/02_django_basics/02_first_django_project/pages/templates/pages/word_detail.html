@@ -1,10 +1,17 @@
 {% extends "pages/base.html" %}
 
 {% block content %}
-<p><a href="{% url 'pages:word_list' %}">Back to words</a></p>
-<h1>{{ word.word }}</h1>
-<p><a href="{% url 'pages:edit_word' word.pk %}">Edit word</a></p>
-<p><a href="{% url 'pages:delete_word' word.pk %}">Delete word</a></p>
+<p><a class="back-link" href="{% url 'pages:word_list' %}">Back to words</a></p>
+<div class="page-heading">
+    <div>
+        <h1>{{ word.word }}</h1>
+        {% if word.category %}<p class="muted">{{ word.category }}</p>{% endif %}
+    </div>
+    <div class="action-group">
+        <a class="button" href="{% url 'pages:edit_word' word.pk %}">Edit</a>
+        <a class="button button-danger" href="{% url 'pages:delete_word' word.pk %}">Delete</a>
+    </div>
+</div>
 
 {% if word.meaning %}
 <h2>Meaning</h2>
@@ -16,7 +23,4 @@
 <p>{{ word.example }}</p>
 {% endif %}
 
-{% if word.category %}
-<p>Category: {{ word.category }}</p>
-{% endif %}
 {% endblock %}
