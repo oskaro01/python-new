@@ -1,7 +1,7 @@
-# Django Basics 12: Search And Filter Words
+# Django Basics 12: Search Words
 
-The Words page now has a text search and an optional category filter. These
-are GET inputs because they read saved data without changing it.
+The Words page has one search box for words, meanings, and examples. It uses
+GET because searching reads saved data without changing it.
 
 ## Follow One Search
 
@@ -15,11 +15,9 @@ are GET inputs because they read saved data without changing it.
    fields contains the text. `icontains` ignores letter case.
 6. The template shows matching words and keeps the search text in the input.
 
-`Q` combines conditions with `|` (OR). The category filter uses
-`category__iexact`, so it matches the whole category without caring about
-letter case. If both inputs are filled, Django applies both filters (AND).
-The database performs the filtering; the view does not scan every row in
-Python.
+`Q` combines conditions with `|` (OR). The database performs the search; the
+view does not scan every row in Python. Category is still saved with each word
+and displayed in the list, but it is not a separate search box.
 
 Search here means **substring matching**, not typo correction. For example,
 `cal` can match `calm`, but `clma` will not. We can revisit fuzzy search later.
@@ -33,21 +31,20 @@ Start Django from the repository root:
 ```
 
 Open `http://127.0.0.1:8000/words/`. Try part of a word, a meaning, and an
-example. Then try a category and both inputs together. **Clear** returns to
-the full list. Stop the server with `Ctrl+C`.
+example. **Clear** returns to the full list. Stop the server with `Ctrl+C`.
 
 This lesson changes no model fields, so no migration is needed.
 
 ## Files Changed
 
-- `pages/views.py`: read GET values and filter the Word QuerySet.
+- `pages/views.py`: read the GET search value and filter the Word QuerySet.
 - `pages/templates/pages/word_list.html`: search form and empty results state.
 - `pages/static/pages/styles.css`: responsive form spacing.
 
 ## Key Memory Hook
 
 ```text
-GET values -> QuerySet filters -> matching database rows -> template
+GET search text -> QuerySet filter -> matching database rows -> template
 ```
 
 ## Next Lesson

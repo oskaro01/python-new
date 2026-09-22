@@ -55,7 +55,6 @@ def new_word(request):
 def word_list(request):
     words = Word.objects.all()
     query = request.GET.get("q", "").strip()
-    category = request.GET.get("category", "").strip()
 
     if query:
         words = words.filter(
@@ -63,15 +62,11 @@ def word_list(request):
             | Q(meaning__icontains=query)
             | Q(example__icontains=query)
         )
-    if category:
-        words = words.filter(category__iexact=category)
-
     page = Paginator(words, 5).get_page(request.GET.get("page"))
     return render(request, "pages/word_list.html", {
         "title": "Words",
         "words": page,
         "query": query,
-        "category": category,
     })
 
 

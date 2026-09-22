@@ -7,10 +7,8 @@
 <form method="get" class="search-form">
     <label for="word-search">Search</label>
     <input id="word-search" type="search" name="q" value="{{ query }}">
-    <label for="category-filter">Category</label>
-    <input id="category-filter" type="text" name="category" value="{{ category }}">
     <button type="submit">Search</button>
-    {% if query or category %}<a href="{% url 'pages:word_list' %}">Clear</a>{% endif %}
+    {% if query %}<a href="{% url 'pages:word_list' %}">Clear</a>{% endif %}
 </form>
 
 {% for entry in words %}
@@ -21,8 +19,8 @@
     {% if entry.category %}<p>Category: {{ entry.category }}</p>{% endif %}
 </article>
 {% empty %}
-{% if query or category %}
-<p>No words match these filters.</p>
+{% if query %}
+<p>No words match your search.</p>
 {% else %}
 <p>No words saved yet.</p>
 {% endif %}
@@ -31,11 +29,11 @@
 {% if words.paginator.num_pages > 1 %}
 <div class="pagination">
     {% if words.has_previous %}
-    <a href="?q={{ query|urlencode }}&amp;category={{ category|urlencode }}&amp;page={{ words.previous_page_number }}">Previous</a>
+    <a href="?q={{ query|urlencode }}&amp;page={{ words.previous_page_number }}">Previous</a>
     {% endif %}
     <span>Page {{ words.number }} of {{ words.paginator.num_pages }}</span>
     {% if words.has_next %}
-    <a href="?q={{ query|urlencode }}&amp;category={{ category|urlencode }}&amp;page={{ words.next_page_number }}">Next</a>
+    <a href="?q={{ query|urlencode }}&amp;page={{ words.next_page_number }}">Next</a>
     {% endif %}
 </div>
 {% endif %}

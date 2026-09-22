@@ -555,7 +555,7 @@ To learn:
 - [ ] Open one saved word by ID and handle missing words with 404
 - [ ] Edit a saved word using a prefilled form
 - [ ] Delete a saved word after confirmation
-- [ ] Search and filter saved words with QuerySets
+- [ ] Search saved words and meanings with QuerySets
 - [ ] Paginate filtered words while preserving GET search values
 - [ ] URLs, views, templates, redirects, messages
 - [ ] Models, migrations, Django ORM, QuerySets

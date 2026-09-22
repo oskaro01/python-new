@@ -5,8 +5,8 @@ This lesson shows five matching words at a time.
 
 ## Follow A Page Request
 
-1. The view reads `q` and `category` from `request.GET` and filters the Word
-   QuerySet, just like lesson 12.
+1. The view reads `q` from `request.GET` and filters the Word QuerySet,
+   just like lesson 12.
 2. `Paginator(words, 5)` divides the matching rows into pages of five.
 3. `get_page(request.GET.get("page"))` selects a page from the URL. A missing
    page number means page 1. Django also handles invalid page numbers.
@@ -14,8 +14,8 @@ This lesson shows five matching words at a time.
    decide whether to show navigation links.
 
 For example, `/words/?page=2` asks for the second group of five. A filtered
-URL can be `/words/?q=calm&page=2`. The links carry `q` and `category` so the
-filters stay active when moving between pages. `urlencode` makes entered
+URL can be `/words/?q=calm&page=2`. The links carry `q` so the search stays
+active when moving between pages. `urlencode` makes entered
 text safe to put in a URL.
 
 ## Try It
@@ -27,7 +27,7 @@ Start Django from the repository root:
 ```
 
 With six or more saved words, open `http://127.0.0.1:8000/words/` and click
-**Next**. The sixth word should appear on page 2. Search or filter, then use
+**Next**. The sixth word should appear on page 2. Search, then use
 Previous/Next and check that your search stays in the URL. Stop the server
 with `Ctrl+C`.
 

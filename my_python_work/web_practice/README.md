@@ -234,5 +234,5 @@ http://127.0.0.1:8000/words/
 - A detail route can fetch one row by ID or return a 404.
 - An edit form can load current values and save changes to the same row.
 - A confirmation page can delete a row only after a POST request.
-- QuerySets can search saved fields and filter by category.
+- QuerySets can search saved words, meanings, and examples.
 - Django's Paginator can show a few filtered words per page.
