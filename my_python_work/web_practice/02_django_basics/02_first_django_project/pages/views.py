@@ -1,6 +1,8 @@
 """Views for simple website pages."""
 
-from django.shortcuts import render
+from django.shortcuts import redirect, render
+
+from dictionary.models import Word
 
 from .forms import WordForm
 
@@ -30,21 +32,24 @@ def about(request):
 
 
 def new_word(request):
-    submitted_word = None
-
     if request.method == "POST":
         form = WordForm(request.POST)
 
         if form.is_valid():
-            submitted_word = form.cleaned_data
+            Word.objects.create(**form.cleaned_data)
+            return redirect("pages:word_list")
     else:
         form = WordForm()
 
     context = {
         "title": "New Word",
         "heading": "Add A Dictionary Word",
-        "message": "This form validates the word data but does not save it yet.",
+        "message": "Save a word to your dictionary.",
         "form": form,
-        "submitted_word": submitted_word,
     }
     return render(request, "pages/word_form.html", context)
+
+
+def word_list(request):
+    words = Word.objects.all()
+    return render(request, "pages/word_list.html", {"title": "Words", "words": words})

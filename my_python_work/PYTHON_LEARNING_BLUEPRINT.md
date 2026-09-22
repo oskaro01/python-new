@@ -511,6 +511,7 @@ Early starter files:
 - `my_python_work/web_practice/02_django_basics/02_first_django_project/dictionary/admin.py`
 - `my_python_work/web_practice/02_django_basics/02_first_django_project/dictionary/migrations/0001_initial.py`
 - `my_python_work/web_practice/02_django_basics/07_django_models_migrations/README.md`
+- `my_python_work/web_practice/02_django_basics/08_save_words_to_database/README.md`
 
 Recommended future stack:
 
@@ -545,6 +546,7 @@ To learn:
 - [ ] Load Django static CSS files
 - [ ] Validate POST data with Django forms
 - [ ] Create first Django model and migration
+- [ ] Save validated words with the ORM and list them from SQLite
 - [ ] URLs, views, templates, redirects, messages
 - [ ] Models, migrations, Django ORM, QuerySets
 - [ ] PostgreSQL

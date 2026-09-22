@@ -125,4 +125,4 @@ migrate changes the database
 
 ## Next Lesson
 
-Next we will save the new-word form into the database.
+Lesson 08 saves validated words and shows them on a list page.

@@ -33,17 +33,6 @@
         {{ form.category.errors }}
     </div>
 
-    <button type="submit">Check word</button>
+    <button type="submit">Save word</button>
 </form>
-
-{% if submitted_word %}
-<section class="panel success-panel">
-    <h2>Cleaned Form Data</h2>
-    <p><strong>Word:</strong> {{ submitted_word.word }}</p>
-    <p><strong>Meaning:</strong> {{ submitted_word.meaning|default:"Not given yet" }}</p>
-    <p><strong>Example:</strong> {{ submitted_word.example|default:"Not given yet" }}</p>
-    <p><strong>Category:</strong> {{ submitted_word.category|default:"Not given yet" }}</p>
-</section>
-{% endif %}
 {% endblock %}
-

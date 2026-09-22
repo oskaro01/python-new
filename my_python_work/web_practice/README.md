@@ -2,7 +2,7 @@
 
 This folder starts the Python full-stack path.
 
-We are not jumping straight into Django yet. First we learn what Django will later do for us:
+We learned web foundations first; now the Django lessons build on them:
 
 - receive a browser request
 - choose what page to show
@@ -29,7 +29,7 @@ We are not jumping straight into Django yet. First we learn what Django will lat
 15. `02_django_basics/05_django_static_files/`
 16. `02_django_basics/06_django_forms/`
 17. `02_django_basics/07_django_models_migrations/`
-18. Later: save forms to database
+18. `02_django_basics/08_save_words_to_database/`
 
 ## Django Run Helper
 
@@ -196,6 +196,7 @@ The first app lesson also adds:
 ```text
 http://127.0.0.1:8000/about/
 http://127.0.0.1:8000/words/new/
+http://127.0.0.1:8000/words/
 ```
 
 ## What To Notice
@@ -224,3 +225,4 @@ http://127.0.0.1:8000/words/new/
 - Django static files keep CSS, images, and JavaScript outside templates.
 - Django forms validate submitted `POST` data before we trust it.
 - Django models describe database tables using Python classes.
+- A validated Django form can create a database row; a QuerySet can read it back.
