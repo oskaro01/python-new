@@ -20,6 +20,22 @@ The project keeps settings and the top-level URL map.
 
 The app keeps feature code like views and app-specific URLs.
 
+## Follow One Request
+
+When the browser asks for `/about/`:
+
+```text
+mini_site/urls.py -> pages/urls.py -> pages/views.py -> browser response
+```
+
+`mini_site/urls.py` includes the app's URL list. The matching path in
+`pages/urls.py` calls `about(request)`. In lesson 03 that view returned plain
+text; lesson 04 changed it to render HTML.
+
+Registering `pages.apps.PagesConfig` in `INSTALLED_APPS` tells Django to load
+the app. The `name="about"` in a URL pattern gives that route a name we can
+refer to later in templates.
+
 ## Files Added Or Changed
 
 ```text
@@ -81,4 +97,4 @@ Apps handle their own feature URLs.
 
 ## Next Lesson
 
-Next we will add static files so CSS can live outside the HTML.
+Lesson 04 introduces HTML templates and shared page layouts.

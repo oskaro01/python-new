@@ -1,17 +1,18 @@
 # Django Basics 02: First Django Project
 
-This is our first tiny Django project.
+This is our first tiny Django project. Later lessons keep adding to this same
+folder, so the files you see now include work from lessons 03-07.
 
 It started intentionally small:
 
 - one `manage.py`
 - one project package named `mini_site`
-- one project package named `mini_site`
 - one first app named `pages`
 - simple page routes
-- plain text responses
+- plain text responses at the start
 
-No database models yet. No templates yet. No app folder yet.
+At the end of lesson 02, there were no templates or dictionary model. Those
+arrived in later lessons. The current project has both.
 
 ## Run
 
@@ -62,6 +63,12 @@ Stop it with `Ctrl+C`.
 
 - route table
 - connects a URL path to Python code
+- `mini_site/urls.py` delegates page paths to `pages/urls.py`
+
+`pages/views.py`
+
+- contains functions that receive a request and return a response
+- later lessons changed those responses from plain text to HTML templates
 
 `asgi.py` and `wsgi.py`
 
@@ -89,4 +96,4 @@ Matching view returns response
 
 ## Next Lesson
 
-Lesson 04 added templates, so the pages app now returns HTML files from `pages/templates/pages/`.
+Lesson 03 introduces the `pages` app and shows how a URL reaches a view.

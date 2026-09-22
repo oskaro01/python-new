@@ -60,6 +60,11 @@ Now:
 return render(request, "pages/home.html", context)
 ```
 
+`request` is the browser request. The template path tells Django which HTML
+file to use. `context` is a dictionary of values available in that template:
+for example, `context["heading"]` appears as `{{ heading }}`. A template can
+also loop over a list using `{% for item in lesson_points %}`.
+
 ## Template Inheritance
 
 `base.html` is the shared page shell.
@@ -72,6 +77,10 @@ return render(request, "pages/home.html", context)
 
 This keeps repeated HTML in one place.
 
+`{% block content %}` in `base.html` marks the area each child page fills.
+The `pages/` subfolder inside `templates/` keeps template names distinct if
+another app later has its own `home.html`.
+
 ## Key Memory Hook
 
 ```text
@@ -82,4 +91,4 @@ base.html avoids repeated layout
 
 ## Next Lesson
 
-Next we will start forms, because dictionary words need add/edit pages.
+Lesson 05 moves CSS into a static file. Lesson 06 then adds a word form.

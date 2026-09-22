@@ -104,4 +104,4 @@ CSS goes in static/
 
 ## Next Lesson
 
-Next we will add a database model for dictionary words.
+Lesson 06 introduces the New Word form. The database model comes in lesson 07.
