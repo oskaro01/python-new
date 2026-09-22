@@ -36,6 +36,7 @@ We learned web foundations first; now the Django lessons build on them:
 22. `02_django_basics/12_search_filter_words/`
 23. `02_django_basics/13_paginate_words/`
 24. `02_django_basics/14_django_messages/`
+25. `02_django_basics/15_django_admin/`
 
 ## Django Run Helper
 
@@ -238,3 +239,4 @@ http://127.0.0.1:8000/words/
 - QuerySets can search saved words, meanings, and examples.
 - Django's Paginator can show a few filtered words per page.
 - Django messages show one-time feedback after a redirect.
+- Django admin can manage registered Word rows with an admin account.
