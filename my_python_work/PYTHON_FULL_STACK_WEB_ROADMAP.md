@@ -81,6 +81,7 @@ Tiny early start:
 - `my_python_work/web_practice/02_django_basics/04_django_templates/README.md`
 - `my_python_work/web_practice/02_django_basics/05_django_static_files/README.md`
 - `my_python_work/web_practice/02_django_basics/06_django_forms/README.md`
+- `my_python_work/web_practice/02_django_basics/07_django_models_migrations/README.md`
 
 These files are allowed before the big review because they teach the basic browser/server idea without adding Django complexity yet.
 
@@ -178,6 +179,10 @@ Files:
 - `my_python_work/web_practice/02_django_basics/02_first_django_project/pages/forms.py`
 - `my_python_work/web_practice/02_django_basics/02_first_django_project/pages/templates/pages/word_form.html`
 - `my_python_work/web_practice/02_django_basics/06_django_forms/README.md`
+- `my_python_work/web_practice/02_django_basics/02_first_django_project/dictionary/models.py`
+- `my_python_work/web_practice/02_django_basics/02_first_django_project/dictionary/admin.py`
+- `my_python_work/web_practice/02_django_basics/02_first_django_project/dictionary/migrations/0001_initial.py`
+- `my_python_work/web_practice/02_django_basics/07_django_models_migrations/README.md`
 
 Learn:
 
@@ -197,6 +202,9 @@ Learn:
 - `request.POST`
 - `form.cleaned_data`
 - Static files
+- Models
+- Migrations
+- Django Admin registration
 - Redirects
 - Messages
 

@@ -507,6 +507,10 @@ Early starter files:
 - `my_python_work/web_practice/02_django_basics/02_first_django_project/pages/forms.py`
 - `my_python_work/web_practice/02_django_basics/02_first_django_project/pages/templates/pages/word_form.html`
 - `my_python_work/web_practice/02_django_basics/06_django_forms/README.md`
+- `my_python_work/web_practice/02_django_basics/02_first_django_project/dictionary/models.py`
+- `my_python_work/web_practice/02_django_basics/02_first_django_project/dictionary/admin.py`
+- `my_python_work/web_practice/02_django_basics/02_first_django_project/dictionary/migrations/0001_initial.py`
+- `my_python_work/web_practice/02_django_basics/07_django_models_migrations/README.md`
 
 Recommended future stack:
 
@@ -540,6 +544,7 @@ To learn:
 - [ ] Render Django templates with context data
 - [ ] Load Django static CSS files
 - [ ] Validate POST data with Django forms
+- [ ] Create first Django model and migration
 - [ ] URLs, views, templates, redirects, messages
 - [ ] Models, migrations, Django ORM, QuerySets
 - [ ] PostgreSQL

@@ -28,7 +28,8 @@ We are not jumping straight into Django yet. First we learn what Django will lat
 14. `02_django_basics/04_django_templates/`
 15. `02_django_basics/05_django_static_files/`
 16. `02_django_basics/06_django_forms/`
-17. Later: Django models
+17. `02_django_basics/07_django_models_migrations/`
+18. Later: save forms to database
 
 ## Django Run Helper
 
@@ -222,3 +223,4 @@ http://127.0.0.1:8000/words/new/
 - Django templates let views return HTML files with context data.
 - Django static files keep CSS, images, and JavaScript outside templates.
 - Django forms validate submitted `POST` data before we trust it.
+- Django models describe database tables using Python classes.
