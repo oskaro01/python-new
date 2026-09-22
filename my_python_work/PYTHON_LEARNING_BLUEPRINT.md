@@ -515,6 +515,7 @@ Early starter files:
 - `my_python_work/web_practice/02_django_basics/09_word_detail_404/README.md`
 - `my_python_work/web_practice/02_django_basics/10_edit_saved_word/README.md`
 - `my_python_work/web_practice/02_django_basics/11_delete_saved_word/README.md`
+- `my_python_work/web_practice/02_django_basics/12_search_filter_words/README.md`
 
 Recommended future stack:
 
@@ -553,6 +554,7 @@ To learn:
 - [ ] Open one saved word by ID and handle missing words with 404
 - [ ] Edit a saved word using a prefilled form
 - [ ] Delete a saved word after confirmation
+- [ ] Search and filter saved words with QuerySets
 - [ ] URLs, views, templates, redirects, messages
 - [ ] Models, migrations, Django ORM, QuerySets
 - [ ] PostgreSQL

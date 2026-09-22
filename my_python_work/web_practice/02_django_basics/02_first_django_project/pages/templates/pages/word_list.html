@@ -4,6 +4,15 @@
 <h1>Your Words</h1>
 <p><a href="{% url 'pages:new_word' %}">Add a word</a></p>
 
+<form method="get" class="search-form">
+    <label for="word-search">Search</label>
+    <input id="word-search" type="search" name="q" value="{{ query }}">
+    <label for="category-filter">Category</label>
+    <input id="category-filter" type="text" name="category" value="{{ category }}">
+    <button type="submit">Search</button>
+    {% if query or category %}<a href="{% url 'pages:word_list' %}">Clear</a>{% endif %}
+</form>
+
 {% for entry in words %}
 <article class="panel">
     <h2><a href="{% url 'pages:word_detail' entry.pk %}">{{ entry.word }}</a></h2>
@@ -12,6 +21,10 @@
     {% if entry.category %}<p>Category: {{ entry.category }}</p>{% endif %}
 </article>
 {% empty %}
+{% if query or category %}
+<p>No words match these filters.</p>
+{% else %}
 <p>No words saved yet.</p>
+{% endif %}
 {% endfor %}
 {% endblock %}

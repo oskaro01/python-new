@@ -76,3 +76,16 @@ button {
     border-color: #86efac;
     background: #f0fdf4;
 }
+
+.search-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin: 18px 0;
+}
+
+.search-form input {
+    min-width: 0;
+    flex: 1 1 140px;
+}

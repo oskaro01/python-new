@@ -1,5 +1,6 @@
 """Views for simple website pages."""
 
+from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 
 from dictionary.models import Word
@@ -52,7 +53,24 @@ def new_word(request):
 
 def word_list(request):
     words = Word.objects.all()
-    return render(request, "pages/word_list.html", {"title": "Words", "words": words})
+    query = request.GET.get("q", "").strip()
+    category = request.GET.get("category", "").strip()
+
+    if query:
+        words = words.filter(
+            Q(word__icontains=query)
+            | Q(meaning__icontains=query)
+            | Q(example__icontains=query)
+        )
+    if category:
+        words = words.filter(category__iexact=category)
+
+    return render(request, "pages/word_list.html", {
+        "title": "Words",
+        "words": words,
+        "query": query,
+        "category": category,
+    })
 
 
 def word_detail(request, word_id):

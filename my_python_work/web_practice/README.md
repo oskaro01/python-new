@@ -33,6 +33,7 @@ We learned web foundations first; now the Django lessons build on them:
 19. `02_django_basics/09_word_detail_404/`
 20. `02_django_basics/10_edit_saved_word/`
 21. `02_django_basics/11_delete_saved_word/`
+22. `02_django_basics/12_search_filter_words/`
 
 ## Django Run Helper
 
@@ -232,3 +233,4 @@ http://127.0.0.1:8000/words/
 - A detail route can fetch one row by ID or return a 404.
 - An edit form can load current values and save changes to the same row.
 - A confirmation page can delete a row only after a POST request.
+- QuerySets can search saved fields and filter by category.
