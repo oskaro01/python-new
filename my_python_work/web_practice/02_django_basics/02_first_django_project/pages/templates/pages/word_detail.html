@@ -3,6 +3,7 @@
 {% block content %}
 <p><a href="{% url 'pages:word_list' %}">Back to words</a></p>
 <h1>{{ word.word }}</h1>
+<p><a href="{% url 'pages:edit_word' word.pk %}">Edit word</a></p>
 
 {% if word.meaning %}
 <h2>Meaning</h2>

@@ -31,6 +31,7 @@ We learned web foundations first; now the Django lessons build on them:
 17. `02_django_basics/07_django_models_migrations/`
 18. `02_django_basics/08_save_words_to_database/`
 19. `02_django_basics/09_word_detail_404/`
+20. `02_django_basics/10_edit_saved_word/`
 
 ## Django Run Helper
 
@@ -228,3 +229,4 @@ http://127.0.0.1:8000/words/
 - Django models describe database tables using Python classes.
 - A validated Django form can create a database row; a QuerySet can read it back.
 - A detail route can fetch one row by ID or return a 404.
+- An edit form can load current values and save changes to the same row.

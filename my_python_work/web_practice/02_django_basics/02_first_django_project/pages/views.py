@@ -58,3 +58,29 @@ def word_list(request):
 def word_detail(request, word_id):
     word = get_object_or_404(Word, pk=word_id)
     return render(request, "pages/word_detail.html", {"title": word.word, "word": word})
+
+
+def edit_word(request, word_id):
+    word = get_object_or_404(Word, pk=word_id)
+
+    if request.method == "POST":
+        form = WordForm(request.POST)
+        if form.is_valid():
+            for field, value in form.cleaned_data.items():
+                setattr(word, field, value)
+            word.save()
+            return redirect("pages:word_detail", word_id=word.pk)
+    else:
+        form = WordForm(initial={
+            "word": word.word,
+            "meaning": word.meaning,
+            "example": word.example,
+            "category": word.category,
+        })
+
+    return render(request, "pages/word_form.html", {
+        "title": "Edit Word",
+        "heading": f"Edit {word.word}",
+        "message": "Update this dictionary entry.",
+        "form": form,
+    })

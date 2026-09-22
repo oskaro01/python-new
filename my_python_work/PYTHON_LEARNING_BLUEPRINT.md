@@ -513,6 +513,7 @@ Early starter files:
 - `my_python_work/web_practice/02_django_basics/07_django_models_migrations/README.md`
 - `my_python_work/web_practice/02_django_basics/08_save_words_to_database/README.md`
 - `my_python_work/web_practice/02_django_basics/09_word_detail_404/README.md`
+- `my_python_work/web_practice/02_django_basics/10_edit_saved_word/README.md`
 
 Recommended future stack:
 
@@ -549,6 +550,7 @@ To learn:
 - [ ] Create first Django model and migration
 - [ ] Save validated words with the ORM and list them from SQLite
 - [ ] Open one saved word by ID and handle missing words with 404
+- [ ] Edit a saved word using a prefilled form
 - [ ] URLs, views, templates, redirects, messages
 - [ ] Models, migrations, Django ORM, QuerySets
 - [ ] PostgreSQL
