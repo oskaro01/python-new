@@ -27,6 +27,17 @@ a:hover { color: #334f88; }
 nav { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
 nav a { padding: 8px 12px; border-radius: 3px; color: #111; text-decoration: none; font-size: 0.875rem; font-weight: 700; }
 nav a:hover { background: #f5f6f7; color: #3f5f9f; }
+.nav-user { padding: 8px 4px 8px 12px; color: #6b7078; font-size: 0.875rem; }
+.nav-form { margin: 0; }
+.nav-button {
+    min-height: auto;
+    padding: 8px 12px;
+    border: 0;
+    background: transparent;
+    color: #111;
+    font-size: 0.875rem;
+}
+.nav-button:hover { background: #f5f6f7; color: #3f5f9f; }
 .title-strip { background: #3f5f9f; color: #fff; }
 .title-strip-inner { max-width: 1152px; margin: 0 auto; padding: 12px 24px; font-size: 1.25rem; font-weight: 500; line-height: 1.2; }
 .page-shell { max-width: 1152px; margin: 0 auto; padding: 24px 24px 64px; }
@@ -112,6 +123,7 @@ textarea { resize: vertical; }
     background: #fff;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.14);
 }
+.auth-form { max-width: 480px; }
 .field { display: grid; gap: 6px; }
 .field label { font-weight: 600; }
 .help-text { margin: 0; font-size: 0.85rem; }

@@ -38,6 +38,7 @@ We learned web foundations first; now the Django lessons build on them:
 24. `02_django_basics/14_django_messages/`
 25. `02_django_basics/15_django_admin/`
 26. `02_django_basics/16_django_modelform/`
+27. `02_django_basics/17_auth_register_login_logout/`
 
 ## Django Run Helper
 
@@ -242,3 +243,4 @@ http://127.0.0.1:8000/words/
 - Django messages show one-time feedback after a redirect.
 - Django admin can manage registered Word rows with an admin account.
 - ModelForm connects Word fields, validation, and saving.
+- Django auth provides secure registration, login, logout, and sessions.

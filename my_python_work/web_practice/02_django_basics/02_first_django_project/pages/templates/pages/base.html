@@ -15,6 +15,16 @@
                 <a href="{% url 'pages:word_list' %}">Words</a>
                 <a href="{% url 'pages:new_word' %}">Add word</a>
                 <a href="{% url 'pages:about' %}">About</a>
+                {% if user.is_authenticated %}
+                <span class="nav-user">{{ user.username }}</span>
+                <form method="post" action="{% url 'accounts:logout' %}" class="nav-form">
+                    {% csrf_token %}
+                    <button type="submit" class="nav-button">Log out</button>
+                </form>
+                {% else %}
+                <a href="{% url 'accounts:login' %}">Log in</a>
+                <a href="{% url 'accounts:register' %}">Register</a>
+                {% endif %}
             </nav>
         </div>
         <div class="title-strip"><div class="title-strip-inner">Personal Dictionary</div></div>

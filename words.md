@@ -29,3 +29,4 @@ nkkd-019
 stern > (of a person or their manner) serious and unrelenting, especially in asserting authority or exercising discipline.
 
 distinction
+Acquisition

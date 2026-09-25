@@ -93,6 +93,13 @@ Browser asks URL
 Django checks urls.py
 Matching view returns response
 ```
+====
+test,
+
+user name = ayzal
+pass = 2458
+====
+
 
 ## Next Lesson
 
