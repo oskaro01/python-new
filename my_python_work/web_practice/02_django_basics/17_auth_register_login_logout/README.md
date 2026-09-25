@@ -72,4 +72,5 @@ logout POST -> clear login session
 
 ## Next Lesson
 
-Next: connect every Word to its owner and keep each user's dictionary private.
+Lesson 18 connects every Word to its owner and keeps each user's dictionary
+private.

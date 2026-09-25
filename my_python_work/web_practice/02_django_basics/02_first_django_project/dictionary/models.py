@@ -1,9 +1,17 @@
 """Database models for dictionary features."""
 
+from django.conf import settings
 from django.db import models
 
 
 class Word(models.Model):
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="words",
+        null=True,
+        blank=True,
+    )
     word = models.CharField(max_length=80)
     meaning = models.TextField(blank=True)
     example = models.TextField(blank=True)

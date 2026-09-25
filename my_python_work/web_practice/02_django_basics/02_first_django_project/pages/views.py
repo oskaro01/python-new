@@ -2,6 +2,7 @@
 
 from django.db.models import Q
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 
@@ -34,12 +35,15 @@ def about(request):
     return render(request, "pages/about.html", context)
 
 
+@login_required
 def new_word(request):
     if request.method == "POST":
         form = WordForm(request.POST)
 
         if form.is_valid():
-            form.save()
+            word = form.save(commit=False)
+            word.owner = request.user
+            word.save()
             messages.success(request, "Word saved.")
             return redirect("pages:word_list")
     else:
@@ -54,8 +58,9 @@ def new_word(request):
     return render(request, "pages/word_form.html", context)
 
 
+@login_required
 def word_list(request):
-    words = Word.objects.all()
+    words = Word.objects.filter(owner=request.user)
     query = request.GET.get("q", "").strip()
 
     if query:
@@ -72,13 +77,15 @@ def word_list(request):
     })
 
 
+@login_required
 def word_detail(request, word_id):
-    word = get_object_or_404(Word, pk=word_id)
+    word = get_object_or_404(Word, pk=word_id, owner=request.user)
     return render(request, "pages/word_detail.html", {"title": word.word, "word": word})
 
 
+@login_required
 def edit_word(request, word_id):
-    word = get_object_or_404(Word, pk=word_id)
+    word = get_object_or_404(Word, pk=word_id, owner=request.user)
 
     if request.method == "POST":
         form = WordForm(request.POST, instance=word)
@@ -97,8 +104,9 @@ def edit_word(request, word_id):
     })
 
 
+@login_required
 def delete_word(request, word_id):
-    word = get_object_or_404(Word, pk=word_id)
+    word = get_object_or_404(Word, pk=word_id, owner=request.user)
 
     if request.method == "POST":
         word.delete()

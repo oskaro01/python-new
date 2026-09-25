@@ -521,6 +521,7 @@ Early starter files:
 - `my_python_work/web_practice/02_django_basics/15_django_admin/README.md`
 - `my_python_work/web_practice/02_django_basics/16_django_modelform/README.md`
 - `my_python_work/web_practice/02_django_basics/17_auth_register_login_logout/README.md`
+- `my_python_work/web_practice/02_django_basics/18_private_words_ownership/README.md`
 
 Recommended future stack:
 
@@ -565,6 +566,7 @@ To learn:
 - [ ] Use Django admin to manage Word rows
 - [ ] Use ModelForm to create and edit Word rows
 - [ ] Register, log in, and log out with Django authentication
+- [ ] Connect Words to owners and protect every Word query
 - [ ] URLs, views, templates, redirects, messages
 - [ ] Models, migrations, Django ORM, QuerySets
 - [ ] PostgreSQL
