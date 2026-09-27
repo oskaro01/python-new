@@ -30,3 +30,5 @@ stern > (of a person or their manner) serious and unrelenting, especially in ass
 
 distinction
 Acquisition
+elusive
+resonant

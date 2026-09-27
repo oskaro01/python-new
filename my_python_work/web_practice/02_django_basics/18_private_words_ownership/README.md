@@ -97,4 +97,4 @@ every Word query includes owner=request.user
 
 ## Next Lesson
 
-Next: relationships beyond ownership, using categories or tags as real models.
+Lesson 19 turns repeated category text into a reusable Category model.

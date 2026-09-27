@@ -4,6 +4,26 @@ from django.conf import settings
 from django.db import models
 
 
+class Category(models.Model):
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="word_categories",
+        null=True,
+        blank=True,
+    )
+    name = models.CharField(max_length=60)
+
+    class Meta:
+        ordering = ["name"]
+        constraints = [
+            models.UniqueConstraint(fields=["owner", "name"], name="unique_owner_category"),
+        ]
+
+    def __str__(self):
+        return self.name
+
+
 class Word(models.Model):
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -15,7 +35,13 @@ class Word(models.Model):
     word = models.CharField(max_length=80)
     meaning = models.TextField(blank=True)
     example = models.TextField(blank=True)
-    category = models.CharField(max_length=60, blank=True)
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.SET_NULL,
+        related_name="words",
+        null=True,
+        blank=True,
+    )
     is_favorite = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

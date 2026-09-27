@@ -40,6 +40,7 @@ We learned web foundations first; now the Django lessons build on them:
 26. `02_django_basics/16_django_modelform/`
 27. `02_django_basics/17_auth_register_login_logout/`
 28. `02_django_basics/18_private_words_ownership/`
+29. `02_django_basics/19_category_foreign_key/`
 
 ## Django Run Helper
 
@@ -246,3 +247,4 @@ http://127.0.0.1:8000/words/
 - ModelForm connects Word fields, validation, and saving.
 - Django auth provides secure registration, login, logout, and sessions.
 - A ForeignKey and owner-filtered queries keep each user's words private.
+- A Category ForeignKey lets many Words reuse one Category row.

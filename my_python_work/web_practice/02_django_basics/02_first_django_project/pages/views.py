@@ -38,16 +38,15 @@ def about(request):
 @login_required
 def new_word(request):
     if request.method == "POST":
-        form = WordForm(request.POST)
+        form = WordForm(request.POST, user=request.user)
 
         if form.is_valid():
-            word = form.save(commit=False)
-            word.owner = request.user
-            word.save()
+            form.instance.owner = request.user
+            form.save()
             messages.success(request, "Word saved.")
             return redirect("pages:word_list")
     else:
-        form = WordForm()
+        form = WordForm(user=request.user)
 
     context = {
         "title": "New Word",
@@ -88,13 +87,13 @@ def edit_word(request, word_id):
     word = get_object_or_404(Word, pk=word_id, owner=request.user)
 
     if request.method == "POST":
-        form = WordForm(request.POST, instance=word)
+        form = WordForm(request.POST, instance=word, user=request.user)
         if form.is_valid():
             form.save()
             messages.success(request, "Word updated.")
             return redirect("pages:word_detail", word_id=word.pk)
     else:
-        form = WordForm(instance=word)
+        form = WordForm(instance=word, user=request.user)
 
     return render(request, "pages/word_form.html", {
         "title": "Edit Word",
