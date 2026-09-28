@@ -41,6 +41,7 @@ We learned web foundations first; now the Django lessons build on them:
 27. `02_django_basics/17_auth_register_login_logout/`
 28. `02_django_basics/18_private_words_ownership/`
 29. `02_django_basics/19_category_foreign_key/`
+30. `02_django_basics/20_password_reset/`
 
 ## Django Run Helper
 
@@ -248,3 +249,4 @@ http://127.0.0.1:8000/words/
 - Django auth provides secure registration, login, logout, and sessions.
 - A ForeignKey and owner-filtered queries keep each user's words private.
 - A Category ForeignKey lets many Words reuse one Category row.
+- Django's built-in password reset views use temporary tokens and email links.

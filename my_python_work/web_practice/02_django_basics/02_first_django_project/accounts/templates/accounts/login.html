@@ -11,5 +11,6 @@
     <button type="submit">Log in</button>
 </form>
 
+<p><a href="{% url 'accounts:password_reset' %}">Forgot your password?</a></p>
 <p>Need an account? <a href="{% url 'accounts:register' %}">Register</a>.</p>
 {% endblock %}

@@ -94,6 +94,7 @@ Tiny early start:
 - `my_python_work/web_practice/02_django_basics/17_auth_register_login_logout/README.md`
 - `my_python_work/web_practice/02_django_basics/18_private_words_ownership/README.md`
 - `my_python_work/web_practice/02_django_basics/19_category_foreign_key/README.md`
+- `my_python_work/web_practice/02_django_basics/20_password_reset/README.md`
 
 These files are allowed before the big review because they teach the basic browser/server idea without adding Django complexity yet.
 
@@ -219,6 +220,7 @@ Learn:
 - Django Admin registration
 - Redirects
 - Messages
+- Password reset with Django's built-in authentication views and local email output
 
 Practice project:
 

@@ -569,6 +569,7 @@ To learn:
 - [ ] Register, log in, and log out with Django authentication
 - [ ] Connect Words to owners and protect every Word query
 - [ ] Replace repeated category text with a Category ForeignKey
+- [ ] Add password reset with temporary tokens and local email output
 - [ ] URLs, views, templates, redirects, messages
 - [ ] Models, migrations, Django ORM, QuerySets
 - [ ] PostgreSQL

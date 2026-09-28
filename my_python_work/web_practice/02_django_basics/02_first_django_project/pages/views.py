@@ -3,6 +3,7 @@
 from django.db.models import Q
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import permission_required
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 
@@ -115,4 +116,14 @@ def delete_word(request, word_id):
     return render(request, "pages/word_confirm_delete.html", {
         "title": "Delete Word",
         "word": word,
+    })
+
+
+@permission_required("dictionary.view_all_words", raise_exception=True)
+def staff_dashboard(request):
+    words = Word.objects.select_related("owner", "category")
+    return render(request, "pages/staff_dashboard.html", {
+        "title": "Staff Dashboard",
+        "words": words,
+        "word_count": words.count(),
     })

@@ -48,7 +48,9 @@ class Word(models.Model):
 
     class Meta:
         ordering = ["word"]
+        permissions = [
+            ("view_all_words", "Can view all dictionary words"),
+        ]
 
     def __str__(self):
         return self.word
-

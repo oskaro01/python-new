@@ -103,4 +103,4 @@ repeated category text -> one Category row <- many Word rows
 
 ## Next Lesson
 
-Next: ManyToMany relationships with reusable tags.
+Next: Password reset with Django's built-in authentication views.

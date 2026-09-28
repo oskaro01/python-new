@@ -1,0 +1,19 @@
+{% extends "pages/base.html" %}
+
+{% block content %}
+<h1>Staff Dashboard</h1>
+<p class="muted">This page is protected by the custom dictionary permission.</p>
+
+<section class="panel">
+    <h2>{{ word_count }} total words</h2>
+    {% for word in words %}
+    <p>
+        <strong>{{ word.word }}</strong>
+        {% if word.owner %}by {{ word.owner.username }}{% endif %}
+        {% if word.category %}({{ word.category.name }}){% endif %}
+    </p>
+    {% empty %}
+    <p>No words have been saved yet.</p>
+    {% endfor %}
+</section>
+{% endblock %}

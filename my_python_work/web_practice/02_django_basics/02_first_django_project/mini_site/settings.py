@@ -73,4 +73,7 @@ STATIC_URL = "static/"
 LOGIN_REDIRECT_URL = "pages:word_list"
 LOGOUT_REDIRECT_URL = "pages:word_list"
 
+# Password reset emails print in the terminal while we learn locally.
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

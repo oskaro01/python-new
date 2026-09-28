@@ -15,6 +15,9 @@
                 <a href="{% url 'pages:word_list' %}">Words</a>
                 <a href="{% url 'pages:new_word' %}">Add word</a>
                 <a href="{% url 'pages:about' %}">About</a>
+                {% if perms.dictionary.view_all_words %}
+                <a href="{% url 'pages:staff_dashboard' %}">Staff</a>
+                {% endif %}
                 {% if user.is_authenticated %}
                 <span class="nav-user">{{ user.username }}</span>
                 <form method="post" action="{% url 'accounts:logout' %}" class="nav-form">
