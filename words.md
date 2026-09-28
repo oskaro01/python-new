@@ -32,7 +32,7 @@ distinction
 Acquisition
 elusive
 resonant
- 
+Designates 
 
 
 

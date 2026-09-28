@@ -70,5 +70,4 @@ email -> temporary reset link -> new password
 
 ## Next Lesson
 
-Next: ManyToMany relationships with reusable tags. We are postponing that
-feature until it becomes useful.
+Next: permissions and groups for protected staff actions.

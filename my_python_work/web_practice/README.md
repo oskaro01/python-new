@@ -42,6 +42,7 @@ We learned web foundations first; now the Django lessons build on them:
 28. `02_django_basics/18_private_words_ownership/`
 29. `02_django_basics/19_category_foreign_key/`
 30. `02_django_basics/20_password_reset/`
+31. `02_django_basics/21_permissions_groups/`
 
 ## Django Run Helper
 
@@ -250,3 +251,4 @@ http://127.0.0.1:8000/words/
 - A ForeignKey and owner-filtered queries keep each user's words private.
 - A Category ForeignKey lets many Words reuse one Category row.
 - Django's built-in password reset views use temporary tokens and email links.
+- Permissions and groups protect staff actions without hardcoding usernames.
