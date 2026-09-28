@@ -6,7 +6,10 @@
         <h1>Your words</h1>
         <p class="muted">Your saved vocabulary, in one place.</p>
     </div>
-    <a class="button button-primary" href="{% url 'pages:new_word' %}">Add word</a>
+    <div class="action-group">
+        <a class="button button-primary" href="{% url 'pages:new_word' %}">Add word</a>
+        <a class="button" href="{% url 'pages:import_words' %}">Import</a>
+    </div>
 </div>
 
 <form method="get" class="search-form">
@@ -15,6 +18,13 @@
     <button type="submit">Search</button>
     {% if query %}<a href="{% url 'pages:word_list' %}">Clear</a>{% endif %}
 </form>
+
+<p class="muted">
+    Export:
+    <a href="{% url 'pages:export_words_csv' %}">CSV</a>
+    or
+    <a href="{% url 'pages:export_words_json' %}">JSON</a>
+</p>
 
 <div class="word-list">
 {% for entry in words %}

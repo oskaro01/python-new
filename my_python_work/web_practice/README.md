@@ -44,6 +44,7 @@ We learned web foundations first; now the Django lessons build on them:
 30. `02_django_basics/20_password_reset/`
 31. `02_django_basics/21_permissions_groups/`
 32. `02_django_basics/22_account_password_change/`
+33. `02_django_basics/23_import_export/`
 
 ## Django Run Helper
 
@@ -254,3 +255,4 @@ http://127.0.0.1:8000/words/
 - Django's built-in password reset views use temporary tokens and email links.
 - Permissions and groups protect staff actions without hardcoding usernames.
 - Account pages show user information and password changes verify the current password.
+- CSV and JSON backups move validated, user-owned dictionary data in and out.

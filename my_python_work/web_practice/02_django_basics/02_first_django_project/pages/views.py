@@ -1,15 +1,22 @@
 """Views for simple website pages."""
 
-from django.db.models import Q
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.decorators import permission_required
+from django.db.models import Q
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_GET, require_http_methods
 
 from dictionary.models import Word
 
-from .forms import WordForm
+from .forms import ImportWordsForm, WordForm
+from .import_export import (
+    csv_response,
+    json_response,
+    read_import_rows,
+    row_text,
+)
 
 
 def home(request):
@@ -74,6 +81,92 @@ def word_list(request):
         "title": "Words",
         "words": page,
         "query": query,
+    })
+
+
+@login_required
+@require_GET
+def export_words_csv(request):
+    words = Word.objects.filter(owner=request.user).select_related("category")
+    return csv_response(words)
+
+
+@login_required
+@require_GET
+def export_words_json(request):
+    words = Word.objects.filter(owner=request.user).select_related("category")
+    return json_response(words)
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def import_words(request):
+    form = ImportWordsForm(request.POST or None, request.FILES or None)
+    result = None
+
+    if request.method == "POST" and form.is_valid():
+        try:
+            rows = read_import_rows(form.cleaned_data["file"])
+        except ValueError as error:
+            form.add_error("file", str(error))
+        else:
+            existing_words = {
+                value.casefold()
+                for value in Word.objects.filter(owner=request.user).values_list("word", flat=True)
+            }
+            imported_words = set()
+            errors = []
+            imported = 0
+            duplicates = 0
+            invalid = 0
+
+            for row_number, row in enumerate(rows, start=2):
+                word_value = row_text(row, "word")
+                normalized_word = word_value.casefold()
+
+                if not word_value:
+                    invalid += 1
+                    errors.append(f"Row {row_number}: word is required.")
+                    continue
+
+                if normalized_word in existing_words or normalized_word in imported_words:
+                    duplicates += 1
+                    continue
+
+                word_form = WordForm(
+                    {
+                        "word": word_value,
+                        "meaning": row_text(row, "meaning"),
+                        "example": row_text(row, "example"),
+                        "category_name": row_text(row, "category", "category_name"),
+                    },
+                    user=request.user,
+                )
+
+                if word_form.is_valid():
+                    word_form.instance.owner = request.user
+                    word_form.save()
+                    imported_words.add(normalized_word)
+                    imported += 1
+                else:
+                    invalid += 1
+                    error_text = "; ".join(
+                        f"{field}: {', '.join(errors)}"
+                        for field, errors in word_form.errors.items()
+                    )
+                    errors.append(f"Row {row_number}: {error_text}")
+
+            result = {
+                "imported": imported,
+                "duplicates": duplicates,
+                "invalid": invalid,
+                "errors": errors[:5],
+            }
+
+    return render(request, "pages/word_import.html", {
+        "title": "Import Words",
+        "form": form,
+        "result": result,
     })
 
 

@@ -572,6 +572,7 @@ To learn:
 - [ ] Add password reset with temporary tokens and local email output
 - [ ] Protect staff actions with Django permissions and groups
 - [ ] Build an account page and password-change workflow
+- [ ] Import and export user-owned dictionary data with CSV and JSON
 - [ ] URLs, views, templates, redirects, messages
 - [ ] Models, migrations, Django ORM, QuerySets
 - [ ] PostgreSQL

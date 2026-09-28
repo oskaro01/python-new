@@ -59,3 +59,9 @@ class WordForm(forms.ModelForm):
         if commit:
             word.save()
         return word
+
+
+class ImportWordsForm(forms.Form):
+    file = forms.FileField(
+        help_text="Use a UTF-8 .csv or .json file smaller than 1 MB."
+    )

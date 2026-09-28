@@ -1,0 +1,39 @@
+{% extends "pages/base.html" %}
+
+{% block content %}
+<h1>Import words</h1>
+<p class="muted">Upload a UTF-8 CSV or JSON backup.</p>
+
+<form method="post" enctype="multipart/form-data" class="form-panel">
+    {% csrf_token %}
+    <div class="field">
+        <label for="{{ form.file.id_for_label }}">Backup file</label>
+        {{ form.file }}
+        {{ form.file.errors }}
+        <p class="help-text">{{ form.file.help_text }}</p>
+    </div>
+
+    <div class="action-group">
+        <button type="submit">Import words</button>
+        <a class="button" href="{% url 'pages:word_list' %}">Cancel</a>
+    </div>
+</form>
+
+{% if result %}
+<section class="panel" style="margin-top: 20px;">
+    <h2>Import summary</h2>
+    <p>Imported: {{ result.imported }}</p>
+    <p>Skipped duplicates: {{ result.duplicates }}</p>
+    <p>Invalid rows: {{ result.invalid }}</p>
+
+    {% if result.errors %}
+    <h2>First errors</h2>
+    <ul>
+        {% for error in result.errors %}
+        <li>{{ error }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</section>
+{% endif %}
+{% endblock %}
