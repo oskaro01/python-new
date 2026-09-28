@@ -571,6 +571,7 @@ To learn:
 - [ ] Replace repeated category text with a Category ForeignKey
 - [ ] Add password reset with temporary tokens and local email output
 - [ ] Protect staff actions with Django permissions and groups
+- [ ] Build an account page and password-change workflow
 - [ ] URLs, views, templates, redirects, messages
 - [ ] Models, migrations, Django ORM, QuerySets
 - [ ] PostgreSQL

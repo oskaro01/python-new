@@ -1,8 +1,18 @@
 from django.contrib import messages
 from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
 from .forms import RegisterForm
+
+
+@login_required
+def account(request):
+    return render(request, "accounts/account.html", {
+        "title": "Account",
+        "word_count": request.user.words.count(),
+        "category_count": request.user.word_categories.count(),
+    })
 
 
 def register(request):

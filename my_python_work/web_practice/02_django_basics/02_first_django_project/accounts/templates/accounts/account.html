@@ -1,0 +1,20 @@
+{% extends "pages/base.html" %}
+
+{% block content %}
+<h1>Account</h1>
+<p class="muted">Your Personal Dictionary account information.</p>
+
+<section class="panel">
+    <h2>Profile</h2>
+    <p><strong>Username:</strong> {{ user.username }}</p>
+    <p><strong>Email:</strong> {{ user.email }}</p>
+</section>
+
+<section class="panel">
+    <h2>Dictionary</h2>
+    <p><strong>Words:</strong> {{ word_count }}</p>
+    <p><strong>Categories:</strong> {{ category_count }}</p>
+</section>
+
+<p><a href="{% url 'accounts:password_change' %}">Change password</a></p>
+{% endblock %}
