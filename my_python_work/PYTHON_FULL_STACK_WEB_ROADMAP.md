@@ -99,6 +99,7 @@ Tiny early start:
 - `my_python_work/web_practice/02_django_basics/22_account_password_change/README.md`
 - `my_python_work/web_practice/02_django_basics/23_import_export/README.md`
 - `my_python_work/web_practice/02_django_basics/24_custom_staff_dashboard/README.md`
+- `my_python_work/web_practice/02_django_basics/25_testing/README.md`
 
 These files are allowed before the big review because they teach the basic browser/server idea without adding Django complexity yet.
 
@@ -229,6 +230,7 @@ Learn:
 - Account page and password change with Django's built-in form
 - CSV and JSON import/export with ownership and duplicate checks
 - Custom staff dashboard with ORM analytics
+- Automated tests for privacy, CRUD, import/export, permissions, and auth
 
 Practice project:
 

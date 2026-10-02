@@ -574,6 +574,7 @@ To learn:
 - [ ] Build an account page and password-change workflow
 - [ ] Import and export user-owned dictionary data with CSV and JSON
 - [ ] Build a custom staff dashboard with ORM analytics
+- [ ] Write Django tests for privacy, CRUD, import/export, permissions, and auth
 - [ ] URLs, views, templates, redirects, messages
 - [ ] Models, migrations, Django ORM, QuerySets
 - [ ] PostgreSQL
