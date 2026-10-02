@@ -1,19 +1,81 @@
 {% extends "pages/base.html" %}
 
 {% block content %}
-<h1>Staff Dashboard</h1>
-<p class="muted">This page is protected by the custom dictionary permission.</p>
+<div class="page-heading">
+    <div>
+        <h1>Staff Dashboard</h1>
+        <p class="muted">Protected analytics for dictionary managers.</p>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <article class="stat-card">
+        <span>Total words</span>
+        <strong>{{ total_words }}</strong>
+    </article>
+    <article class="stat-card">
+        <span>Categories</span>
+        <strong>{{ total_categories }}</strong>
+    </article>
+    <article class="stat-card">
+        <span>Users</span>
+        <strong>{{ total_users }}</strong>
+    </article>
+    <article class="stat-card">
+        <span>Users with words</span>
+        <strong>{{ users_with_words }}</strong>
+    </article>
+    <article class="stat-card">
+        <span>Words without owner</span>
+        <strong>{{ orphan_words }}</strong>
+    </article>
+</div>
+
+<div class="dashboard-grid">
+    <section class="panel">
+        <h2>Top users</h2>
+        {% for user_row in top_users %}
+        <p><strong>{{ user_row.username }}</strong> - {{ user_row.word_count }} words</p>
+        {% empty %}
+        <p class="muted">No user-owned words yet.</p>
+        {% endfor %}
+    </section>
+
+    <section class="panel">
+        <h2>Top categories</h2>
+        {% for category in top_categories %}
+        <p><strong>{{ category.name }}</strong> - {{ category.word_count }} words</p>
+        {% empty %}
+        <p class="muted">No categories have words yet.</p>
+        {% endfor %}
+    </section>
+</div>
 
 <section class="panel">
-    <h2>{{ word_count }} total words</h2>
-    {% for word in words %}
-    <p>
-        <strong>{{ word.word }}</strong>
-        {% if word.owner %}by {{ word.owner.username }}{% endif %}
-        {% if word.category %}({{ word.category.name }}){% endif %}
-    </p>
-    {% empty %}
-    <p>No words have been saved yet.</p>
-    {% endfor %}
+    <h2>Recent words</h2>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Word</th>
+                <th>Owner</th>
+                <th>Category</th>
+                <th>Added</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for word in recent_words %}
+            <tr>
+                <td>{{ word.word }}</td>
+                <td>{% if word.owner %}{{ word.owner.username }}{% else %}<span class="muted">No owner</span>{% endif %}</td>
+                <td>{% if word.category %}{{ word.category.name }}{% else %}<span class="muted">None</span>{% endif %}</td>
+                <td>{{ word.created_at|date:"M j, Y" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4">No words have been saved yet.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </section>
 {% endblock %}

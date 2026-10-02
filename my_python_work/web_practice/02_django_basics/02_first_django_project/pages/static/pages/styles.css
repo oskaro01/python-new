@@ -130,6 +130,25 @@ textarea { resize: vertical; }
 .help-text { margin: 0; font-size: 0.85rem; }
 .errorlist { margin: 0; padding-left: 20px; color: #b42318; }
 .panel { padding: 20px; border: 1px solid #c9ccd1; border-radius: 4px; background: #fff; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.14); }
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 18px;
+}
+.stat-card {
+    padding: 16px;
+    border: 1px solid #c9ccd1;
+    border-radius: 4px;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.14);
+}
+.stat-card span { display: block; color: #6b7078; font-size: 0.85rem; }
+.stat-card strong { display: block; margin-top: 4px; font-size: 1.7rem; line-height: 1.1; }
+.dashboard-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-bottom: 18px; }
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th, .data-table td { padding: 10px; border-bottom: 1px solid #e5e5e5; text-align: left; vertical-align: top; }
+.data-table th { color: #111; font-size: 0.85rem; }
 .pagination { display: flex; align-items: center; gap: 16px; margin: 24px 0; }
 .back-link { display: inline-block; margin-bottom: 18px; }
 .notice { padding: 10px 14px; margin-bottom: 20px; border-left: 4px solid #18794e; background: #f0faf6; }
@@ -143,4 +162,6 @@ textarea { resize: vertical; }
     .search-form input { flex-basis: 100%; max-width: none; }
     .word-row { flex-direction: column; gap: 8px; }
     .form-panel { padding: 18px; }
+    .dashboard-grid { grid-template-columns: 1fr; }
+    .data-table { display: block; overflow-x: auto; }
 }

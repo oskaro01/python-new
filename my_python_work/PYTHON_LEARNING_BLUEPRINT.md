@@ -573,6 +573,7 @@ To learn:
 - [ ] Protect staff actions with Django permissions and groups
 - [ ] Build an account page and password-change workflow
 - [ ] Import and export user-owned dictionary data with CSV and JSON
+- [ ] Build a custom staff dashboard with ORM analytics
 - [ ] URLs, views, templates, redirects, messages
 - [ ] Models, migrations, Django ORM, QuerySets
 - [ ] PostgreSQL

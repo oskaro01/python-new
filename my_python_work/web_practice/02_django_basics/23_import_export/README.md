@@ -93,4 +93,4 @@ import = file rows -> validated database rows
 
 ## Next Lesson
 
-Next: dictionary file and media uploads.
+Next: custom staff dashboard and analytics.

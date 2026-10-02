@@ -3,12 +3,13 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.decorators import permission_required
-from django.db.models import Q
+from django.contrib.auth import get_user_model
+from django.db.models import Count, Q
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_GET, require_http_methods
 
-from dictionary.models import Word
+from dictionary.models import Category, Word
 
 from .forms import ImportWordsForm, WordForm
 from .import_export import (
@@ -214,9 +215,27 @@ def delete_word(request, word_id):
 
 @permission_required("dictionary.view_all_words", raise_exception=True)
 def staff_dashboard(request):
-    words = Word.objects.select_related("owner", "category")
+    User = get_user_model()
+    recent_words = Word.objects.select_related("owner", "category").order_by("-created_at")[:8]
+    top_categories = (
+        Category.objects.annotate(word_count=Count("words"))
+        .filter(word_count__gt=0)
+        .order_by("-word_count", "name")[:5]
+    )
+    top_users = (
+        User.objects.annotate(word_count=Count("words"))
+        .filter(word_count__gt=0)
+        .order_by("-word_count", "username")[:5]
+    )
+
     return render(request, "pages/staff_dashboard.html", {
         "title": "Staff Dashboard",
-        "words": words,
-        "word_count": words.count(),
+        "total_words": Word.objects.count(),
+        "total_categories": Category.objects.count(),
+        "total_users": User.objects.count(),
+        "users_with_words": User.objects.filter(words__isnull=False).distinct().count(),
+        "orphan_words": Word.objects.filter(owner__isnull=True).count(),
+        "recent_words": recent_words,
+        "top_categories": top_categories,
+        "top_users": top_users,
     })
