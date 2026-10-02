@@ -101,6 +101,7 @@ Tiny early start:
 - `my_python_work/web_practice/02_django_basics/24_custom_staff_dashboard/README.md`
 - `my_python_work/web_practice/02_django_basics/25_testing/README.md`
 - `my_python_work/web_practice/02_django_basics/26_security_hardening/README.md`
+- `my_python_work/web_practice/02_django_basics/27_render_deployment/README.md`
 
 These files are allowed before the big review because they teach the basic browser/server idea without adding Django complexity yet.
 
@@ -233,6 +234,7 @@ Learn:
 - Custom staff dashboard with ORM analytics
 - Automated tests for privacy, CRUD, import/export, permissions, and auth
 - Security hardening with environment settings and safer uploads
+- Render deployment preparation with PostgreSQL, Gunicorn, and static files
 
 Practice project:
 

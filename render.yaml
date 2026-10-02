@@ -1,0 +1,35 @@
+databases:
+  - name: personal-dictionary-db
+    databaseName: personal_dictionary
+    user: personal_dictionary
+    plan: free
+
+services:
+  - type: web
+    name: personal-dictionary
+    runtime: python
+    plan: free
+    rootDir: my_python_work/web_practice/02_django_basics/02_first_django_project
+    buildCommand: ./build.sh
+    startCommand: gunicorn mini_site.wsgi:application
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: personal-dictionary-db
+          property: connectionString
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_DEBUG
+        value: "False"
+      - key: DJANGO_ALLOWED_HOSTS
+        sync: false
+      - key: DJANGO_CSRF_TRUSTED_ORIGINS
+        sync: false
+      - key: DJANGO_SECURE_SSL_REDIRECT
+        value: "True"
+      - key: DJANGO_SESSION_COOKIE_SECURE
+        value: "True"
+      - key: DJANGO_CSRF_COOKIE_SECURE
+        value: "True"
+      - key: DEFAULT_FROM_EMAIL
+        sync: false

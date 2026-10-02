@@ -117,4 +117,4 @@ Protect every boundary.
 
 ## Next Lesson
 
-Next: deployment preparation and production settings.
+Next: Render deployment preparation.
