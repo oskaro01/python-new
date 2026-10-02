@@ -11,6 +11,7 @@ from django.http import HttpResponse
 EXPORT_FIELDS = ("word", "meaning", "example", "category")
 ALLOWED_EXTENSIONS = {".csv", ".json"}
 MAX_FILE_SIZE = 1_000_000
+MAX_IMPORT_ROWS = 5_000
 
 
 def word_rows(words):
@@ -61,20 +62,25 @@ def read_import_rows(uploaded_file):
         reader = csv.DictReader(io.StringIO(text))
         if not reader.fieldnames or "word" not in reader.fieldnames:
             raise ValueError("CSV files need a 'word' column.")
-        return list(reader)
+        rows = list(reader)
+    else:
+        try:
+            data = json.loads(text)
+        except json.JSONDecodeError as error:
+            raise ValueError("The JSON file is not valid.") from error
 
-    try:
-        data = json.loads(text)
-    except json.JSONDecodeError as error:
-        raise ValueError("The JSON file is not valid.") from error
+        if not isinstance(data, list):
+            raise ValueError("JSON must contain a list of word objects.")
 
-    if not isinstance(data, list):
-        raise ValueError("JSON must contain a list of word objects.")
+        if not all(isinstance(row, dict) for row in data):
+            raise ValueError("Every JSON item must be an object.")
 
-    if not all(isinstance(row, dict) for row in data):
-        raise ValueError("Every JSON item must be an object.")
+        rows = data
 
-    return data
+    if len(rows) > MAX_IMPORT_ROWS:
+        raise ValueError(f"Import files cannot contain more than {MAX_IMPORT_ROWS} rows.")
+
+    return rows
 
 
 def row_text(row, *keys):

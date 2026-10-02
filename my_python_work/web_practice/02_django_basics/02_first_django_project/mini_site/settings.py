@@ -1,16 +1,30 @@
 """Settings for the tiny learning Django project."""
 
+import os
 from pathlib import Path
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Learning-only secret key. Real deployed projects must keep this private.
-SECRET_KEY = "django-insecure-learning-only-key"
+def env_bool(name, default=False):
+    return os.environ.get(name, str(default)).lower() in {"1", "true", "yes", "on"}
 
-DEBUG = True
 
-ALLOWED_HOSTS = []
+# Local defaults keep the project easy to run. Production should set these.
+SECRET_KEY = os.environ.get(
+    "DJANGO_SECRET_KEY",
+    "django-insecure-learning-only-key",
+)
+DEBUG = env_bool("DJANGO_DEBUG", True)
+
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.environ.get(
+        "DJANGO_ALLOWED_HOSTS",
+        "127.0.0.1,localhost",
+    ).split(",")
+    if host.strip()
+]
 
 INSTALLED_APPS = [
     "pages.apps.PagesConfig",
@@ -75,5 +89,13 @@ LOGOUT_REDIRECT_URL = "pages:word_list"
 
 # Password reset emails print in the terminal while we learn locally.
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+# Basic response protections. HTTPS-only settings are enabled in production.
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_REFERRER_POLICY = "same-origin"
+X_FRAME_OPTIONS = "DENY"
+SECURE_SSL_REDIRECT = env_bool("DJANGO_SECURE_SSL_REDIRECT", False)
+SESSION_COOKIE_SECURE = env_bool("DJANGO_SESSION_COOKIE_SECURE", False)
+CSRF_COOKIE_SECURE = env_bool("DJANGO_CSRF_COOKIE_SECURE", False)
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

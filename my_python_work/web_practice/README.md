@@ -47,6 +47,7 @@ We learned web foundations first; now the Django lessons build on them:
 33. `02_django_basics/23_import_export/`
 34. `02_django_basics/24_custom_staff_dashboard/`
 35. `02_django_basics/25_testing/`
+36. `02_django_basics/26_security_hardening/`
 
 ## Django Run Helper
 
@@ -260,3 +261,4 @@ http://127.0.0.1:8000/words/
 - CSV and JSON backups move validated, user-owned dictionary data in and out.
 - Custom staff dashboards use ORM counts to explain saved data.
 - Django tests protect privacy, CRUD, imports, permissions, and account rules.
+- Environment settings, CSRF, escaping, permissions, and upload limits improve security.
