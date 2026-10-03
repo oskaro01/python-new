@@ -582,6 +582,7 @@ To learn:
 - [ ] Learn caching basics and cache invalidation
 - [ ] Send password reset emails through a free HTTPS email API
 - [ ] Add a database-backed health check for the deployed app
+- [ ] Inspect the live database schema with a protected read-only explorer
 - [ ] URLs, views, templates, redirects, messages
 - [ ] Models, migrations, Django ORM, QuerySets
 - [ ] PostgreSQL

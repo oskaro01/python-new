@@ -17,6 +17,7 @@
                 <a href="{% url 'pages:about' %}">About</a>
                 {% if perms.dictionary.view_all_words %}
                 <a href="{% url 'pages:staff_dashboard' %}">Staff</a>
+                <a href="{% url 'pages:database_explorer' %}">Database</a>
                 {% endif %}
                 {% if user.is_authenticated %}
                 <a href="{% url 'accounts:account' %}">Account</a>

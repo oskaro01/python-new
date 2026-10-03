@@ -55,6 +55,7 @@ We learned web foundations first; now the Django lessons build on them:
 41. `02_django_basics/31_gmail_smtp_email/`
 42. `02_django_basics/32_resend_email_api/`
 43. `02_django_basics/33_health_check_observability/`
+44. `02_django_basics/34_database_explorer/`
 
 ## Django Run Helper
 

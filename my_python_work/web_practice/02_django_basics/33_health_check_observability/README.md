@@ -108,5 +108,4 @@ safe errors        -> log details privately, expose little publicly
 
 ## Next Lesson
 
-Next: review the complete deployment path and clean up the learning project
-before starting the next application phase.
+Next: [the visual database explorer](../34_database_explorer/README.md).

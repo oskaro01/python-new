@@ -23,6 +23,7 @@ from .import_export import (
     read_import_rows,
     row_text,
 )
+from .database_schema import get_database_schema
 
 
 logger = logging.getLogger(__name__)
@@ -87,6 +88,33 @@ def health_check(request):
         return JsonResponse({"status": "unavailable"}, status=503)
 
     return JsonResponse({"status": "ok", "database": "ok"})
+
+
+@permission_required("dictionary.view_all_words", raise_exception=True)
+@require_GET
+def database_explorer(request):
+    try:
+        schema = get_database_schema()
+    except Exception:
+        logger.exception("Database schema inspection failed.")
+        return render(
+            request,
+            "pages/database_explorer.html",
+            {
+                "title": "Database Explorer",
+                "schema_error": "The database schema could not be read right now.",
+            },
+            status=503,
+        )
+
+    return render(
+        request,
+        "pages/database_explorer.html",
+        {
+            "title": "Database Explorer",
+            "schema": schema,
+        },
+    )
 
 
 @login_required

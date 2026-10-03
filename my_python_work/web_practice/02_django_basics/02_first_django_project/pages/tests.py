@@ -39,6 +39,39 @@ class HealthCheckTests(TestCase):
         )
 
 
+class DatabaseExplorerTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = User.objects.create_user(
+            username="schema-reader",
+            password="test-password-123",
+        )
+
+    def test_database_explorer_requires_permission(self):
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse("pages:database_explorer"))
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_database_explorer_shows_live_schema_metadata(self):
+        permission = Permission.objects.get(
+            content_type__app_label="dictionary",
+            codename="view_all_words",
+        )
+        self.user.user_permissions.add(permission)
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse("pages:database_explorer"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Database Explorer")
+        self.assertContains(response, "dictionary_word")
+        self.assertContains(response, "dictionary_category")
+        self.assertContains(response, "Foreign-key map")
+        self.assertContains(response, "word")
+
+
 class WordAccessTests(TestCase):
     @classmethod
     def setUpTestData(cls):

@@ -1,0 +1,162 @@
+{% extends "pages/base.html" %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <h1>Database Explorer</h1>
+        <p class="muted">Read-only metadata from the active database connection.</p>
+    </div>
+    <a class="button" href="{% url 'pages:staff_dashboard' %}">Back to dashboard</a>
+</div>
+
+{% if schema_error %}
+<div class="notice notice-error">{{ schema_error }}</div>
+{% else %}
+<div class="stats-grid">
+    <article class="stat-card">
+        <span>Backend</span>
+        <strong class="stat-text">{{ schema.backend|title }}</strong>
+    </article>
+    <article class="stat-card">
+        <span>Tables and views</span>
+        <strong>{{ schema.table_count }}</strong>
+    </article>
+    <article class="stat-card">
+        <span>Foreign-key relationships</span>
+        <strong>{{ schema.relationship_count }}</strong>
+    </article>
+    <article class="stat-card">
+        <span>Rows at load</span>
+        <strong>{{ schema.total_rows }}</strong>
+    </article>
+</div>
+
+<section class="panel schema-notice">
+    <strong>Read-only view</strong>
+    <span>Columns and constraints come from the database itself. No row contents,
+        passwords, connection strings, or secrets are shown.</span>
+</section>
+
+<section class="panel schema-map">
+    <div class="section-heading">
+        <div>
+            <h2>Foreign-key map</h2>
+            <p class="muted">The arrows show how stored records connect.</p>
+        </div>
+    </div>
+    {% for relation in schema.relationships %}
+    <div class="schema-relation">
+        <code>{{ relation.from_table }}.{{ relation.from_columns|join:", " }}</code>
+        <span class="schema-arrow" aria-hidden="true">→</span>
+        <code>{{ relation.to_table }}.{{ relation.to_columns|join:", " }}</code>
+        <span class="schema-constraint">{{ relation.name }}</span>
+    </div>
+    {% empty %}
+    <p class="muted">No foreign-key relationships were found.</p>
+    {% endfor %}
+</section>
+
+<section class="schema-table-list">
+    <div class="section-heading">
+        <div>
+            <h2>Tables and columns</h2>
+            <p class="muted">Expand a table to see its database-level structure.</p>
+        </div>
+    </div>
+
+    {% for table in schema.tables %}
+    <details class="schema-table" {% if table.application_table %}open{% endif %}>
+        <summary>
+            <span class="schema-table-title">
+                <code>{{ table.name }}</code>
+                <span class="schema-model">{{ table.model_label }}</span>
+            </span>
+            <span class="schema-table-meta">
+                <span>{{ table.row_count_display }} rows</span>
+                <span>{{ table.column_count }} columns</span>
+                <span>{{ table.kind }}</span>
+            </span>
+        </summary>
+
+        <div class="schema-table-body">
+            <div class="table-scroll">
+                <table class="data-table schema-columns">
+                    <thead>
+                        <tr>
+                            <th>Column</th>
+                            <th>PostgreSQL type</th>
+                            <th>Django field</th>
+                            <th>Nullable</th>
+                            <th>Default</th>
+                            <th>Relationship</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for column in table.columns %}
+                        <tr>
+                            <td>
+                                <code>{{ column.name }}</code>
+                                {% if column.primary_key %}<span class="schema-key">PK</span>{% endif %}
+                                {% if column.auto_increment %}<span class="schema-key">AUTO</span>{% endif %}
+                            </td>
+                            <td><code>{{ column.database_type }}</code></td>
+                            <td>{{ column.django_type }}</td>
+                            <td>{{ column.nullable_display }}</td>
+                            <td><code>{{ column.default_display }}</code></td>
+                            <td>
+                                {% if column.foreign_key %}
+                                <code>{{ column.foreign_key.target_table }}.{{ column.foreign_key.target_column }}</code>
+                                <small>on delete {{ column.foreign_key.on_delete }}</small>
+                                {% else %}
+                                <span class="muted">—</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="schema-constraints">
+                <h3>Constraints and indexes</h3>
+                {% if table.constraints %}
+                <div class="table-scroll">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Kind</th>
+                                <th>Columns</th>
+                                <th>References</th>
+                                <th>Index type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for constraint in table.constraints %}
+                            <tr>
+                                <td><code>{{ constraint.name }}</code></td>
+                                <td><span class="schema-key">{{ constraint.kind }}</span></td>
+                                <td><code>{{ constraint.columns_display }}</code></td>
+                                <td>
+                                    {% if constraint.target_display %}
+                                    <code>{{ constraint.target_display }}</code>
+                                    {% else %}
+                                    <span class="muted">—</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ constraint.index_type|default:"—" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="muted">No constraints or indexes reported.</p>
+                {% endif %}
+            </div>
+        </div>
+    </details>
+    {% endfor %}
+</section>
+{% endif %}
+{% endblock %}
