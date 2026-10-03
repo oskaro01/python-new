@@ -207,7 +207,7 @@ The app logs safe password-reset checkpoints:
 
 ```text
 Password reset requested for email domain gmail.com: 1 eligible user(s).
-Password reset email send call finished without SMTP error.
+Password reset SMTP send returned 1 message(s) for gmail.com.
 ```
 
 How to read them:
@@ -215,8 +215,9 @@ How to read them:
 | Log result | Meaning |
 | --- | --- |
 | `0 eligible user(s)` | No active user with that exact email and a usable password exists in the live database. |
-| `1 eligible user(s)` then SMTP error | Gmail rejected the send. Check the SMTP variables. |
-| `1 eligible user(s)` and no SMTP error | Django handed the email to Gmail. Check Gmail search, spam, all mail, and sender reputation. |
+| `1 eligible user(s)` then `Password reset SMTP send failed` | Gmail rejected the send or the connection failed. The log includes the exception type. |
+| `1 eligible user(s)` and `send returned 1 message(s)` | Django handed the email to Gmail. Check Gmail Sent, search, spam, all mail, and sender reputation. |
+| `send returned 0 message(s)` | The backend did not report a delivered message. Check the SMTP configuration and deployment variables. |
 
 ### `SMTPAuthenticationError`
 
