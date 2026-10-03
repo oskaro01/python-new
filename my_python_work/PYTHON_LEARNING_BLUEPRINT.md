@@ -577,6 +577,7 @@ To learn:
 - [ ] Write Django tests for privacy, CRUD, import/export, permissions, and auth
 - [ ] Harden Django settings, uploads, secrets, and production security options
 - [ ] Prepare and deploy the Django dictionary with Render and Neon PostgreSQL
+- [ ] Add production maintenance basics: custom error pages and logging
 - [ ] URLs, views, templates, redirects, messages
 - [ ] Models, migrations, Django ORM, QuerySets
 - [ ] PostgreSQL

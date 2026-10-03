@@ -1,5 +1,7 @@
 """Views for simple website pages."""
 
+import logging
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.decorators import permission_required
@@ -18,6 +20,9 @@ from .import_export import (
     read_import_rows,
     row_text,
 )
+
+
+logger = logging.getLogger(__name__)
 
 
 def home(request):
@@ -239,3 +244,13 @@ def staff_dashboard(request):
         "top_categories": top_categories,
         "top_users": top_users,
     })
+
+
+def page_not_found(request, exception):
+    logger.warning("404 page not found: %s", request.path)
+    return render(request, "pages/404.html", {"title": "Page Not Found"}, status=404)
+
+
+def server_error(request):
+    logger.error("500 server error: %s", request.path)
+    return render(request, "pages/500.html", {"title": "Server Error"}, status=500)

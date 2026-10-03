@@ -1,0 +1,10 @@
+{% extends "pages/base.html" %}
+
+{% block content %}
+<section class="error-page panel">
+    <p class="error-code">500</p>
+    <h1>Something went wrong</h1>
+    <p class="muted">The app hit a server error. Check the deployment logs for details.</p>
+    <a class="button button-primary" href="{% url 'pages:word_list' %}">Back to words</a>
+</section>
+{% endblock %}

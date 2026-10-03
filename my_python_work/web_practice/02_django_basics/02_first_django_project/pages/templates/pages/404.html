@@ -1,0 +1,10 @@
+{% extends "pages/base.html" %}
+
+{% block content %}
+<section class="error-page panel">
+    <p class="error-code">404</p>
+    <h1>Page not found</h1>
+    <p class="muted">That page does not exist or the link has changed.</p>
+    <a class="button button-primary" href="{% url 'pages:word_list' %}">Back to words</a>
+</section>
+{% endblock %}

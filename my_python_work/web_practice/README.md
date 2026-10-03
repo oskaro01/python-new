@@ -49,6 +49,7 @@ We learned web foundations first; now the Django lessons build on them:
 35. `02_django_basics/25_testing/`
 36. `02_django_basics/26_security_hardening/`
 37. `02_django_basics/27_render_deployment/`
+38. `02_django_basics/28_production_maintenance/`
 
 ## Django Run Helper
 
@@ -264,3 +265,4 @@ http://127.0.0.1:8000/words/
 - Django tests protect privacy, CRUD, imports, permissions, and account rules.
 - Environment settings, CSRF, escaping, permissions, and upload limits improve security.
 - Render deployment connects Git, Gunicorn, Neon PostgreSQL, static files, and HTTPS.
+- Production maintenance uses friendly error pages and logs to debug the live site.
