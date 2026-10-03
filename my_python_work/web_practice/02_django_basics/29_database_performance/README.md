@@ -163,6 +163,19 @@ Apply it locally:
 When the migration is committed, Render's `build.sh` applies the same
 migration to Neon during deployment.
 
+## Neon Connection Note
+
+Neon may pause idle compute and close idle SSL connections. For this small
+Render deployment, the project uses:
+
+```text
+DATABASE_CONN_MAX_AGE=0
+```
+
+That tells Django to close the database connection after each request. It
+avoids reusing a stale connection when Neon wakes up. Django also enables
+connection health checks for the external PostgreSQL configuration.
+
 ## Safer Query Habits
 
 ### Filter At The Database

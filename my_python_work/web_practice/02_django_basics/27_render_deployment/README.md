@@ -153,6 +153,18 @@ postgresql://your-private-neon-connection-string
 
 Do not paste this value into a code file, commit, screenshot, or chat.
 
+### `DATABASE_CONN_MAX_AGE`
+
+Keep this value at:
+
+```text
+0
+```
+
+Neon can pause idle compute and close idle SSL connections. A value of `0`
+makes Django open a fresh database connection for each request instead of
+reusing a stale one. This is a good tradeoff for our small learning app.
+
 ### `DJANGO_ALLOWED_HOSTS`
 
 Render gives every web service a free address ending in `onrender.com`.
@@ -415,6 +427,18 @@ https://your-real-render-hostname.onrender.com
 
 The database migrations did not run against Neon. Read the Render deploy
 logs, then run the migration command from Part G with the Neon URL.
+
+### `SSL connection has been closed unexpectedly`
+
+This usually means Django tried to reuse a database connection that Neon
+already closed after being idle. Confirm:
+
+```text
+DATABASE_CONN_MAX_AGE=0
+```
+
+Then redeploy the Render service. Django also enables connection health checks
+for the Neon configuration.
 
 ### Static CSS is missing
 

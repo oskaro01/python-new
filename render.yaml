@@ -9,6 +9,8 @@ services:
     envVars:
       - key: DATABASE_URL
         sync: false
+      - key: DATABASE_CONN_MAX_AGE
+        value: "0"
       - key: DJANGO_SECRET_KEY
         generateValue: true
       - key: DJANGO_DEBUG

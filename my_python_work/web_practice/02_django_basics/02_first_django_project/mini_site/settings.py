@@ -87,10 +87,13 @@ database_url = os.environ.get("DATABASE_URL")
 if database_url:
     if dj_database_url is None:
         raise RuntimeError("Install dj-database-url when DATABASE_URL is set.")
+    # Neon can suspend idle compute, so avoid reusing stale SSL connections.
+    database_conn_max_age = int(os.environ.get("DATABASE_CONN_MAX_AGE", "0"))
     DATABASES = {
         "default": dj_database_url.config(
             default=database_url,
-            conn_max_age=600,
+            conn_max_age=database_conn_max_age,
+            conn_health_checks=True,
             ssl_require=not DEBUG,
         )
     }
