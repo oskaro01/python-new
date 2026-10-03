@@ -119,6 +119,7 @@ textarea { resize: vertical; }
     margin-inline: auto;
 }
 .form-page.auth-page { width: min(100%, 480px); }
+.form-page > h1 + p { margin-bottom: 24px; }
 .form-panel {
     display: grid;
     gap: 18px;
@@ -129,7 +130,12 @@ textarea { resize: vertical; }
     background: #fff;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.14);
 }
-.form-page .form-panel { max-width: none; }
+.form-page .form-panel {
+    max-width: none;
+    padding-block: 32px;
+}
+.form-page.auth-page .form-panel { padding-inline: 40px; }
+.form-page .form-panel + p { margin-top: 20px; }
 .field { display: grid; gap: 6px; }
 .field label { font-weight: 600; }
 .help-text { margin: 0; font-size: 0.85rem; }
@@ -167,6 +173,8 @@ textarea { resize: vertical; }
     .search-form input { flex-basis: 100%; max-width: none; }
     .word-row { flex-direction: column; gap: 8px; }
     .form-panel { padding: 18px; }
+    .form-page .form-panel { padding-block: 24px; }
+    .form-page.auth-page .form-panel { padding-inline: 18px; }
     .dashboard-grid { grid-template-columns: 1fr; }
     .data-table { display: block; overflow-x: auto; }
 }
