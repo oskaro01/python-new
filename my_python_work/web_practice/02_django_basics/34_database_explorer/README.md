@@ -32,6 +32,8 @@ It displays:
 - foreign-key targets
 - constraints and indexes
 - a relationship map
+- available, applied, and pending migrations
+- applied migration history and timestamps
 
 When the active backend is PostgreSQL, column types come from PostgreSQL's
 catalog using `format_type`, so values such as `character varying(80)` and
@@ -67,6 +69,40 @@ dictionary_category
 The actual page is generated from the live database, so it also includes
 Django's support tables such as permissions, sessions, migrations, and admin
 logs.
+
+## Migration Status
+
+The page compares two things:
+
+```text
+migration files in the project
+records in the database's django_migrations table
+```
+
+The three numbers mean:
+
+```text
+available -> migration files Django knows about in code
+applied   -> migrations recorded as completed in the database
+pending   -> migrations still waiting to be applied
+```
+
+The normal workflow is:
+
+```powershell
+python manage.py makemigrations
+python manage.py migrate
+```
+
+`makemigrations` notices model changes and creates migration instructions in
+an app's `migrations/` folder. It does not change PostgreSQL yet.
+
+`migrate` reads those instructions, changes the database schema, and records
+the completed migration in `django_migrations`.
+
+The explorer is deliberately read-only. It reports pending migrations but
+does not run `migrate` from a browser request. Schema changes should happen
+through the deployment build step or an intentional terminal command.
 
 ## Local And Production
 

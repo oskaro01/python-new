@@ -37,6 +37,90 @@
         passwords, connection strings, or secrets are shown.</span>
 </section>
 
+<section class="panel schema-migrations">
+    <div class="section-heading">
+        <div>
+            <h2>Migration status</h2>
+            <p class="muted">This compares migration files in the project with the database record.</p>
+        </div>
+    </div>
+
+    <div class="migration-summary">
+        <div>
+            <span>Available in code</span>
+            <strong>{{ schema.migrations.available_count }}</strong>
+        </div>
+        <div>
+            <span>Applied to database</span>
+            <strong>{{ schema.migrations.applied_count }}</strong>
+        </div>
+        <div>
+            <span>Pending</span>
+            <strong>{{ schema.migrations.pending_count }}</strong>
+        </div>
+    </div>
+
+    {% if schema.migrations.is_current %}
+    <p class="notice">The database is up to date with the migration files.</p>
+    {% else %}
+    <p class="notice notice-error">Pending migrations exist. Run <code>python manage.py migrate</code> before relying on the new schema.</p>
+    {% endif %}
+
+    {% if schema.migrations.pending %}
+    <div class="schema-constraints">
+        <h3>Pending migrations</h3>
+        <div class="table-scroll">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>App</th>
+                        <th>Migration</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for migration in schema.migrations.pending %}
+                    <tr>
+                        <td><code>{{ migration.app }}</code></td>
+                        <td><code>{{ migration.name }}</code></td>
+                        <td><span class="schema-key schema-key-warning">PENDING</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <details class="migration-history">
+        <summary>Applied migration history</summary>
+        <div class="table-scroll">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>App</th>
+                        <th>Migration</th>
+                        <th>Applied</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for migration in schema.migrations.applied %}
+                    <tr>
+                        <td><code>{{ migration.app }}</code></td>
+                        <td><code>{{ migration.name }}</code></td>
+                        <td>{{ migration.applied|date:"M j, Y H:i" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3">No applied migration records were found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </details>
+</section>
+
 <section class="panel schema-map">
     <div class="section-heading">
         <div>

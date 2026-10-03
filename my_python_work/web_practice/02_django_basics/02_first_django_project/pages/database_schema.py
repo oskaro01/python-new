@@ -2,6 +2,8 @@
 
 from django.apps import apps
 from django.db import connection
+from django.db.migrations.executor import MigrationExecutor
+from django.db.migrations.recorder import MigrationRecorder
 
 
 def _display(value, empty="—"):
@@ -58,6 +60,43 @@ def _row_count(cursor, table_name, table_type):
         return cursor.fetchone()[0]
     except Exception:
         return None
+
+
+def get_migration_status():
+    """Return applied and pending migrations for the active database."""
+    executor = MigrationExecutor(connection)
+    applied_keys = set(executor.loader.applied_migrations)
+    migration_plan = executor.migration_plan(executor.loader.graph.leaf_nodes())
+    pending_migrations = [
+        {
+            "app": migration.app_label,
+            "name": migration.name,
+        }
+        for migration, backwards in migration_plan
+        if not backwards
+    ]
+
+    recorder = MigrationRecorder(connection)
+    if recorder.has_table():
+        applied_records = [
+            {
+                "app": record.app,
+                "name": record.name,
+                "applied": record.applied,
+            }
+            for record in recorder.migration_qs.order_by("-applied", "-id")
+        ]
+    else:
+        applied_records = []
+
+    return {
+        "applied_count": len(applied_keys),
+        "pending_count": len(pending_migrations),
+        "available_count": len(executor.loader.disk_migrations),
+        "applied": applied_records,
+        "pending": pending_migrations,
+        "is_current": not pending_migrations,
+    }
 
 
 def get_database_schema():
@@ -191,4 +230,5 @@ def get_database_schema():
         "total_rows": total_rows,
         "tables": tables,
         "relationships": relationships,
+        "migrations": get_migration_status(),
     }

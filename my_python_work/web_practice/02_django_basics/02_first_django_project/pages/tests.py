@@ -69,6 +69,9 @@ class DatabaseExplorerTests(TestCase):
         self.assertContains(response, "dictionary_word")
         self.assertContains(response, "dictionary_category")
         self.assertContains(response, "Foreign-key map")
+        self.assertContains(response, "Migration status")
+        self.assertContains(response, "Applied migration history")
+        self.assertContains(response, "0005_word_word_owner_word_idx_word_word_created_idx")
         self.assertContains(response, "word")
 
 
