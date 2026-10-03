@@ -131,6 +131,13 @@ EMAIL_BACKEND = os.environ.get(
 )
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "webmaster@localhost")
 
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "personal-dictionary-cache",
+    }
+}
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,

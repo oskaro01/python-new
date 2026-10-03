@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.decorators import permission_required
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.db.models import Count, Q
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
@@ -23,6 +24,29 @@ from .import_export import (
 
 
 logger = logging.getLogger(__name__)
+STAFF_DASHBOARD_STATS_CACHE_KEY = "staff-dashboard-stats"
+STAFF_DASHBOARD_STATS_TIMEOUT = 60
+
+
+def clear_staff_dashboard_cache():
+    cache.delete(STAFF_DASHBOARD_STATS_CACHE_KEY)
+
+
+def get_staff_dashboard_stats():
+    stats = cache.get(STAFF_DASHBOARD_STATS_CACHE_KEY)
+    if stats is not None:
+        return stats
+
+    User = get_user_model()
+    stats = {
+        "total_words": Word.objects.count(),
+        "total_categories": Category.objects.count(),
+        "total_users": User.objects.count(),
+        "users_with_words": User.objects.filter(words__isnull=False).distinct().count(),
+        "orphan_words": Word.objects.filter(owner__isnull=True).count(),
+    }
+    cache.set(STAFF_DASHBOARD_STATS_CACHE_KEY, stats, STAFF_DASHBOARD_STATS_TIMEOUT)
+    return stats
 
 
 def home(request):
@@ -57,6 +81,7 @@ def new_word(request):
         if form.is_valid():
             form.instance.owner = request.user
             form.save()
+            clear_staff_dashboard_cache()
             messages.success(request, "Word saved.")
             return redirect("pages:word_list")
     else:
@@ -152,6 +177,7 @@ def import_words(request):
                 if word_form.is_valid():
                     word_form.instance.owner = request.user
                     word_form.save()
+                    clear_staff_dashboard_cache()
                     imported_words.add(normalized_word)
                     imported += 1
                 else:
@@ -194,6 +220,7 @@ def edit_word(request, word_id):
         form = WordForm(request.POST, instance=word, user=request.user)
         if form.is_valid():
             form.save()
+            clear_staff_dashboard_cache()
             messages.success(request, "Word updated.")
             return redirect("pages:word_detail", word_id=word.pk)
     else:
@@ -213,6 +240,7 @@ def delete_word(request, word_id):
 
     if request.method == "POST":
         word.delete()
+        clear_staff_dashboard_cache()
         messages.success(request, "Word deleted.")
         return redirect("pages:word_list")
 
@@ -225,6 +253,7 @@ def delete_word(request, word_id):
 @permission_required("dictionary.view_all_words", raise_exception=True)
 def staff_dashboard(request):
     User = get_user_model()
+    stats = get_staff_dashboard_stats()
     recent_words = Word.objects.select_related("owner", "category").order_by("-created_at")[:8]
     top_categories = (
         Category.objects.annotate(word_count=Count("words"))
@@ -239,11 +268,7 @@ def staff_dashboard(request):
 
     return render(request, "pages/staff_dashboard.html", {
         "title": "Staff Dashboard",
-        "total_words": Word.objects.count(),
-        "total_categories": Category.objects.count(),
-        "total_users": User.objects.count(),
-        "users_with_words": User.objects.filter(words__isnull=False).distinct().count(),
-        "orphan_words": Word.objects.filter(owner__isnull=True).count(),
+        **stats,
         "recent_words": recent_words,
         "top_categories": top_categories,
         "top_users": top_users,

@@ -51,6 +51,7 @@ We learned web foundations first; now the Django lessons build on them:
 37. `02_django_basics/27_render_deployment/`
 38. `02_django_basics/28_production_maintenance/`
 39. `02_django_basics/29_database_performance/`
+40. `02_django_basics/30_caching_basics/`
 
 ## Django Run Helper
 
@@ -268,3 +269,4 @@ http://127.0.0.1:8000/words/
 - Render deployment connects Git, Gunicorn, Neon PostgreSQL, static files, and HTTPS.
 - Production maintenance uses friendly error pages and logs to debug the live site.
 - Database indexes and `select_related` reduce unnecessary database work.
+- Caching stores short-lived reusable data, but private pages need careful invalidation.

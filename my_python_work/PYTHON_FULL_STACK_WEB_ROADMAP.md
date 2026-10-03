@@ -104,6 +104,7 @@ Tiny early start:
 - `my_python_work/web_practice/02_django_basics/27_render_deployment/README.md`
 - `my_python_work/web_practice/02_django_basics/28_production_maintenance/README.md`
 - `my_python_work/web_practice/02_django_basics/29_database_performance/README.md`
+- `my_python_work/web_practice/02_django_basics/30_caching_basics/README.md`
 
 These files are allowed before the big review because they teach the basic browser/server idea without adding Django complexity yet.
 
@@ -240,6 +241,7 @@ Learn:
   and static files
 - Production maintenance with custom error pages and deployment logs
 - Database performance with indexes, `select_related`, and N+1 query awareness
+- Caching basics with short-lived dashboard stats and cache invalidation
 
 Practice project:
 
