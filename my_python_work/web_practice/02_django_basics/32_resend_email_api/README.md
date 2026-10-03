@@ -142,4 +142,4 @@ secret     -> API keys belong in environment variables
 
 ## Next Lesson
 
-Next: deployment observability and a small health-check endpoint.
+Next: [health checks and deployment observability](../33_health_check_observability/README.md).

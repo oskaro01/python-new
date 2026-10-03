@@ -1,10 +1,12 @@
 """Tests for the dictionary's important user-facing rules."""
 
 import json
+from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db import DatabaseError
 from django.test import TestCase
 from django.urls import reverse
 
@@ -12,6 +14,29 @@ from dictionary.models import Category, Word
 
 
 User = get_user_model()
+
+
+class HealthCheckTests(TestCase):
+    def test_health_check_reports_database_status(self):
+        response = self.client.get(reverse("pages:health"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(
+            response.content,
+            {"status": "ok", "database": "ok"},
+        )
+
+    @patch("pages.views.connection.cursor")
+    def test_health_check_returns_503_when_database_fails(self, mock_cursor):
+        mock_cursor.side_effect = DatabaseError("database unavailable")
+
+        response = self.client.get(reverse("pages:health"))
+
+        self.assertEqual(response.status_code, 503)
+        self.assertJSONEqual(
+            response.content,
+            {"status": "unavailable"},
+        )
 
 
 class WordAccessTests(TestCase):

@@ -580,7 +580,8 @@ To learn:
 - [ ] Add production maintenance basics: custom error pages and logging
 - [ ] Improve database performance with indexes and `select_related`
 - [ ] Learn caching basics and cache invalidation
-- [ ] Configure a free SMTP provider for real password reset emails
+- [ ] Send password reset emails through a free HTTPS email API
+- [ ] Add a database-backed health check for the deployed app
 - [ ] URLs, views, templates, redirects, messages
 - [ ] Models, migrations, Django ORM, QuerySets
 - [ ] PostgreSQL

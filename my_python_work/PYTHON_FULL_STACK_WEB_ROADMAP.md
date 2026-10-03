@@ -107,6 +107,7 @@ Tiny early start:
 - `my_python_work/web_practice/02_django_basics/30_caching_basics/README.md`
 - `my_python_work/web_practice/02_django_basics/31_gmail_smtp_email/README.md`
 - `my_python_work/web_practice/02_django_basics/32_resend_email_api/README.md`
+- `my_python_work/web_practice/02_django_basics/33_health_check_observability/README.md`
 
 These files are allowed before the big review because they teach the basic browser/server idea without adding Django complexity yet.
 
@@ -244,6 +245,7 @@ Learn:
 - Production maintenance with custom error pages and deployment logs
 - Database performance with indexes, `select_related`, and N+1 query awareness
 - Caching basics with short-lived dashboard stats and cache invalidation
+- Health checks and deployment observability with a database-backed status endpoint
 
 Practice project:
 

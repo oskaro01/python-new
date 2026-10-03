@@ -7,8 +7,10 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.decorators import permission_required
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
+from django.db import connection
 from django.db.models import Count, Q
 from django.core.paginator import Paginator
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_GET, require_http_methods
 
@@ -71,6 +73,20 @@ def about(request):
         "message": "This page also uses the shared base template.",
     }
     return render(request, "pages/about.html", context)
+
+
+@require_GET
+def health_check(request):
+    """Return a safe status response for Render and uptime checks."""
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+            cursor.fetchone()
+    except Exception:
+        logger.exception("Health check failed.")
+        return JsonResponse({"status": "unavailable"}, status=503)
+
+    return JsonResponse({"status": "ok", "database": "ok"})
 
 
 @login_required
