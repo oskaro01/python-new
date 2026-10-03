@@ -1,6 +1,7 @@
 {% extends "pages/base.html" %}
 
 {% block content %}
+<section class="form-page">
 <h1>{{ heading }}</h1>
 <p>{{ message }}</p>
 
@@ -38,4 +39,5 @@
         <a class="button" href="{% url 'pages:word_list' %}">Cancel</a>
     </div>
 </form>
+</section>
 {% endblock %}

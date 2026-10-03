@@ -1,6 +1,7 @@
 {% extends "pages/base.html" %}
 
 {% block content %}
+<section class="form-page auth-page">
 <h1>Log in</h1>
 <p class="muted">Use the account you registered for this dictionary.</p>
 
@@ -13,4 +14,5 @@
 
 <p><a href="{% url 'accounts:password_reset' %}">Forgot your password?</a></p>
 <p>Need an account? <a href="{% url 'accounts:register' %}">Register</a>.</p>
+</section>
 {% endblock %}

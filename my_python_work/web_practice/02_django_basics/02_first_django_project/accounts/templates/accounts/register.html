@@ -1,6 +1,7 @@
 {% extends "pages/base.html" %}
 
 {% block content %}
+<section class="form-page auth-page">
 <h1>Create account</h1>
 <p class="muted">Register with a username and password.</p>
 
@@ -11,4 +12,5 @@
 </form>
 
 <p>Already registered? <a href="{% url 'accounts:login' %}">Log in</a>.</p>
+</section>
 {% endblock %}
