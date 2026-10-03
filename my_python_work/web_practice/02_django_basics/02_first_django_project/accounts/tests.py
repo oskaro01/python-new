@@ -40,3 +40,7 @@ class ResendEmailBackendTests(SimpleTestCase):
             request.headers["Authorization"],
             "Bearer re_test_key",
         )
+        self.assertEqual(
+            request.headers["User-agent"],
+            "personal-dictionary/1.0",
+        )

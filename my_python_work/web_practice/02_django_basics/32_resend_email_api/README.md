@@ -94,6 +94,16 @@ Resend accepted the API request.
 If the API rejects the sender or key, the logs will show a safe error without
 printing the API key.
 
+If the log shows:
+
+```text
+HTTP Error 403: error code: 1010
+```
+
+the API edge rejected the default Python HTTP client signature. The project
+sets an explicit `User-Agent` header for the Resend request. Redeploy the
+latest commit before testing again.
+
 ## Part E: Local Development
 
 Leave `DJANGO_EMAIL_BACKEND` unset locally while learning. Django then uses the

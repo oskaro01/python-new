@@ -72,6 +72,7 @@ class ResendEmailBackend(BaseEmailBackend):
             headers={
                 "Authorization": f"Bearer {self.api_key}",
                 "Content-Type": "application/json",
+                "User-Agent": "personal-dictionary/1.0",
             },
             method="POST",
         )
