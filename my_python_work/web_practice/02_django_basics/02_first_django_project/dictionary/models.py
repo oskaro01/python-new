@@ -51,6 +51,10 @@ class Word(models.Model):
         permissions = [
             ("view_all_words", "Can view all dictionary words"),
         ]
+        indexes = [
+            models.Index(fields=["owner", "word"], name="word_owner_word_idx"),
+            models.Index(fields=["-created_at"], name="word_created_idx"),
+        ]
 
     def __str__(self):
         return self.word

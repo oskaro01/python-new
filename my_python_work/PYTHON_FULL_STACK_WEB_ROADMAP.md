@@ -103,6 +103,7 @@ Tiny early start:
 - `my_python_work/web_practice/02_django_basics/26_security_hardening/README.md`
 - `my_python_work/web_practice/02_django_basics/27_render_deployment/README.md`
 - `my_python_work/web_practice/02_django_basics/28_production_maintenance/README.md`
+- `my_python_work/web_practice/02_django_basics/29_database_performance/README.md`
 
 These files are allowed before the big review because they teach the basic browser/server idea without adding Django complexity yet.
 
@@ -238,6 +239,7 @@ Learn:
 - Render web deployment preparation with external Neon PostgreSQL, Gunicorn,
   and static files
 - Production maintenance with custom error pages and deployment logs
+- Database performance with indexes, `select_related`, and N+1 query awareness
 
 Practice project:
 

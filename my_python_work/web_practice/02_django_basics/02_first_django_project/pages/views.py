@@ -73,7 +73,7 @@ def new_word(request):
 
 @login_required
 def word_list(request):
-    words = Word.objects.filter(owner=request.user)
+    words = Word.objects.select_related("category").filter(owner=request.user)
     query = request.GET.get("q", "").strip()
 
     if query:
@@ -178,7 +178,11 @@ def import_words(request):
 
 @login_required
 def word_detail(request, word_id):
-    word = get_object_or_404(Word, pk=word_id, owner=request.user)
+    word = get_object_or_404(
+        Word.objects.select_related("category"),
+        pk=word_id,
+        owner=request.user,
+    )
     return render(request, "pages/word_detail.html", {"title": word.word, "word": word})
 
 

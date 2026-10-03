@@ -50,6 +50,7 @@ We learned web foundations first; now the Django lessons build on them:
 36. `02_django_basics/26_security_hardening/`
 37. `02_django_basics/27_render_deployment/`
 38. `02_django_basics/28_production_maintenance/`
+39. `02_django_basics/29_database_performance/`
 
 ## Django Run Helper
 
@@ -266,3 +267,4 @@ http://127.0.0.1:8000/words/
 - Environment settings, CSRF, escaping, permissions, and upload limits improve security.
 - Render deployment connects Git, Gunicorn, Neon PostgreSQL, static files, and HTTPS.
 - Production maintenance uses friendly error pages and logs to debug the live site.
+- Database indexes and `select_related` reduce unnecessary database work.

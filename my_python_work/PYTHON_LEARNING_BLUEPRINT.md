@@ -578,6 +578,7 @@ To learn:
 - [ ] Harden Django settings, uploads, secrets, and production security options
 - [ ] Prepare and deploy the Django dictionary with Render and Neon PostgreSQL
 - [ ] Add production maintenance basics: custom error pages and logging
+- [ ] Improve database performance with indexes and `select_related`
 - [ ] URLs, views, templates, redirects, messages
 - [ ] Models, migrations, Django ORM, QuerySets
 - [ ] PostgreSQL
