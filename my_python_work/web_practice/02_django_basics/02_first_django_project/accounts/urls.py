@@ -2,6 +2,7 @@ from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
 from django.urls import path, reverse_lazy
 
+from .forms import LoggedPasswordResetForm
 from . import views
 
 
@@ -34,6 +35,7 @@ urlpatterns = [
     path(
         "password-reset/",
         auth_views.PasswordResetView.as_view(
+            form_class=LoggedPasswordResetForm,
             template_name="accounts/password_reset_form.html",
             email_template_name="accounts/password_reset_email.txt",
             subject_template_name="accounts/password_reset_subject.txt",

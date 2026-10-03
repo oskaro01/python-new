@@ -203,6 +203,21 @@ Check:
 - `DEFAULT_FROM_EMAIL`
 - whether the Render variables were saved
 
+The app logs safe password-reset checkpoints:
+
+```text
+Password reset requested for email domain gmail.com: 1 eligible user(s).
+Password reset email send call finished without SMTP error.
+```
+
+How to read them:
+
+| Log result | Meaning |
+| --- | --- |
+| `0 eligible user(s)` | No active user with that exact email and a usable password exists in the live database. |
+| `1 eligible user(s)` then SMTP error | Gmail rejected the send. Check the SMTP variables. |
+| `1 eligible user(s)` and no SMTP error | Django handed the email to Gmail. Check Gmail search, spam, all mail, and sender reputation. |
+
 ### `SMTPAuthenticationError`
 
 The Gmail account rejected the login. Generate a new App Password and replace
