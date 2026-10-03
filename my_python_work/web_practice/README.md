@@ -52,6 +52,7 @@ We learned web foundations first; now the Django lessons build on them:
 38. `02_django_basics/28_production_maintenance/`
 39. `02_django_basics/29_database_performance/`
 40. `02_django_basics/30_caching_basics/`
+41. `02_django_basics/31_gmail_smtp_email/`
 
 ## Django Run Helper
 
@@ -270,3 +271,4 @@ http://127.0.0.1:8000/words/
 - Production maintenance uses friendly error pages and logs to debug the live site.
 - Database indexes and `select_related` reduce unnecessary database work.
 - Caching stores short-lived reusable data, but private pages need careful invalidation.
+- Gmail SMTP can deliver password-reset emails without putting credentials in code.

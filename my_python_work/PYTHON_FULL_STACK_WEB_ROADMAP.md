@@ -105,6 +105,7 @@ Tiny early start:
 - `my_python_work/web_practice/02_django_basics/28_production_maintenance/README.md`
 - `my_python_work/web_practice/02_django_basics/29_database_performance/README.md`
 - `my_python_work/web_practice/02_django_basics/30_caching_basics/README.md`
+- `my_python_work/web_practice/02_django_basics/31_gmail_smtp_email/README.md`
 
 These files are allowed before the big review because they teach the basic browser/server idea without adding Django complexity yet.
 
@@ -515,6 +516,7 @@ Learn:
 
 - Django email settings
 - SMTP
+- Gmail SMTP with an app password for free learning deployments
 - Resend later if wanted
 - Email templates
 - Dictionary backup/export email
