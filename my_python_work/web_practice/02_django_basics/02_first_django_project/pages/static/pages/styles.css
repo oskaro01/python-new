@@ -133,6 +133,7 @@ textarea { resize: vertical; }
 .form-page .form-panel {
     max-width: none;
     padding-block: 32px;
+    padding-bottom: 44px;
 }
 .form-page.auth-page .form-panel { padding-inline: 40px; }
 .form-page .form-panel + p { margin-top: 20px; }
@@ -173,7 +174,10 @@ textarea { resize: vertical; }
     .search-form input { flex-basis: 100%; max-width: none; }
     .word-row { flex-direction: column; gap: 8px; }
     .form-panel { padding: 18px; }
-    .form-page .form-panel { padding-block: 24px; }
+    .form-page .form-panel {
+        padding-block: 24px;
+        padding-bottom: 32px;
+    }
     .form-page.auth-page .form-panel { padding-inline: 18px; }
     .dashboard-grid { grid-template-columns: 1fr; }
     .data-table { display: block; overflow-x: auto; }
