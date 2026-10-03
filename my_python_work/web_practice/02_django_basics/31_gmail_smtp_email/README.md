@@ -1,10 +1,14 @@
 # Django Basics 31: Gmail SMTP Email
 
+> Historical note: Gmail SMTP works for local testing, but Render's free web
+> service blocks outbound SMTP connections. The live deployment now uses
+> [Django Basics 32: Resend Email API](../32_resend_email_api/README.md).
+
 Lesson 20 used Django's console email backend. Reset links appeared in the
 terminal, which was perfect for local learning.
 
-Now we are connecting the live app to Gmail SMTP so password-reset messages
-can really be delivered.
+This lesson records the local Gmail SMTP experiment. It is useful for learning
+email settings, but it is not the live Render solution.
 
 ## Cost
 

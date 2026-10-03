@@ -56,7 +56,7 @@ class LoggedPasswordResetForm(PasswordResetForm):
             sent_count = email_message.send()
         except Exception as exc:
             logger.error(
-                "Password reset SMTP send failed for %s (%s).",
+                "Password reset email send failed for %s (%s).",
                 recipient_domain,
                 type(exc).__name__,
                 exc_info=True,
@@ -64,7 +64,7 @@ class LoggedPasswordResetForm(PasswordResetForm):
             return
 
         logger.info(
-            "Password reset SMTP send returned %s message(s) for %s.",
+            "Password reset email backend returned %s message(s) for %s.",
             sent_count,
             recipient_domain,
         )
