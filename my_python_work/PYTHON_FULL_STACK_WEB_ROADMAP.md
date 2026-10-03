@@ -234,7 +234,8 @@ Learn:
 - Custom staff dashboard with ORM analytics
 - Automated tests for privacy, CRUD, import/export, permissions, and auth
 - Security hardening with environment settings and safer uploads
-- Render deployment preparation with PostgreSQL, Gunicorn, and static files
+- Render web deployment preparation with external Neon PostgreSQL, Gunicorn,
+  and static files
 
 Practice project:
 
@@ -280,7 +281,7 @@ Learn:
 Database path:
 
 1. SQLite while learning
-2. PostgreSQL for serious projects
+2. PostgreSQL for serious projects, hosted separately from the web service
 
 Practice:
 
@@ -624,7 +625,7 @@ Learn:
 
 - Environment variables
 - Production settings
-- PostgreSQL in production
+- External PostgreSQL in production, using Neon for this learning project
 - Static files
 - Media files
 - Domain
@@ -636,7 +637,7 @@ Learn:
 
 Possible deployment paths:
 
-- Render
+- Render web service + Neon PostgreSQL
 - Railway
 - Fly.io
 - VPS later

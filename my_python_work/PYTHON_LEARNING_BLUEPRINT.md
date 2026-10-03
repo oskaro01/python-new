@@ -576,7 +576,7 @@ To learn:
 - [ ] Build a custom staff dashboard with ORM analytics
 - [ ] Write Django tests for privacy, CRUD, import/export, permissions, and auth
 - [ ] Harden Django settings, uploads, secrets, and production security options
-- [ ] Prepare and deploy the Django dictionary with Render and PostgreSQL
+- [ ] Prepare and deploy the Django dictionary with Render and Neon PostgreSQL
 - [ ] URLs, views, templates, redirects, messages
 - [ ] Models, migrations, Django ORM, QuerySets
 - [ ] PostgreSQL

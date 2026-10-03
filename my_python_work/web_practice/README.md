@@ -263,4 +263,4 @@ http://127.0.0.1:8000/words/
 - Custom staff dashboards use ORM counts to explain saved data.
 - Django tests protect privacy, CRUD, imports, permissions, and account rules.
 - Environment settings, CSRF, escaping, permissions, and upload limits improve security.
-- Render deployment connects Git, Gunicorn, PostgreSQL, static files, and HTTPS.
+- Render deployment connects Git, Gunicorn, Neon PostgreSQL, static files, and HTTPS.
