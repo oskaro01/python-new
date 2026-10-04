@@ -237,3 +237,7 @@ That means Render’s personal-dictionary service only deploys changes inside th
 supa user >> 
 
 .\.venv\Scripts\python.exe my_python_work\web_practice\03_mini_checkout_lab\manage.py createsuperuser
+
+====
+.\.venv\Scripts\python.exe my_python_work\web_practice\03_mini_checkout_lab\manage.py runserver 8001
+====

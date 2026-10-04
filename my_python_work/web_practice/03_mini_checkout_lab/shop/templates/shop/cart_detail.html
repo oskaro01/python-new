@@ -43,7 +43,7 @@
         <h2>Cart total</h2>
         <strong class="cart-total">${{ cart_total|floatformat:2 }}</strong>
         <a class="button button-primary" href="{% url 'shop:checkout' %}">Checkout</a>
-        <a class="button button-primary" href="{% url 'shop:product_list' %}">Continue shopping</a>
+        <a class="button" href="{% url 'shop:product_list' %}">Continue shopping</a>
     </aside>
 </section>
 {% else %}

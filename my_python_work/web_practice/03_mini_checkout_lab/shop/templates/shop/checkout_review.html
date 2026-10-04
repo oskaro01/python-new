@@ -44,7 +44,7 @@
         <ul class="summary-list">
             {% for item in items %}
             <li>
-                <span>{{ item.product.name }} × {{ item.quantity }}</span>
+                <span>{{ item.product.name }} x {{ item.quantity }}</span>
                 <strong>${{ item.line_total|floatformat:2 }}</strong>
             </li>
             {% endfor %}
