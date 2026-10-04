@@ -500,6 +500,8 @@ Current checkpoint:
 Files:
 
 - `my_python_work/web_practice/03_mini_checkout_lab/README.md`
+- `my_python_work/web_practice/03_mini_checkout_lab/36_product_catalog/README.md`
+- `my_python_work/web_practice/03_mini_checkout_lab/37_session_cart/README.md`
 - `my_python_work/web_practice/03_mini_checkout_lab/manage.py`
 - `my_python_work/web_practice/03_mini_checkout_lab/shop/models.py`
 - `my_python_work/web_practice/03_mini_checkout_lab/shop/cart.py`

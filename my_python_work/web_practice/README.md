@@ -57,8 +57,10 @@ We learned web foundations first; now the Django lessons build on them:
 43. `02_django_basics/33_health_check_observability/`
 44. `02_django_basics/34_database_explorer/`
 45. `02_django_basics/35_project_review_cleanup/`
-46. `03_mini_checkout_lab/`
-47. `04_chat_lab/`
+46. `03_mini_checkout_lab/README.md`
+47. `03_mini_checkout_lab/36_product_catalog/README.md`
+48. `03_mini_checkout_lab/37_session_cart/README.md`
+49. `04_chat_lab/README.md`
 
 ## Django Run Helper
 
