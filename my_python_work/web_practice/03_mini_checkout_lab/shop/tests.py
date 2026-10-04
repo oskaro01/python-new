@@ -113,3 +113,58 @@ class ProductCatalogTests(TestCase):
 
         self.assertRedirects(response, reverse("shop:cart_detail"))
         self.assertEqual(self.client.session["cart"], {})
+
+    def test_checkout_redirects_when_cart_is_empty(self):
+        response = self.client.get(reverse("shop:checkout"))
+
+        self.assertRedirects(response, reverse("shop:cart_detail"))
+
+    def test_checkout_shows_customer_form_with_cart(self):
+        self.client.post(
+            reverse("shop:add_to_cart", kwargs={"product_id": self.active_product.pk}),
+        )
+
+        response = self.client.get(reverse("shop:checkout"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Customer details")
+        self.assertContains(response, "$12.50")
+
+    def test_invalid_checkout_data_returns_form_errors(self):
+        self.client.post(
+            reverse("shop:add_to_cart", kwargs={"product_id": self.active_product.pk}),
+        )
+
+        response = self.client.post(
+            reverse("shop:checkout_review"),
+            {"full_name": "", "email": "not-an-email"},
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertContains(response, "This field is required.", status_code=400)
+        self.assertContains(
+            response,
+            "Enter a valid email address.",
+            status_code=400,
+        )
+
+    def test_valid_checkout_shows_review_without_creating_order(self):
+        self.client.post(
+            reverse("shop:add_to_cart", kwargs={"product_id": self.active_product.pk}),
+        )
+
+        response = self.client.post(
+            reverse("shop:checkout_review"),
+            {
+                "full_name": "Ayzal Yohan",
+                "email": "ayzal@example.com",
+                "phone": "01700000000",
+                "notes": "Please leave at the front desk.",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Ayzal Yohan")
+        self.assertContains(response, "ayzal@example.com")
+        self.assertContains(response, "Review complete")
+        self.assertContains(response, "$12.50")

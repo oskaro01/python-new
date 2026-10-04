@@ -1,5 +1,7 @@
 """Session-cart helpers for the ecommerce learning lab."""
 
+from decimal import Decimal
+
 from .models import Product
 
 
@@ -57,6 +59,13 @@ def remove_product(request, product_id):
 
 def get_cart_count(request):
     return sum(get_cart_data(request).values())
+
+
+def get_cart_total(items):
+    return sum(
+        (item["line_total"] for item in items),
+        Decimal("0.00"),
+    )
 
 
 def get_cart_items(request):

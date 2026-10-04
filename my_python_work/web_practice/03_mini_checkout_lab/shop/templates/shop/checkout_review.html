@@ -1,0 +1,58 @@
+{% extends "shop/base.html" %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">Review</p>
+        <h1>Checkout review</h1>
+        <p class="muted">Confirm the details before the order workflow is added.</p>
+    </div>
+</div>
+
+<section class="checkout-layout">
+    <section class="checkout-panel">
+        <h2>Customer details</h2>
+        <dl class="review-details">
+            <div>
+                <dt>Full name</dt>
+                <dd>{{ customer.full_name }}</dd>
+            </div>
+            <div>
+                <dt>Email address</dt>
+                <dd>{{ customer.email }}</dd>
+            </div>
+            {% if customer.phone %}
+            <div>
+                <dt>Phone</dt>
+                <dd>{{ customer.phone }}</dd>
+            </div>
+            {% endif %}
+            {% if customer.notes %}
+            <div>
+                <dt>Order notes</dt>
+                <dd>{{ customer.notes|linebreaksbr }}</dd>
+            </div>
+            {% endif %}
+        </dl>
+        <p class="review-status">Review complete. No order or payment has been created yet.</p>
+        <a class="button" href="{% url 'shop:cart_detail' %}">Back to cart</a>
+    </section>
+
+    <aside class="checkout-summary">
+        <p class="eyebrow">Summary</p>
+        <h2>Your items</h2>
+        <ul class="summary-list">
+            {% for item in items %}
+            <li>
+                <span>{{ item.product.name }} × {{ item.quantity }}</span>
+                <strong>${{ item.line_total|floatformat:2 }}</strong>
+            </li>
+            {% endfor %}
+        </ul>
+        <div class="summary-total">
+            <span>Total</span>
+            <strong>${{ cart_total|floatformat:2 }}</strong>
+        </div>
+    </aside>
+</section>
+{% endblock %}

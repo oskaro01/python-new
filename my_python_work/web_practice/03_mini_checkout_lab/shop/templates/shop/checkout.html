@@ -1,0 +1,47 @@
+{% extends "shop/base.html" %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">Checkout</p>
+        <h1>Customer details</h1>
+        <p class="muted">Enter the details for this checkout review.</p>
+    </div>
+</div>
+
+<section class="checkout-layout">
+    <form method="post" action="{% url 'shop:checkout_review' %}" class="checkout-panel">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        {% for field in form %}
+        <div class="checkout-field">
+            {{ field.label_tag }}
+            {{ field }}
+            {% if field.help_text %}<p class="help-text">{{ field.help_text }}</p>{% endif %}
+            {{ field.errors }}
+        </div>
+        {% endfor %}
+        <div class="action-group checkout-actions">
+            <a class="button" href="{% url 'shop:cart_detail' %}">Back to cart</a>
+            <button class="button button-primary" type="submit">Review order</button>
+        </div>
+    </form>
+
+    <aside class="checkout-summary">
+        <p class="eyebrow">Summary</p>
+        <h2>Your items</h2>
+        <ul class="summary-list">
+            {% for item in items %}
+            <li>
+                <span>{{ item.product.name }} × {{ item.quantity }}</span>
+                <strong>${{ item.line_total|floatformat:2 }}</strong>
+            </li>
+            {% endfor %}
+        </ul>
+        <div class="summary-total">
+            <span>Total</span>
+            <strong>${{ cart_total|floatformat:2 }}</strong>
+        </div>
+    </aside>
+</section>
+{% endblock %}
