@@ -598,6 +598,7 @@ To learn:
 - [ ] Import/export CSV or JSON
 - [ ] Review/practice mode
 - [ ] Optional mini checkout lab for cart/order/shipping/payment concepts
+- [ ] Optional chat lab for conversations, messages, permissions, and WebSockets
 - [ ] Receipt emails
 - [ ] Admin dashboard
 - [ ] CSV exports
@@ -614,6 +615,7 @@ Optional later web project:
 
 - [x] Start `mini_checkout_lab` with a separate product catalog
 - [ ] Continue `mini_checkout_lab` with cart, checkout, shipping, orders, and fake payment
+- [ ] Build `chat_lab` with private conversations and messages
 - [ ] Build `django_marketplace` only if ecommerce becomes useful again
 
 Key lesson:
@@ -627,6 +629,9 @@ mini_checkout_lab
 ```
 
 That lab covers cart, checkout, shipping address, orders, payment status, and receipt email without making the dictionary app heavy.
+
+The future `chat_lab` will cover private conversations, messages,
+participant permissions, unread state, moderation basics, and WebSockets later.
 
 ## Learning Queue For Later
 
@@ -649,6 +654,7 @@ Practical queue:
 - [ ] Learn Django after OOP, design patterns, and ultimate review
 - [ ] Build Django `django_dictionary`
 - [ ] Build `mini_checkout_lab` later for checkout/payment concepts
+- [ ] Build `chat_lab` later for messaging concepts
 - [ ] Keep full ecommerce marketplace as optional later
 
 DS&A queue:
@@ -748,6 +754,7 @@ Long-term checkpoints:
 - [ ] Learn Django full-stack web development
 - [ ] Build and deploy a Python dictionary web app
 - [ ] Build a tiny checkout lab for ecommerce-specific systems
+- [ ] Build a small chat lab for user-to-user messaging
 
 ## Motivation Note
 

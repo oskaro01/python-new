@@ -535,6 +535,51 @@ You are ready to move on when:
 - You understand why payment confirmation must happen server-side.
 - You know how shipping/payment concepts map to database models.
 
+## Phase 8.75: Optional Chat Lab
+
+Goal: learn private messaging without making the dictionary or checkout
+projects carry social features they do not need.
+
+Project:
+
+```text
+chat_lab
+```
+
+Status: planned, not started.
+
+Files:
+
+- `my_python_work/web_practice/04_chat_lab/README.md`
+
+Learn:
+
+- User search
+- Conversation and message models
+- Conversation participants
+- Inbox and message history
+- Participant-only permissions
+- Read and unread state
+- Pagination and basic message search
+- Block/report and moderation basics
+- Tests and security review
+- Django Channels and WebSockets later
+
+Practice:
+
+- Start with ordinary Django forms and requests.
+- Allow two users to create a private conversation.
+- Show only conversations where the current user participates.
+- Add unread counts and mark messages as read.
+- Add real-time delivery only after the normal workflow is correct.
+
+You are ready to move on when:
+
+- You can explain who is allowed to read each message.
+- You can distinguish a conversation from an individual message.
+- You understand why WebSockets are an additional layer, not a replacement
+  for good database permissions.
+
 ## Phase 9: Email
 
 Goal: send useful transactional emails.
@@ -811,6 +856,24 @@ Teaches:
 - receipt email
 
 This keeps the main road light while still covering the business systems a dictionary app does not naturally need.
+
+Optional messaging lab:
+
+```text
+chat_lab
+```
+
+Teaches:
+
+- conversations
+- messages
+- participant permissions
+- unread state
+- moderation basics
+- WebSockets later
+
+This keeps social features separate from the focused dictionary and checkout
+projects.
 
 ## Optional Ecommerce Project Later
 
