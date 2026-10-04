@@ -503,6 +503,7 @@ Files:
 - `my_python_work/web_practice/03_mini_checkout_lab/36_product_catalog/README.md`
 - `my_python_work/web_practice/03_mini_checkout_lab/37_session_cart/README.md`
 - `my_python_work/web_practice/03_mini_checkout_lab/38_checkout_form/README.md`
+- `my_python_work/web_practice/03_mini_checkout_lab/39_orders_and_items/README.md`
 - `my_python_work/web_practice/03_mini_checkout_lab/manage.py`
 - `my_python_work/web_practice/03_mini_checkout_lab/shop/models.py`
 - `my_python_work/web_practice/03_mini_checkout_lab/shop/cart.py`
@@ -515,6 +516,9 @@ Learn:
 - Session cart
 - Server-side quantity and stock validation
 - Checkout form and review step
+- Order and order-item models
+- Historical price snapshots
+- Transactional order creation
 - Shipping address
 - Billing address
 - Order model
@@ -533,6 +537,7 @@ Practice:
 - Add, update, and remove items from a session cart.
 - Change stock in Admin and verify the cart cannot exceed current stock.
 - Validate customer details and review the current cart.
+- Place a pending order and inspect its item snapshots in Admin.
 - Convert cart items into an order.
 - Save shipping/contact details.
 - Mark an order as pending/paid/cancelled.

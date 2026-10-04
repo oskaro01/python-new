@@ -616,6 +616,7 @@ Optional later web project:
 - [x] Start `mini_checkout_lab` with a separate product catalog
 - [x] Add a session-based cart to `mini_checkout_lab`
 - [x] Add a validated checkout form and review step
+- [x] Create pending orders with historical order-item snapshots
 - [ ] Continue `mini_checkout_lab` with cart, checkout, shipping, orders, and fake payment
 - [ ] Build `chat_lab` with private conversations and messages
 - [ ] Build `django_marketplace` only if ecommerce becomes useful again

@@ -1,0 +1,40 @@
+{% extends "shop/base.html" %}
+
+{% block content %}
+<section class="success-panel">
+    <p class="eyebrow">Order received</p>
+    <h1>Order #{{ order.id }} placed</h1>
+    <p class="muted">Your order is pending. Payment has not been processed.</p>
+
+    <dl class="review-details">
+        <div>
+            <dt>Customer</dt>
+            <dd>{{ order.full_name }}</dd>
+        </div>
+        <div>
+            <dt>Email address</dt>
+            <dd>{{ order.email }}</dd>
+        </div>
+        <div>
+            <dt>Status</dt>
+            <dd>{{ order.get_status_display }}</dd>
+        </div>
+    </dl>
+
+    <div class="order-items">
+        <h2>Items</h2>
+        {% for item in order.items.all %}
+        <div class="order-item-row">
+            <span>{{ item.product_name }} x {{ item.quantity }}</span>
+            <strong>${{ item.line_total|floatformat:2 }}</strong>
+        </div>
+        {% endfor %}
+        <div class="summary-total">
+            <span>Total</span>
+            <strong>${{ order.total_amount|floatformat:2 }}</strong>
+        </div>
+    </div>
+
+    <a class="button button-primary" href="{% url 'shop:product_list' %}">Continue shopping</a>
+</section>
+{% endblock %}

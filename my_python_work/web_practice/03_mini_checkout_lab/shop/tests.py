@@ -3,7 +3,7 @@ from decimal import Decimal
 from django.test import TestCase
 from django.urls import reverse
 
-from .models import Product
+from .models import Order, OrderItem, Product
 
 
 class ProductCatalogTests(TestCase):
@@ -166,5 +166,73 @@ class ProductCatalogTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Ayzal Yohan")
         self.assertContains(response, "ayzal@example.com")
-        self.assertContains(response, "Review complete")
+        self.assertContains(response, "pending order")
+        self.assertContains(response, "Place order")
         self.assertContains(response, "$12.50")
+        self.assertEqual(Order.objects.count(), 0)
+
+    def test_place_order_creates_order_items_and_clears_cart(self):
+        self.client.post(
+            reverse("shop:add_to_cart", kwargs={"product_id": self.active_product.pk}),
+        )
+        self.client.post(
+            reverse("shop:checkout_review"),
+            {
+                "full_name": "Ayzal Yohan",
+                "email": "ayzal@example.com",
+                "phone": "",
+                "notes": "",
+            },
+        )
+
+        response = self.client.post(reverse("shop:place_order"))
+
+        order = Order.objects.get()
+        item = OrderItem.objects.get(order=order)
+        self.assertRedirects(
+            response,
+            reverse("shop:order_success", kwargs={"order_id": order.pk}),
+        )
+        self.assertEqual(order.status, Order.PENDING)
+        self.assertEqual(order.total_amount, Decimal("12.50"))
+        self.assertEqual(item.product_name, "Canvas Tote")
+        self.assertEqual(item.unit_price, Decimal("12.50"))
+        self.assertEqual(item.quantity, 1)
+        self.assertEqual(item.line_total, Decimal("12.50"))
+        self.assertNotIn("cart", self.client.session)
+        self.assertNotIn("checkout_customer", self.client.session)
+
+    def test_order_item_keeps_price_snapshot(self):
+        self.client.post(
+            reverse("shop:add_to_cart", kwargs={"product_id": self.active_product.pk}),
+        )
+        self.client.post(
+            reverse("shop:checkout_review"),
+            {
+                "full_name": "Ayzal Yohan",
+                "email": "ayzal@example.com",
+                "phone": "",
+                "notes": "",
+            },
+        )
+        self.client.post(reverse("shop:place_order"))
+
+        self.active_product.price = Decimal("20.00")
+        self.active_product.save(update_fields=["price", "updated_at"])
+
+        item = OrderItem.objects.get()
+        self.assertEqual(item.unit_price, Decimal("12.50"))
+        self.assertEqual(item.line_total, Decimal("12.50"))
+
+    def test_order_success_requires_the_current_session(self):
+        order = Order.objects.create(
+            full_name="Someone Else",
+            email="other@example.com",
+            total_amount=Decimal("0.00"),
+        )
+
+        response = self.client.get(
+            reverse("shop:order_success", kwargs={"order_id": order.pk}),
+        )
+
+        self.assertEqual(response.status_code, 404)

@@ -421,6 +421,27 @@ textarea:focus {
     background: rgba(255, 155, 47, 0.12);
     color: #ffe2b1;
 }
+.success-panel {
+    max-width: 720px;
+    padding: 32px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: rgba(21, 24, 37, 0.94);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22);
+}
+
+.success-panel h1 { margin-bottom: 8px; }
+.order-items { margin: 26px 0; }
+.order-items h2 { margin-bottom: 12px; }
+.order-item-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+    color: var(--muted);
+}
+.order-item-row strong { color: var(--text); }
 
 @media (max-width: 720px) {
     .header-inner {
@@ -441,4 +462,5 @@ textarea:focus {
     .cart-row { align-items: flex-start; flex-direction: column; }
     .cart-actions { justify-content: flex-start; }
     .checkout-panel { padding: 22px; }
+    .success-panel { padding: 24px; }
 }

@@ -8,7 +8,7 @@ Personal Dictionary app.
 1. [Lesson 36: Product Catalog](36_product_catalog/README.md)
 2. [Lesson 37: Session Cart](37_session_cart/README.md)
 3. [Lesson 38: Checkout Form](38_checkout_form/README.md)
-4. Lesson 39: Orders and Order Items, planned
+4. [Lesson 39: Orders and Order Items](39_orders_and_items/README.md)
 5. Lesson 40: Shipping and Contact Details, planned
 6. Lesson 41: Fake Payment Status, planned
 7. Lesson 42: Receipt Email, planned
@@ -32,6 +32,7 @@ checkpoint at a time.
         views.py
         cart.py
         forms.py
+        migrations/
         admin.py
         tests.py
 ```

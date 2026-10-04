@@ -104,4 +104,5 @@ You understand:
 
 ## Next Lesson
 
-Lesson 39 will introduce `Order` and `OrderItem` database models.
+[Lesson 39: Orders And Order Items](../39_orders_and_items/README.md) will
+introduce `Order` and `OrderItem` database models.

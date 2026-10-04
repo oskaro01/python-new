@@ -5,7 +5,7 @@
     <div>
         <p class="eyebrow">Review</p>
         <h1>Checkout review</h1>
-        <p class="muted">Confirm the details before the order workflow is added.</p>
+        <p class="muted">Confirm the details before placing this pending order.</p>
     </div>
 </div>
 
@@ -34,8 +34,14 @@
             </div>
             {% endif %}
         </dl>
-        <p class="review-status">Review complete. No order or payment has been created yet.</p>
-        <a class="button" href="{% url 'shop:cart_detail' %}">Back to cart</a>
+        <p class="review-status">This creates a pending order. Payment is not processed yet.</p>
+        <div class="action-group">
+            <a class="button" href="{% url 'shop:cart_detail' %}">Back to cart</a>
+            <form method="post" action="{% url 'shop:place_order' %}">
+                {% csrf_token %}
+                <button class="button button-primary" type="submit">Place order</button>
+            </form>
+        </div>
     </section>
 
     <aside class="checkout-summary">

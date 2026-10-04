@@ -1,18 +1,25 @@
 """Public product catalog views."""
 
 from django.contrib import messages
+from django.db import transaction
+from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_GET, require_POST
 
 from .cart import (
     add_product,
+    CART_SESSION_KEY,
     get_cart_items,
     get_cart_total,
     remove_product,
     update_product,
 )
 from .forms import CheckoutForm
-from .models import Product
+from .models import Order, OrderItem, Product
+
+
+CHECKOUT_SESSION_KEY = "checkout_customer"
+LAST_ORDER_SESSION_KEY = "last_order_id"
 
 
 @require_GET
@@ -96,6 +103,9 @@ def checkout_review(request):
             status=400,
         )
 
+    request.session[CHECKOUT_SESSION_KEY] = form.cleaned_data
+    request.session.modified = True
+
     # Reload the cart before displaying the review so totals come from current
     # database prices and stock, never from browser-submitted values.
     items = get_cart_items(request)
@@ -111,6 +121,68 @@ def checkout_review(request):
             "customer": form.cleaned_data,
             "items": items,
             "cart_total": get_cart_total(items),
+        },
+    )
+
+
+@require_POST
+def place_order(request):
+    checkout_data = request.session.get(CHECKOUT_SESSION_KEY, {})
+    form = CheckoutForm(checkout_data)
+    if not form.is_valid():
+        messages.info(request, "Please enter your checkout details again.")
+        return redirect("shop:checkout")
+
+    items = get_cart_items(request)
+    if not items:
+        messages.info(request, "Your cart is empty.")
+        return redirect("shop:cart_detail")
+
+    cart_total = get_cart_total(items)
+    with transaction.atomic():
+        order = Order.objects.create(
+            full_name=form.cleaned_data["full_name"],
+            email=form.cleaned_data["email"],
+            phone=form.cleaned_data["phone"],
+            notes=form.cleaned_data["notes"],
+            total_amount=cart_total,
+        )
+        OrderItem.objects.bulk_create(
+            [
+                OrderItem(
+                    order=order,
+                    product=item["product"],
+                    product_name=item["product"].name,
+                    unit_price=item["product"].price,
+                    quantity=item["quantity"],
+                    line_total=item["line_total"],
+                )
+                for item in items
+            ]
+        )
+
+    request.session.pop(CART_SESSION_KEY, None)
+    request.session.pop(CHECKOUT_SESSION_KEY, None)
+    request.session[LAST_ORDER_SESSION_KEY] = order.pk
+    request.session.modified = True
+    return redirect("shop:order_success", order_id=order.pk)
+
+
+@require_GET
+def order_success(request, order_id):
+    if request.session.get(LAST_ORDER_SESSION_KEY) != order_id:
+        raise Http404
+
+    order = get_object_or_404(
+        Order.objects.prefetch_related("items"),
+        pk=order_id,
+    )
+    return render(
+        request,
+        "shop/order_success.html",
+        {
+            "title": "Order placed",
+            "order": order,
         },
     )
 
