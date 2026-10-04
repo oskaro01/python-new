@@ -493,20 +493,24 @@ Current checkpoint:
 - `Product` model and first migration
 - Django Admin product management
 - Active/inactive catalog visibility
-- Basic catalog tests
+- Session cart with add/update/remove
+- Server-side stock and price checks
+- Catalog and cart tests
 
 Files:
 
 - `my_python_work/web_practice/03_mini_checkout_lab/README.md`
 - `my_python_work/web_practice/03_mini_checkout_lab/manage.py`
 - `my_python_work/web_practice/03_mini_checkout_lab/shop/models.py`
+- `my_python_work/web_practice/03_mini_checkout_lab/shop/cart.py`
 - `my_python_work/web_practice/03_mini_checkout_lab/shop/views.py`
 - `my_python_work/web_practice/03_mini_checkout_lab/shop/migrations/0001_initial.py`
 
 Learn:
 
 - Product catalog
-- Cart
+- Session cart
+- Server-side quantity and stock validation
 - Checkout form
 - Shipping address
 - Billing address
@@ -523,7 +527,8 @@ Practice:
 - Create products in Django Admin.
 - Browse active products on the public catalog.
 - Mark a product inactive and verify that customers cannot see it.
-- Add simple items to a cart.
+- Add, update, and remove items from a session cart.
+- Change stock in Admin and verify the cart cannot exceed current stock.
 - Convert cart items into an order.
 - Save shipping/contact details.
 - Mark an order as pending/paid/cancelled.

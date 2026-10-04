@@ -1,0 +1,55 @@
+{% extends "shop/base.html" %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">Session cart</p>
+        <h1>Your Cart</h1>
+        <p class="muted">Review the products saved for this browser session.</p>
+    </div>
+</div>
+
+{% if items %}
+<section class="cart-layout" aria-label="Shopping cart">
+    <div class="cart-panel">
+        {% for item in items %}
+        <article class="cart-row">
+            <div class="cart-product">
+                <span class="product-mark">{{ item.product.name|first|upper }}</span>
+                <div>
+                    <h2><a href="{% url 'shop:product_detail' item.product.slug %}">{{ item.product.name }}</a></h2>
+                    <p class="muted">${{ item.product.price|floatformat:2 }} each</p>
+                </div>
+            </div>
+            <div class="cart-actions">
+                <form method="post" action="{% url 'shop:update_cart' item.product.id %}" class="quantity-form">
+                    {% csrf_token %}
+                    <label for="quantity-{{ item.product.id }}">Quantity</label>
+                    <input id="quantity-{{ item.product.id }}" name="quantity" type="number" min="0" max="{{ item.product.stock }}" value="{{ item.quantity }}">
+                    <button class="button" type="submit">Update</button>
+                </form>
+                <strong class="line-total">${{ item.line_total|floatformat:2 }}</strong>
+                <form method="post" action="{% url 'shop:remove_from_cart' item.product.id %}">
+                    {% csrf_token %}
+                    <button class="button button-danger" type="submit">Remove</button>
+                </form>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+
+    <aside class="cart-summary">
+        <p class="eyebrow">Summary</p>
+        <h2>Cart total</h2>
+        <strong class="cart-total">${{ cart_total|floatformat:2 }}</strong>
+        <a class="button button-primary" href="{% url 'shop:product_list' %}">Continue shopping</a>
+    </aside>
+</section>
+{% else %}
+<section class="empty-state">
+    <h2>Your cart is empty</h2>
+    <p class="muted">Add a product from the catalog to begin.</p>
+    <a class="button button-primary" href="{% url 'shop:product_list' %}">Browse products</a>
+</section>
+{% endif %}
+{% endblock %}

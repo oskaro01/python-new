@@ -25,7 +25,15 @@
         <p class="product-description">{{ product.description|truncatewords:22 }}</p>
         <div class="product-card-bottom">
             <strong class="price">${{ product.price|floatformat:2 }}</strong>
-            <a class="button" href="{% url 'shop:product_detail' product.slug %}">View details</a>
+            <div class="action-group">
+                <a class="button" href="{% url 'shop:product_detail' product.slug %}">View details</a>
+                {% if product.stock %}
+                <form method="post" action="{% url 'shop:add_to_cart' product.id %}">
+                    {% csrf_token %}
+                    <button class="button button-primary" type="submit">Add</button>
+                </form>
+                {% endif %}
+            </div>
         </div>
     </article>
     {% endfor %}

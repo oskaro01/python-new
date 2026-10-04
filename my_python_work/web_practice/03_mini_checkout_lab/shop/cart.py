@@ -1,0 +1,93 @@
+"""Session-cart helpers for the ecommerce learning lab."""
+
+from .models import Product
+
+
+CART_SESSION_KEY = "cart"
+
+
+def get_cart_data(request):
+    raw_cart = request.session.get(CART_SESSION_KEY, {})
+    if not isinstance(raw_cart, dict):
+        return {}
+
+    cart = {}
+    for product_id, quantity in raw_cart.items():
+        try:
+            quantity = int(quantity)
+        except (TypeError, ValueError):
+            continue
+
+        if quantity > 0:
+            cart[str(product_id)] = quantity
+
+    return cart
+
+
+def save_cart(request, cart):
+    request.session[CART_SESSION_KEY] = cart
+    request.session.modified = True
+
+
+def add_product(request, product, quantity=1):
+    cart = get_cart_data(request)
+    product_id = str(product.pk)
+    current_quantity = cart.get(product_id, 0)
+    cart[product_id] = min(current_quantity + quantity, product.stock)
+    save_cart(request, cart)
+
+
+def update_product(request, product, quantity):
+    cart = get_cart_data(request)
+    product_id = str(product.pk)
+
+    if quantity <= 0 or product.stock <= 0:
+        cart.pop(product_id, None)
+    else:
+        cart[product_id] = min(quantity, product.stock)
+
+    save_cart(request, cart)
+
+
+def remove_product(request, product_id):
+    cart = get_cart_data(request)
+    cart.pop(str(product_id), None)
+    save_cart(request, cart)
+
+
+def get_cart_count(request):
+    return sum(get_cart_data(request).values())
+
+
+def get_cart_items(request):
+    cart = get_cart_data(request)
+    if not cart:
+        return []
+
+    products = Product.objects.filter(
+        pk__in=cart.keys(),
+        is_active=True,
+    )
+    products_by_id = {str(product.pk): product for product in products}
+    cleaned_cart = {}
+    items = []
+
+    for product_id, requested_quantity in cart.items():
+        product = products_by_id.get(product_id)
+        if product is None or product.stock <= 0:
+            continue
+
+        quantity = min(requested_quantity, product.stock)
+        cleaned_cart[product_id] = quantity
+        items.append(
+            {
+                "product": product,
+                "quantity": quantity,
+                "line_total": product.price * quantity,
+            }
+        )
+
+    if cleaned_cart != cart:
+        save_cart(request, cleaned_cart)
+
+    return items

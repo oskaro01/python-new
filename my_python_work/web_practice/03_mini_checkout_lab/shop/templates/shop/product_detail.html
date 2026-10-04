@@ -17,6 +17,12 @@
             <span class="stock stock-empty">Currently unavailable</span>
             {% endif %}
         </div>
+        {% if product.stock %}
+        <form method="post" action="{% url 'shop:add_to_cart' product.id %}" class="detail-action">
+            {% csrf_token %}
+            <button class="button button-primary" type="submit">Add to cart</button>
+        </form>
+        {% endif %}
     </div>
 </article>
 {% endblock %}

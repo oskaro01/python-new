@@ -13,12 +13,20 @@
             <a class="brand" href="{% url 'shop:product_list' %}">Mini Checkout Lab</a>
             <nav aria-label="Main navigation">
                 <a href="{% url 'shop:product_list' %}">Products</a>
+                <a href="{% url 'shop:cart_detail' %}">Cart ({{ cart_count }})</a>
                 <a href="/admin/">Admin</a>
             </nav>
         </div>
     </header>
 
     <main class="page-shell">
+        {% if messages %}
+        <div class="messages" aria-live="polite">
+            {% for message in messages %}
+            <p class="notice notice-{{ message.tags }}">{{ message }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
         {% block content %}{% endblock %}
     </main>
 </body>

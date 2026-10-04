@@ -126,7 +126,7 @@ For the next lesson, I’ll keep it tight.
   note:  lesson, 20 ,,,remove the break-marker =, and open it
 
 
-  ===
+====
 
   Same repository does not mean same project or same database.
 python-new/                         Git repository
@@ -225,3 +225,15 @@ with its own database, or a customer-support chat inside the ecommerce project.
 So the clean path is:
 Dictionary -> Ecommerce Checkout -> Chat/Messaging Lab
 The dictionary stays focused, while we still learn how a real messaging
+
+
+====
+Great question. Pushing the new lab will not replace or break the live dictionary app.
+Your current render.yaml says:
+rootDir: my_python_work/web_practice/02_django_basics/02_first_django_project
+That means Render’s personal-dictionary service only deploys changes inside the dictionary folder.
+
+====
+supa user >> 
+
+.\.venv\Scripts\python.exe my_python_work\web_practice\03_mini_checkout_lab\manage.py createsuperuser
