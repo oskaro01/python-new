@@ -1,7 +1,7 @@
 {% extends "shop/base.html" %}
 
 {% block content %}
-<a class="back-link" href="{% url 'shop:product_list' %}">Back to products</a>
+<a class="back-link" href="{% url 'shop:product_list' %}">&larr; Back to products</a>
 
 <article class="detail-panel">
     <div class="detail-mark">{{ product.name|first|upper }}</div>
@@ -18,10 +18,14 @@
             {% endif %}
         </div>
         {% if product.stock %}
-        <form method="post" action="{% url 'shop:add_to_cart' product.id %}" class="detail-action">
-            {% csrf_token %}
-            <button class="button button-primary" type="submit">Add to cart</button>
-        </form>
+        <div class="detail-actions">
+            <form method="post" action="{% url 'shop:add_to_cart' product.id %}" class="detail-action js-add-to-cart">
+                {% csrf_token %}
+                <input type="hidden" name="return_to" value="detail">
+                <button class="button button-primary" type="submit">Add to cart</button>
+            </form>
+            <a class="button detail-cart-link" href="{% url 'shop:cart_detail' %}">Go to cart</a>
+        </div>
         {% endif %}
     </div>
 </article>

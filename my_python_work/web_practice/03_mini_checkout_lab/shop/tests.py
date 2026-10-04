@@ -54,14 +54,28 @@ class ProductCatalogTests(TestCase):
 
         self.assertRedirects(
             response,
-            reverse(
-                "shop:product_detail",
-                kwargs={"slug": self.active_product.slug},
-            ),
+            reverse("shop:product_list"),
         )
         self.assertEqual(
             self.client.session["cart"],
             {str(self.active_product.pk): 1},
+        )
+
+    def test_ajax_add_to_cart_returns_json_without_redirecting(self):
+        response = self.client.post(
+            reverse("shop:add_to_cart", kwargs={"product_id": self.active_product.pk}),
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+            HTTP_ACCEPT="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "ok": True,
+                "message": "Canvas Tote was added to your cart.",
+                "cart_count": 1,
+            },
         )
 
     def test_cart_update_is_limited_by_current_stock(self):

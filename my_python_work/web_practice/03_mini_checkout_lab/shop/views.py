@@ -2,7 +2,7 @@
 
 from django.contrib import messages
 from django.db import transaction
-from django.http import Http404
+from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_GET, require_POST
 
@@ -10,6 +10,7 @@ from .cart import (
     add_product,
     CART_SESSION_KEY,
     get_cart_items,
+    get_cart_count,
     get_cart_total,
     remove_product,
     update_product,
@@ -190,14 +191,28 @@ def order_success(request, order_id):
 @require_POST
 def add_to_cart(request, product_id):
     product = get_object_or_404(Product, pk=product_id, is_active=True)
+    wants_json = request.headers.get("X-Requested-With") == "XMLHttpRequest"
 
     if product.stock <= 0:
-        messages.error(request, f"{product.name} is out of stock.")
+        message = f"{product.name} is out of stock."
+        if wants_json:
+            return JsonResponse(
+                {"ok": False, "message": message, "cart_count": get_cart_count(request)},
+                status=400,
+            )
+        messages.error(request, message)
     else:
         add_product(request, product)
-        messages.success(request, f"{product.name} was added to your cart.")
+        message = f"{product.name} was added to your cart."
+        if wants_json:
+            return JsonResponse(
+                {"ok": True, "message": message, "cart_count": get_cart_count(request)},
+            )
+        messages.success(request, message)
 
-    return redirect("shop:product_detail", slug=product.slug)
+    if request.POST.get("return_to") == "detail":
+        return redirect("shop:product_detail", slug=product.slug)
+    return redirect("shop:product_list")
 
 
 @require_POST

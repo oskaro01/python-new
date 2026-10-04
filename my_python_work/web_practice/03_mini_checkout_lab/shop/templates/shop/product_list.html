@@ -28,8 +28,9 @@
             <div class="action-group">
                 <a class="button" href="{% url 'shop:product_detail' product.slug %}">View details</a>
                 {% if product.stock %}
-                <form method="post" action="{% url 'shop:add_to_cart' product.id %}">
+                <form method="post" action="{% url 'shop:add_to_cart' product.id %}" class="js-add-to-cart">
                     {% csrf_token %}
+                    <input type="hidden" name="return_to" value="catalog">
                     <button class="button button-primary" type="submit">Add</button>
                 </form>
                 {% endif %}

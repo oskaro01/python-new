@@ -13,7 +13,7 @@
             <a class="brand" href="{% url 'shop:product_list' %}">Mini Checkout Lab</a>
             <nav aria-label="Main navigation">
                 <a href="{% url 'shop:product_list' %}">Products</a>
-                <a href="{% url 'shop:cart_detail' %}">Cart ({{ cart_count }})</a>
+                <a href="{% url 'shop:cart_detail' %}">Cart (<span class="cart-count">{{ cart_count }}</span>)</a>
                 <a href="/admin/">Admin</a>
             </nav>
         </div>
@@ -29,5 +29,7 @@
         {% endif %}
         {% block content %}{% endblock %}
     </main>
+    <div class="toast-stack" aria-live="polite" aria-atomic="true"></div>
+    <script src="{% static 'shop/shop.js' %}"></script>
 </body>
 </html>
