@@ -193,6 +193,22 @@ def order_success(request, order_id):
 
 
 @require_POST
+def simulate_payment(request, order_id):
+    if request.session.get(LAST_ORDER_SESSION_KEY) != order_id:
+        raise Http404
+
+    order = get_object_or_404(Order, pk=order_id)
+    if order.payment_status == Order.PAYMENT_PENDING:
+        order.payment_status = Order.PAYMENT_PAID
+        order.save(update_fields=["payment_status", "updated_at"])
+        messages.success(request, "Demo payment marked as paid.")
+    else:
+        messages.info(request, "This order already has a payment result.")
+
+    return redirect("shop:order_success", order_id=order.pk)
+
+
+@require_POST
 def add_to_cart(request, product_id):
     product = get_object_or_404(Product, pk=product_id, is_active=True)
     wants_json = request.headers.get("X-Requested-With") == "XMLHttpRequest"

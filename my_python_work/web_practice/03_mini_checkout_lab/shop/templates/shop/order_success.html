@@ -8,7 +8,11 @@
     <div class="success-panel">
         <p class="eyebrow">Order received</p>
         <h1>Order #{{ order.id }} placed</h1>
+        {% if order.payment_status == "paid" %}
+        <p class="muted">Your demo payment has been recorded. The order is still pending fulfillment.</p>
+        {% else %}
         <p class="muted">Your order is pending. Payment has not been processed.</p>
+        {% endif %}
 
         <dl class="review-details">
             <div>
@@ -19,10 +23,14 @@
                 <dt>Email address</dt>
                 <dd>{{ order.email }}</dd>
             </div>
-        <div>
-            <dt>Status</dt>
-            <dd>{{ order.get_status_display }}</dd>
-        </div>
+            <div>
+                <dt>Order status</dt>
+                <dd>{{ order.get_status_display }}</dd>
+            </div>
+            <div>
+                <dt>Payment status</dt>
+                <dd>{{ order.get_payment_status_display }}</dd>
+            </div>
         <div>
             <dt>Shipping address</dt>
             <dd>
@@ -31,7 +39,14 @@
                 {{ order.shipping_country }}
             </dd>
         </div>
-    </dl>
+        </dl>
+
+        {% if order.payment_status == "pending" %}
+        <form method="post" action="{% url 'shop:simulate_payment' order.id %}" class="payment-actions">
+            {% csrf_token %}
+            <button class="button button-primary" type="submit">Simulate successful payment</button>
+        </form>
+        {% endif %}
 
         <div class="order-items">
             <h2>Items</h2>

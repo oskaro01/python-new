@@ -747,6 +747,14 @@ textarea:focus {
     font-weight: 700;
 }
 
+.payment-actions {
+    margin: 20px 0 0;
+}
+
+.payment-actions .button {
+    width: 100%;
+}
+
 .success-panel > .button {
     width: 100%;
     border-color: #202020;

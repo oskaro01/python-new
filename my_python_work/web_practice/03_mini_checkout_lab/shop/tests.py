@@ -216,6 +216,7 @@ class ProductCatalogTests(TestCase):
             reverse("shop:order_success", kwargs={"order_id": order.pk}),
         )
         self.assertEqual(order.status, Order.PENDING)
+        self.assertEqual(order.payment_status, Order.PAYMENT_PENDING)
         self.assertEqual(order.total_amount, Decimal("12.50"))
         self.assertEqual(order.shipping_address, "12 River Road")
         self.assertEqual(order.shipping_city, "Dhaka")
@@ -227,6 +228,38 @@ class ProductCatalogTests(TestCase):
         self.assertEqual(item.line_total, Decimal("12.50"))
         self.assertNotIn("cart", self.client.session)
         self.assertNotIn("checkout_customer", self.client.session)
+
+    def test_simulate_payment_marks_current_order_paid(self):
+        self.client.post(
+            reverse("shop:add_to_cart", kwargs={"product_id": self.active_product.pk}),
+        )
+        self.client.post(
+            reverse("shop:checkout_review"),
+            {
+                "full_name": "Ayzal Yohan",
+                "email": "ayzal@example.com",
+                "phone": "",
+                "shipping_address": "12 River Road",
+                "shipping_city": "Dhaka",
+                "shipping_postal_code": "1205",
+                "shipping_country": "Bangladesh",
+                "notes": "",
+            },
+        )
+        self.client.post(reverse("shop:place_order"))
+        order = Order.objects.get()
+
+        response = self.client.post(
+            reverse("shop:simulate_payment", kwargs={"order_id": order.pk}),
+        )
+
+        self.assertRedirects(
+            response,
+            reverse("shop:order_success", kwargs={"order_id": order.pk}),
+        )
+        order.refresh_from_db()
+        self.assertEqual(order.payment_status, Order.PAYMENT_PAID)
+        self.assertEqual(order.status, Order.PENDING)
 
     def test_order_item_keeps_price_snapshot(self):
         self.client.post(

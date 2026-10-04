@@ -93,5 +93,5 @@ You understand:
 
 ## Next Lesson
 
-Lesson 41 will add a fake payment status flow without connecting to a real
+Lesson 41 adds a fake payment status flow without connecting to a real
 payment provider.
