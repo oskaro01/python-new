@@ -32,7 +32,12 @@ class OrderItemInline(admin.TabularInline):
 class OrderAdmin(admin.ModelAdmin):
     list_display = ("id", "full_name", "email", "status", "total_amount", "created_at")
     list_filter = ("status", "created_at")
-    search_fields = ("full_name", "email")
+    search_fields = (
+        "full_name",
+        "email",
+        "shipping_city",
+        "shipping_postal_code",
+    )
     readonly_fields = ("created_at", "updated_at", "total_amount")
     inlines = [OrderItemInline]
     ordering = ("-created_at",)

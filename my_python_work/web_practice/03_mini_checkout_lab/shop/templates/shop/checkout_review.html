@@ -27,6 +27,14 @@
                 <dd>{{ customer.phone }}</dd>
             </div>
             {% endif %}
+            <div>
+                <dt>Shipping address</dt>
+                <dd>
+                    {{ customer.shipping_address }}<br>
+                    {{ customer.shipping_city }}, {{ customer.shipping_postal_code }}<br>
+                    {{ customer.shipping_country }}
+                </dd>
+            </div>
             {% if customer.notes %}
             <div>
                 <dt>Order notes</dt>

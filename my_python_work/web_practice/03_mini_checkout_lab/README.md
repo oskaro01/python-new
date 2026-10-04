@@ -9,7 +9,7 @@ Personal Dictionary app.
 2. [Lesson 37: Session Cart](37_session_cart/README.md)
 3. [Lesson 38: Checkout Form](38_checkout_form/README.md)
 4. [Lesson 39: Orders and Order Items](39_orders_and_items/README.md)
-5. Lesson 40: Shipping and Contact Details, planned
+5. [Lesson 40: Shipping and Contact Details](40_shipping_contact_details/README.md)
 6. Lesson 41: Fake Payment Status, planned
 7. Lesson 42: Receipt Email, planned
 8. Lesson 43: Tests, Security, and Deployment, planned

@@ -173,6 +173,10 @@ class ProductCatalogTests(TestCase):
                 "full_name": "Ayzal Yohan",
                 "email": "ayzal@example.com",
                 "phone": "01700000000",
+                "shipping_address": "12 River Road",
+                "shipping_city": "Dhaka",
+                "shipping_postal_code": "1205",
+                "shipping_country": "Bangladesh",
                 "notes": "Please leave at the front desk.",
             },
         )
@@ -195,6 +199,10 @@ class ProductCatalogTests(TestCase):
                 "full_name": "Ayzal Yohan",
                 "email": "ayzal@example.com",
                 "phone": "",
+                "shipping_address": "12 River Road",
+                "shipping_city": "Dhaka",
+                "shipping_postal_code": "1205",
+                "shipping_country": "Bangladesh",
                 "notes": "",
             },
         )
@@ -209,6 +217,10 @@ class ProductCatalogTests(TestCase):
         )
         self.assertEqual(order.status, Order.PENDING)
         self.assertEqual(order.total_amount, Decimal("12.50"))
+        self.assertEqual(order.shipping_address, "12 River Road")
+        self.assertEqual(order.shipping_city, "Dhaka")
+        self.assertEqual(order.shipping_postal_code, "1205")
+        self.assertEqual(order.shipping_country, "Bangladesh")
         self.assertEqual(item.product_name, "Canvas Tote")
         self.assertEqual(item.unit_price, Decimal("12.50"))
         self.assertEqual(item.quantity, 1)
@@ -226,6 +238,10 @@ class ProductCatalogTests(TestCase):
                 "full_name": "Ayzal Yohan",
                 "email": "ayzal@example.com",
                 "phone": "",
+                "shipping_address": "12 River Road",
+                "shipping_city": "Dhaka",
+                "shipping_postal_code": "1205",
+                "shipping_country": "Bangladesh",
                 "notes": "",
             },
         )
@@ -242,6 +258,10 @@ class ProductCatalogTests(TestCase):
         order = Order.objects.create(
             full_name="Someone Else",
             email="other@example.com",
+            shipping_address="1 Test Street",
+            shipping_city="Dhaka",
+            shipping_postal_code="1200",
+            shipping_country="Bangladesh",
             total_amount=Decimal("0.00"),
         )
 

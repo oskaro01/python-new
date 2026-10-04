@@ -125,4 +125,4 @@ You understand:
 
 ## Next Lesson
 
-Lesson 40 will add shipping and contact details as explicit order data.
+Lesson 40 adds shipping and contact details as explicit order data.

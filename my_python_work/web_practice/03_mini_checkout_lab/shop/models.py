@@ -40,6 +40,10 @@ class Order(models.Model):
     full_name = models.CharField(max_length=120)
     email = models.EmailField()
     phone = models.CharField(max_length=30, blank=True)
+    shipping_address = models.CharField(max_length=200, default="")
+    shipping_city = models.CharField(max_length=100, default="")
+    shipping_postal_code = models.CharField(max_length=20, default="")
+    shipping_country = models.CharField(max_length=80, default="")
     notes = models.TextField(blank=True)
     status = models.CharField(
         max_length=20,

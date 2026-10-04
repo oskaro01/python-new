@@ -145,6 +145,10 @@ def place_order(request):
             full_name=form.cleaned_data["full_name"],
             email=form.cleaned_data["email"],
             phone=form.cleaned_data["phone"],
+            shipping_address=form.cleaned_data["shipping_address"],
+            shipping_city=form.cleaned_data["shipping_city"],
+            shipping_postal_code=form.cleaned_data["shipping_postal_code"],
+            shipping_country=form.cleaned_data["shipping_country"],
             notes=form.cleaned_data["notes"],
             total_amount=cart_total,
         )

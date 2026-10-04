@@ -19,11 +19,19 @@
                 <dt>Email address</dt>
                 <dd>{{ order.email }}</dd>
             </div>
-            <div>
-                <dt>Status</dt>
-                <dd>{{ order.get_status_display }}</dd>
-            </div>
-        </dl>
+        <div>
+            <dt>Status</dt>
+            <dd>{{ order.get_status_display }}</dd>
+        </div>
+        <div>
+            <dt>Shipping address</dt>
+            <dd>
+                {{ order.shipping_address }}<br>
+                {{ order.shipping_city }}, {{ order.shipping_postal_code }}<br>
+                {{ order.shipping_country }}
+            </dd>
+        </div>
+    </dl>
 
         <div class="order-items">
             <h2>Items</h2>
