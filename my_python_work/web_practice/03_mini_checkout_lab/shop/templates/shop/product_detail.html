@@ -1,0 +1,22 @@
+{% extends "shop/base.html" %}
+
+{% block content %}
+<a class="back-link" href="{% url 'shop:product_list' %}">Back to products</a>
+
+<article class="detail-panel">
+    <div class="detail-mark">{{ product.name|first|upper }}</div>
+    <div class="detail-content">
+        <p class="eyebrow">Product</p>
+        <h1>{{ product.name }}</h1>
+        <p class="detail-description">{{ product.description|linebreaksbr }}</p>
+        <div class="detail-summary">
+            <strong class="price">${{ product.price|floatformat:2 }}</strong>
+            {% if product.stock %}
+            <span class="stock stock-available">{{ product.stock }} available</span>
+            {% else %}
+            <span class="stock stock-empty">Currently unavailable</span>
+            {% endif %}
+        </div>
+    </div>
+</article>
+{% endblock %}

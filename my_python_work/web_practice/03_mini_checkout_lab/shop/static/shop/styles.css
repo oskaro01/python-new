@@ -1,0 +1,179 @@
+:root {
+    color-scheme: light;
+    font-family: Inter, "Segoe UI", Arial, sans-serif;
+    color: #172033;
+    background: #edf1f5;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; line-height: 1.5; }
+a { color: #2457a6; }
+a:hover { color: #183e7a; }
+
+.site-header {
+    background: #172033;
+    color: #fff;
+    border-bottom: 4px solid #e0a11a;
+}
+
+.header-inner,
+.page-shell {
+    width: min(100% - 40px, 1080px);
+    margin: 0 auto;
+}
+
+.header-inner {
+    min-height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.brand {
+    color: #fff;
+    font-size: 1.15rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+nav a {
+    padding: 8px 12px;
+    border-radius: 4px;
+    color: #fff;
+    font-size: 0.92rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+nav a:hover { background: #26344f; }
+
+.page-shell { padding: 48px 0 72px; }
+.page-heading { margin-bottom: 28px; }
+.page-heading h1,
+h1 { margin: 0 0 8px; font-size: 2rem; line-height: 1.15; }
+h2 { margin: 0 0 8px; font-size: 1.15rem; line-height: 1.25; }
+p { margin: 0 0 16px; }
+.muted { color: #687386; }
+.eyebrow {
+    margin-bottom: 8px;
+    color: #a26800;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 18px;
+}
+
+.product-card,
+.empty-state,
+.detail-panel {
+    border: 1px solid #d2d9e2;
+    border-radius: 6px;
+    background: #fff;
+    box-shadow: 0 3px 10px rgba(23, 32, 51, 0.07);
+}
+
+.product-card {
+    min-height: 250px;
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+}
+
+.product-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 22px;
+}
+
+.product-mark,
+.detail-mark {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #dce9fb;
+    color: #2457a6;
+    font-size: 1.35rem;
+    font-weight: 700;
+}
+
+.product-card h2 a { color: #172033; text-decoration: none; }
+.product-card h2 a:hover { color: #2457a6; }
+.product-description { min-height: 48px; color: #687386; }
+
+.product-card-bottom,
+.detail-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: auto;
+}
+
+.price { color: #172033; font-size: 1.25rem; }
+.stock { font-size: 0.8rem; font-weight: 700; }
+.stock-available { color: #18794e; }
+.stock-empty { color: #b42318; }
+
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+    padding: 8px 13px;
+    border: 1px solid #c3ccd8;
+    border-radius: 4px;
+    color: #172033;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.button:hover { background: #f3f6fa; color: #172033; }
+.button-primary { border-color: #2457a6; background: #2457a6; color: #fff; }
+.button-primary:hover { background: #183e7a; color: #fff; }
+
+.empty-state { padding: 32px; text-align: center; }
+.empty-state h2 { margin-bottom: 8px; }
+.back-link { display: inline-block; margin-bottom: 22px; }
+
+.detail-panel {
+    max-width: 760px;
+    padding: 34px;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 28px;
+}
+
+.detail-mark { width: 76px; height: 76px; font-size: 2rem; }
+.detail-description { max-width: 620px; color: #4f5d70; white-space: pre-line; }
+.detail-summary { justify-content: flex-start; margin-top: 28px; }
+
+@media (max-width: 620px) {
+    .header-inner {
+        width: min(100% - 28px, 1080px);
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 10px;
+        padding: 16px 0;
+    }
+
+    nav { flex-wrap: wrap; }
+    .page-shell { width: min(100% - 28px, 1080px); padding-top: 32px; }
+    .detail-panel { grid-template-columns: 1fr; padding: 24px; }
+}

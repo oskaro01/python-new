@@ -612,7 +612,8 @@ First future web project:
 
 Optional later web project:
 
-- [ ] Build `mini_checkout_lab` for cart, checkout, shipping, orders, and fake payment
+- [x] Start `mini_checkout_lab` with a separate product catalog
+- [ ] Continue `mini_checkout_lab` with cart, checkout, shipping, orders, and fake payment
 - [ ] Build `django_marketplace` only if ecommerce becomes useful again
 
 Key lesson:

@@ -1,0 +1,40 @@
+{% extends "shop/base.html" %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">Catalog</p>
+        <h1>Products</h1>
+        <p class="muted">Browse the items currently available.</p>
+    </div>
+</div>
+
+{% if products %}
+<section class="product-grid" aria-label="Products">
+    {% for product in products %}
+    <article class="product-card">
+        <div class="product-card-top">
+            <span class="product-mark">{{ product.name|first|upper }}</span>
+            {% if product.stock %}
+            <span class="stock stock-available">In stock</span>
+            {% else %}
+            <span class="stock stock-empty">Out of stock</span>
+            {% endif %}
+        </div>
+        <h2><a href="{% url 'shop:product_detail' product.slug %}">{{ product.name }}</a></h2>
+        <p class="product-description">{{ product.description|truncatewords:22 }}</p>
+        <div class="product-card-bottom">
+            <strong class="price">${{ product.price|floatformat:2 }}</strong>
+            <a class="button" href="{% url 'shop:product_detail' product.slug %}">View details</a>
+        </div>
+    </article>
+    {% endfor %}
+</section>
+{% else %}
+<section class="empty-state">
+    <h2>No products yet</h2>
+    <p class="muted">Add the first product from the admin page.</p>
+    <a class="button button-primary" href="/admin/">Open admin</a>
+</section>
+{% endif %}
+{% endblock %}

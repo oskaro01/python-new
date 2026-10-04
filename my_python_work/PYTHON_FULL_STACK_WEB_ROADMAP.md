@@ -487,8 +487,25 @@ Project:
 mini_checkout_lab
 ```
 
+Current checkpoint:
+
+- Product catalog with public list/detail pages
+- `Product` model and first migration
+- Django Admin product management
+- Active/inactive catalog visibility
+- Basic catalog tests
+
+Files:
+
+- `my_python_work/web_practice/03_mini_checkout_lab/README.md`
+- `my_python_work/web_practice/03_mini_checkout_lab/manage.py`
+- `my_python_work/web_practice/03_mini_checkout_lab/shop/models.py`
+- `my_python_work/web_practice/03_mini_checkout_lab/shop/views.py`
+- `my_python_work/web_practice/03_mini_checkout_lab/shop/migrations/0001_initial.py`
+
 Learn:
 
+- Product catalog
 - Cart
 - Checkout form
 - Shipping address
@@ -503,6 +520,9 @@ Learn:
 
 Practice:
 
+- Create products in Django Admin.
+- Browse active products on the public catalog.
+- Mark a product inactive and verify that customers cannot see it.
 - Add simple items to a cart.
 - Convert cart items into an order.
 - Save shipping/contact details.
