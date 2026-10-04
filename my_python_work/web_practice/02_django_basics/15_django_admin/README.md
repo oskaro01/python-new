@@ -12,8 +12,8 @@ model was registered in lesson 07; now you can use that registration.
 
 `WordAdmin` changes how the admin list works:
 
-- `list_display`: columns for word, category, favorite status, and created time.
-- `list_filter`: filters for category and favorite status.
+- `list_display`: columns for word, owner, category, and created time.
+- `list_filter`: filters for owner and category.
 - `search_fields`: searches word, meaning, example, and category.
 - `ordering`: sorts the list by word.
 

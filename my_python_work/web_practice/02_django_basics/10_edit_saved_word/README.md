@@ -24,8 +24,8 @@ link. The edit page reuses `WordForm` from the add page.
 The loop uses `setattr(word, field, value)` to set a named attribute. For
 example, `setattr(word, "meaning", "calm")` is equivalent to
 `word.meaning = "calm"`. Only the four fields defined in `WordForm` are
-updated, so `is_favorite` and the timestamps are not copied from the form.
-When `save()` runs, Django updates `updated_at` automatically.
+updated, so timestamps are not copied from the form. When `save()` runs,
+Django updates `updated_at` automatically.
 
 The same `word_form.html` template works for adding and editing because both
 views pass it a `form`, `heading`, and `message`.

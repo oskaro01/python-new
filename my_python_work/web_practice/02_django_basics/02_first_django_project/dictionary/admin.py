@@ -15,8 +15,8 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Word)
 class WordAdmin(admin.ModelAdmin):
-    list_display = ("word", "owner", "category", "is_favorite", "created_at")
-    list_filter = ("owner", "category", "is_favorite")
+    list_display = ("word", "owner", "category", "created_at")
+    list_filter = ("owner", "category")
     search_fields = ("word", "meaning", "example", "category__name", "owner__username")
     ordering = ("word",)
 

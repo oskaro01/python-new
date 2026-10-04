@@ -55,18 +55,16 @@ The model stores:
 - meaning
 - example
 - category
-- favorite status
 - created time
 - updated time
 
 For example, one row could contain `word="curious"`,
-`meaning="wanting to learn"`, and `is_favorite=False`.
+`meaning="wanting to learn"`, and `example="She was curious about Django."`.
 
-`blank=True` lets a form leave a field empty. `default=False` makes a new
-word not a favorite unless you choose otherwise. Django fills in `created_at`
-and `updated_at` automatically. `Meta.ordering = ["word"]` sorts results by
-word by default, and `__str__` makes Django display the word itself when it
-needs a readable name for an entry.
+`blank=True` lets a form leave a field empty. Django fills in `created_at` and
+`updated_at` automatically. `Meta.ordering = ["word"]` sorts results by word by
+default, and `__str__` makes Django display the word itself when it needs a
+readable name for an entry.
 
 ## What The Other Files Do
 

@@ -33,7 +33,7 @@ is created beside `manage.py`. It is ignored by Git. You do not need to run
 `**form.cleaned_data` unpacks a dictionary into named arguments. For example,
 `{"word": "serene", "meaning": "calm"}` becomes
 `Word.objects.create(word="serene", meaning="calm")`. The optional fields are
-included too. The model fills in `is_favorite` and the timestamps itself.
+included too. The model fills in the timestamps itself.
 
 If validation fails, the view shows the same form with errors. It does not
 create a row. `{{ entry.word }}` in the list template displays a saved model

@@ -10,8 +10,8 @@ edit. Django builds those fields from `Word` in `dictionary/models.py`.
 `help_texts` and `widgets` keep our labels, hints, and input sizes familiar.
 We still use `clean_word()` to reject words shorter than two characters.
 
-The explicit `fields` list matters: `is_favorite` and the timestamps are not
-editable through this public form.
+The explicit `fields` list matters: timestamps and ownership are not editable
+through this public form.
 
 ## Add Versus Edit
 
