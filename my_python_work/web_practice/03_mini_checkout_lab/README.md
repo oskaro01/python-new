@@ -14,6 +14,13 @@ Personal Dictionary app.
 7. [Lesson 42: Receipt Email](42_receipt_email/README.md)
 8. [Lesson 43: Tests, Security, and Deployment](43_tests_security_deployment/README.md)
 9. [Lesson 44: Postgres and Resend Deployment](44_postgres_resend_deployment/README.md)
+10. Planned: Product Types and Inventory
+11. Planned: Shipping Methods and Costs
+12. Planned: Real Payment Sandbox
+13. Planned: Payment Callbacks and Verification
+14. Planned: Physical Fulfillment and Tracking
+15. Planned: Secure Digital Fulfillment
+16. Planned: Order History and Customer Purchases
 
 Each lesson has its own README so we can study, verify, and commit one
 checkpoint at a time.
@@ -61,5 +68,7 @@ site. It does not use the Personal Dictionary database.
 
 ## Not Built Yet
 
-The lab does not have real payment processing, shipping integrations, or a
-customer account system yet. Those will arrive as separate lessons.
+The lab currently has demo payment status and receipt email delivery. Real
+payment processing, shipping integrations, fulfillment workflows, and customer
+purchase history are planned as separate lessons. The final design will support
+physical, digital, and hybrid products rather than only digital downloads.

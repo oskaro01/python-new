@@ -77,7 +77,6 @@ It can teach only the missing business systems:
 - shipping address
 - payment status
 - fake payment first
-- Stripe later only if needed
 - receipt email 
 
 
@@ -291,3 +290,67 @@ Yes, you can select a Free web-service instance. However:
 - A workspace can have only one free Render Postgres database.
 - Free Render Postgres databases currently expire after 30 days.
 Those limits are documented on Render’s free-tier page. Since you already obtained a separate DATABASE_URL, you can connect that database to checkout without creating another Render database. Your dictionary deployment will remain separate and untouched.
+
+====
+super user creation / render / db  >>
+
+You’re right. Last time we connected the local terminal directly to the production database and ran createsuperuser. That is cleaner here too.
+Open PowerShell from the repository root and run:
+$env:DATABASE_URL = Read-Host "Paste the CHECKOUT database URL"
+$env:DJANGO_DEBUG = "false"
+
+.\.venv\Scripts\python.exe my_python_work\web_practice\03_mini_checkout_lab\manage.py createsuperuser
+Enter the username, email, and password when Django asks.
+Then remove the temporary values from your terminal session:
+Remove-Item Env:DATABASE_URL
+Remove-Item Env:DJANGO_DEBUG
+Now visit:
+https://YOUR-CHECKOUT-URL.onrender.com/admin/
+Use the account you just created.
+Make absolutely sure you paste the checkout database URL, not the dictionary database URL. If the database is hosted on Render, use its External Database URL because your computer cannot connect through Render’s internal URL. No temporary Render build-command changes are needed this way.
+
+
+12:49 PM
+
+
+
+
+
+
+
+
+in terminal it saying binding requere ,what do i  type there?
+
+
+
+
+
+
+
+12:54 PM
+
+
+
+
+
+
+It should first show:
+Paste the CHECKOUT database URL:
+Paste the checkout database URL there and press Enter. Do not type the words “binding required.”
+Then Django should ask:
+Username:
+Email address:
+Password:
+Password (again):
+Enter your new admin details.
+If the exact message really says something different, send me the full terminal line or a screenshot, because “binding required” is not a normal createsuperuser prompt.
+
+
+after that >> make sure >> 
+
+Your PowerShell session has DATABASE_URL set to an empty value. Remove the temporary production variables, then start the local server:
+Remove-Item Env:DATABASE_URL -ErrorAction SilentlyContinue
+Remove-Item Env:DJANGO_DEBUG -ErrorAction SilentlyContinue
+
+.\.venv\Scripts\python.exe my_python_work\web_practice\03_mini_checkout_lab\manage.py runserver 8001
+Now Django will use the local SQLite database again.
