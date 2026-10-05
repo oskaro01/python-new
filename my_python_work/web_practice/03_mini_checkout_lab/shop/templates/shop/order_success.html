@@ -31,6 +31,14 @@
                 <dt>Payment status</dt>
                 <dd>{{ order.get_payment_status_display }}</dd>
             </div>
+            <div>
+                <dt>Receipt</dt>
+                {% if order.receipt_sent_at %}
+                <dd>Sent to {{ order.email }}</dd>
+                {% else %}
+                <dd>Not sent yet</dd>
+                {% endif %}
+            </div>
         <div>
             <dt>Shipping address</dt>
             <dd>

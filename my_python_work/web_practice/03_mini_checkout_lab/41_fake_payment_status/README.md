@@ -92,5 +92,5 @@ You understand:
 
 ## Next Lesson
 
-Lesson 42 will add receipt email behavior using the project’s existing email
+Lesson 42 adds receipt email behavior using the project's existing email
 lessons as a safe foundation.

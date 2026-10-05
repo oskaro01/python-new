@@ -11,8 +11,8 @@ Personal Dictionary app.
 4. [Lesson 39: Orders and Order Items](39_orders_and_items/README.md)
 5. [Lesson 40: Shipping and Contact Details](40_shipping_contact_details/README.md)
 6. [Lesson 41: Fake Payment Status](41_fake_payment_status/README.md)
-7. Lesson 42: Receipt Email, planned
-8. Lesson 43: Tests, Security, and Deployment, planned
+7. [Lesson 42: Receipt Email](42_receipt_email/README.md)
+8. [Lesson 43: Tests, Security, and Deployment](43_tests_security_deployment/README.md)
 
 Each lesson has its own README so we can study, verify, and commit one
 checkpoint at a time.

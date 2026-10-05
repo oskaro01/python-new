@@ -64,7 +64,9 @@ We learned web foundations first; now the Django lessons build on them:
 50. `03_mini_checkout_lab/39_orders_and_items/README.md`
 51. `03_mini_checkout_lab/40_shipping_contact_details/README.md`
 52. `03_mini_checkout_lab/41_fake_payment_status/README.md`
-53. `04_chat_lab/README.md`
+53. `03_mini_checkout_lab/42_receipt_email/README.md`
+54. `03_mini_checkout_lab/43_tests_security_deployment/README.md`
+55. `04_chat_lab/README.md`
 
 ## Django Run Helper
 

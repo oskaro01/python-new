@@ -1,9 +1,12 @@
 """Public product catalog views."""
 
+import logging
+
 from django.contrib import messages
 from django.db import transaction
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
 
 from .cart import (
@@ -16,11 +19,13 @@ from .cart import (
     update_product,
 )
 from .forms import CheckoutForm
+from .emails import send_order_receipt
 from .models import Order, OrderItem, Product
 
 
 CHECKOUT_SESSION_KEY = "checkout_customer"
 LAST_ORDER_SESSION_KEY = "last_order_id"
+logger = logging.getLogger(__name__)
 
 
 @require_GET
@@ -201,7 +206,18 @@ def simulate_payment(request, order_id):
     if order.payment_status == Order.PAYMENT_PENDING:
         order.payment_status = Order.PAYMENT_PAID
         order.save(update_fields=["payment_status", "updated_at"])
-        messages.success(request, "Demo payment marked as paid.")
+        try:
+            send_order_receipt(order)
+        except Exception:
+            logger.exception("Receipt email failed for order %s", order.pk)
+            messages.error(
+                request,
+                "Demo payment was recorded, but the receipt could not be sent.",
+            )
+        else:
+            order.receipt_sent_at = timezone.now()
+            order.save(update_fields=["receipt_sent_at", "updated_at"])
+            messages.success(request, "Demo payment marked as paid. Receipt sent.")
     else:
         messages.info(request, "This order already has a payment result.")
 

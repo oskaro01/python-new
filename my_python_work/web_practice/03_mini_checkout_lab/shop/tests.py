@@ -1,6 +1,7 @@
 from decimal import Decimal
 
-from django.test import TestCase
+from django.core import mail
+from django.test import Client, TestCase
 from django.urls import reverse
 
 from .models import Order, OrderItem, Product
@@ -77,6 +78,35 @@ class ProductCatalogTests(TestCase):
                 "cart_count": 1,
             },
         )
+
+    def test_state_changing_endpoints_require_post(self):
+        endpoints = [
+            reverse("shop:add_to_cart", kwargs={"product_id": self.active_product.pk}),
+            reverse("shop:update_cart", kwargs={"product_id": self.active_product.pk}),
+            reverse("shop:remove_from_cart", kwargs={"product_id": self.active_product.pk}),
+            reverse("shop:checkout_review"),
+            reverse("shop:place_order"),
+            reverse("shop:simulate_payment", kwargs={"order_id": 1}),
+        ]
+
+        for endpoint in endpoints:
+            with self.subTest(endpoint=endpoint):
+                self.assertEqual(self.client.get(endpoint).status_code, 405)
+
+    def test_csrf_protects_add_to_cart(self):
+        client = Client(enforce_csrf_checks=True)
+
+        response = client.post(
+            reverse("shop:add_to_cart", kwargs={"product_id": self.active_product.pk}),
+        )
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_security_headers_are_present(self):
+        response = self.client.get(reverse("shop:product_list"))
+
+        self.assertEqual(response.headers["X-Content-Type-Options"], "nosniff")
+        self.assertEqual(response.headers["X-Frame-Options"], "DENY")
 
     def test_cart_update_is_limited_by_current_stock(self):
         self.client.post(
@@ -260,6 +290,16 @@ class ProductCatalogTests(TestCase):
         order.refresh_from_db()
         self.assertEqual(order.payment_status, Order.PAYMENT_PAID)
         self.assertEqual(order.status, Order.PENDING)
+        self.assertIsNotNone(order.receipt_sent_at)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ["ayzal@example.com"])
+        self.assertIn(f"Order #{order.pk}", mail.outbox[0].subject)
+        self.assertIn("Canvas Tote x 1", mail.outbox[0].body)
+
+        self.client.post(
+            reverse("shop:simulate_payment", kwargs={"order_id": order.pk}),
+        )
+        self.assertEqual(len(mail.outbox), 1)
 
     def test_order_item_keeps_price_snapshot(self):
         self.client.post(

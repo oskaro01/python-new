@@ -36,6 +36,7 @@ class OrderAdmin(admin.ModelAdmin):
         "email",
         "status",
         "payment_status",
+        "receipt_sent_at",
         "total_amount",
         "created_at",
     )
@@ -46,6 +47,11 @@ class OrderAdmin(admin.ModelAdmin):
         "shipping_city",
         "shipping_postal_code",
     )
-    readonly_fields = ("created_at", "updated_at", "total_amount")
+    readonly_fields = (
+        "created_at",
+        "updated_at",
+        "receipt_sent_at",
+        "total_amount",
+    )
     inlines = [OrderItemInline]
     ordering = ("-created_at",)
