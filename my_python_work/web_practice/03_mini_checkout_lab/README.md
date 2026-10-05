@@ -13,6 +13,7 @@ Personal Dictionary app.
 6. [Lesson 41: Fake Payment Status](41_fake_payment_status/README.md)
 7. [Lesson 42: Receipt Email](42_receipt_email/README.md)
 8. [Lesson 43: Tests, Security, and Deployment](43_tests_security_deployment/README.md)
+9. [Lesson 44: Postgres and Resend Deployment](44_postgres_resend_deployment/README.md)
 
 Each lesson has its own README so we can study, verify, and commit one
 checkpoint at a time.

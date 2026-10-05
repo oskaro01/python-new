@@ -94,4 +94,5 @@ You understand:
 ## Next Lesson
 
 Lesson 43 finishes the checkout lab with broader tests, security checks, and
-deployment preparation.
+deployment preparation. Lesson 44 then connects the lab to Postgres and
+Resend.

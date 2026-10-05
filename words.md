@@ -244,3 +244,50 @@ supa user >>
 .\.venv\Scripts\python.exe my_python_work\web_practice\03_mini_checkout_lab\manage.py migrate
 .\.venv\Scripts\python.exe my_python_work\web_practice\03_mini_checkout_lab\manage.py runserver 8001
 ====
+
+====
+to get djan secret key
+
+.\.venv\Scripts\python.exe -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+
+====
+
+No, you do not need a new Render workspace. Keep the existing workspace and create a second Web Service for Mini Checkout Lab. The dictionary and checkout apps will then have separate URLs, settings, and environment variables.
+Create The Service
+1. Push the latest checkout code to GitHub.
+2. Open your existing Render dashboard/workspace.
+3. Click New → Web Service.
+4. Select the same GitHub repository.
+5. Enter:
+Name: mini-checkout-lab
+Language: Python 3
+Branch: main
+Root Directory: my_python_work/web_practice/03_mini_checkout_lab
+6. Use this build command:
+pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate
+Including migrate here is useful because free web services do not provide Render Shell or paid pre-deploy commands.
+7. Use this start command:
+gunicorn mini_checkout_lab.wsgi:application
+8. Under Instance Type, select Free.
+9. Add the checkout app’s environment variables under Advanced.
+10. Click Create Web Service.
+Render will deploy it and provide a URL similar to:
+https://mini-checkout-lab.onrender.com
+The exact name may differ if that subdomain is already taken. These steps match Render’s official Django deployment guide and web-service setup documentation.
+Host Variables
+Our settings already read Render’s automatically provided RENDER_EXTERNAL_HOSTNAME, so initially you can leave these unset:
+DJANGO_ALLOWED_HOSTS
+DJANGO_CSRF_TRUSTED_ORIGINS
+Once the deployment works, we can optionally add them explicitly:
+DJANGO_ALLOWED_HOSTS=mini-checkout-lab.onrender.com
+DJANGO_CSRF_TRUSTED_ORIGINS=https://mini-checkout-lab.onrender.com
+For DJANGO_SECRET_KEY, click Render’s Generate option when adding the variable.
+Is It Free?
+Yes, you can select a Free web-service instance. However:
+- Free services sleep after 15 minutes without traffic.
+- The first request after sleeping can take about one minute.
+- Each workspace gets 750 shared free instance hours per month.
+- Your dictionary and checkout services will share that allowance.
+- A workspace can have only one free Render Postgres database.
+- Free Render Postgres databases currently expire after 30 days.
+Those limits are documented on Render’s free-tier page. Since you already obtained a separate DATABASE_URL, you can connect that database to checkout without creating another Render database. Your dictionary deployment will remain separate and untouched.

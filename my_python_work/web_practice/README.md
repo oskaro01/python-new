@@ -66,7 +66,8 @@ We learned web foundations first; now the Django lessons build on them:
 52. `03_mini_checkout_lab/41_fake_payment_status/README.md`
 53. `03_mini_checkout_lab/42_receipt_email/README.md`
 54. `03_mini_checkout_lab/43_tests_security_deployment/README.md`
-55. `04_chat_lab/README.md`
+55. `03_mini_checkout_lab/44_postgres_resend_deployment/README.md`
+56. `04_chat_lab/README.md`
 
 ## Django Run Helper
 

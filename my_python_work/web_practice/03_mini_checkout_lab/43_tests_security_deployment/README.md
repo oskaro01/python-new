@@ -77,6 +77,6 @@ You understand:
 
 ## Next Step
 
-The Mini Checkout Lab is complete. The next project in the learning path is
-the separate Chat Lab, where messaging will teach conversations, ownership,
-and later real-time delivery.
+Lesson 44 will connect the lab to separate Postgres and Resend services. After
+that, the next project in the learning path is the separate Chat Lab, where
+messaging will teach conversations, ownership, and later real-time delivery.
