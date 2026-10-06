@@ -212,10 +212,20 @@ p { margin: 0 0 16px; }
 }
 
 .product-card > h2,
+.product-card > .product-type,
 .product-card > .product-description,
 .product-card > .product-card-bottom {
     margin-left: 16px;
     margin-right: 16px;
+}
+
+.product-type {
+    margin-bottom: 5px;
+    color: #75809a;
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
 }
 
 .product-card > h2 {

@@ -4,11 +4,26 @@ from django.db import models
 
 
 class Product(models.Model):
+    PHYSICAL = "physical"
+    DIGITAL = "digital"
+    HYBRID = "hybrid"
+
+    PRODUCT_TYPE_CHOICES = [
+        (PHYSICAL, "Physical"),
+        (DIGITAL, "Digital"),
+        (HYBRID, "Physical + digital"),
+    ]
+
     name = models.CharField(max_length=120)
     slug = models.SlugField(max_length=140, unique=True)
     description = models.TextField(blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     stock = models.PositiveIntegerField(default=0)
+    product_type = models.CharField(
+        max_length=20,
+        choices=PRODUCT_TYPE_CHOICES,
+        default=PHYSICAL,
+    )
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -24,6 +39,18 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+
+    @property
+    def inventory_tracked(self):
+        return self.product_type in {self.PHYSICAL, self.HYBRID}
+
+    @property
+    def requires_shipping(self):
+        return self.product_type in {self.PHYSICAL, self.HYBRID}
+
+    @property
+    def is_available(self):
+        return not self.inventory_tracked or self.stock > 0
 
 
 class Order(models.Model):
@@ -91,6 +118,11 @@ class OrderItem(models.Model):
         related_name="order_items",
     )
     product_name = models.CharField(max_length=120)
+    product_type = models.CharField(
+        max_length=20,
+        choices=Product.PRODUCT_TYPE_CHOICES,
+        default=Product.PHYSICAL,
+    )
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.PositiveIntegerField()
     line_total = models.DecimalField(max_digits=10, decimal_places=2)

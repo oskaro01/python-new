@@ -27,6 +27,7 @@
                 <dd>{{ customer.phone }}</dd>
             </div>
             {% endif %}
+            {% if customer.shipping_address or customer.shipping_city or customer.shipping_country %}
             <div>
                 <dt>Shipping address</dt>
                 <dd>
@@ -35,6 +36,7 @@
                     {{ customer.shipping_country }}
                 </dd>
             </div>
+            {% endif %}
             {% if customer.notes %}
             <div>
                 <dt>Order notes</dt>

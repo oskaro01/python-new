@@ -16,3 +16,15 @@ class CheckoutForm(forms.Form):
         label="Order notes",
         widget=forms.Textarea(attrs={"rows": 4}),
     )
+
+    def __init__(self, *args, requires_shipping=True, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not requires_shipping:
+            for field_name in (
+                "shipping_address",
+                "shipping_city",
+                "shipping_postal_code",
+                "shipping_country",
+            ):
+                self.fields[field_name].required = False
+                self.fields[field_name].label += " (optional for digital items)"

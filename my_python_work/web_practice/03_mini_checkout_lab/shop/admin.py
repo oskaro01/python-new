@@ -7,8 +7,8 @@ from .models import Order, OrderItem, Product
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ("name", "price", "stock", "is_active", "updated_at")
-    list_filter = ("is_active",)
+    list_display = ("name", "product_type", "price", "stock", "is_active", "updated_at")
+    list_filter = ("product_type", "is_active")
     list_editable = ("price", "stock", "is_active")
     search_fields = ("name", "description")
     prepopulated_fields = {"slug": ("name",)}
@@ -22,6 +22,7 @@ class OrderItemInline(admin.TabularInline):
     readonly_fields = (
         "product",
         "product_name",
+        "product_type",
         "unit_price",
         "quantity",
         "line_total",

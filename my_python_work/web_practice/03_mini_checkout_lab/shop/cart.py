@@ -6,6 +6,7 @@ from .models import Product
 
 
 CART_SESSION_KEY = "cart"
+MAX_DIGITAL_QUANTITY = 99
 
 
 def get_cart_data(request):
@@ -35,7 +36,8 @@ def add_product(request, product, quantity=1):
     cart = get_cart_data(request)
     product_id = str(product.pk)
     current_quantity = cart.get(product_id, 0)
-    cart[product_id] = min(current_quantity + quantity, product.stock)
+    maximum = product.stock if product.inventory_tracked else MAX_DIGITAL_QUANTITY
+    cart[product_id] = min(current_quantity + quantity, maximum)
     save_cart(request, cart)
 
 
@@ -43,10 +45,11 @@ def update_product(request, product, quantity):
     cart = get_cart_data(request)
     product_id = str(product.pk)
 
-    if quantity <= 0 or product.stock <= 0:
+    if quantity <= 0 or (product.inventory_tracked and product.stock <= 0):
         cart.pop(product_id, None)
     else:
-        cart[product_id] = min(quantity, product.stock)
+        maximum = product.stock if product.inventory_tracked else MAX_DIGITAL_QUANTITY
+        cart[product_id] = min(quantity, maximum)
 
     save_cart(request, cart)
 
@@ -83,16 +86,18 @@ def get_cart_items(request):
 
     for product_id, requested_quantity in cart.items():
         product = products_by_id.get(product_id)
-        if product is None or product.stock <= 0:
+        if product is None or (product.inventory_tracked and product.stock <= 0):
             continue
 
-        quantity = min(requested_quantity, product.stock)
+        maximum = product.stock if product.inventory_tracked else MAX_DIGITAL_QUANTITY
+        quantity = min(requested_quantity, maximum)
         cleaned_cart[product_id] = quantity
         items.append(
             {
                 "product": product,
                 "quantity": quantity,
                 "line_total": product.price * quantity,
+                "max_quantity": maximum,
             }
         )
 
@@ -100,3 +105,7 @@ def get_cart_items(request):
         save_cart(request, cleaned_cart)
 
     return items
+
+
+def cart_requires_shipping(items):
+    return any(item["product"].requires_shipping for item in items)

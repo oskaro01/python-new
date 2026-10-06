@@ -8,16 +8,19 @@
     <div class="detail-content">
         <p class="eyebrow">Product</p>
         <h1>{{ product.name }}</h1>
+        <p class="product-type">{{ product.get_product_type_display }}</p>
         <p class="detail-description">{{ product.description|linebreaksbr }}</p>
         <div class="detail-summary">
             <strong class="price">${{ product.price|floatformat:2 }}</strong>
-            {% if product.stock %}
+            {% if product.product_type == "digital" %}
+            <span class="stock stock-available">Digital delivery</span>
+            {% elif product.stock %}
             <span class="stock stock-available">{{ product.stock }} available</span>
             {% else %}
             <span class="stock stock-empty">Currently unavailable</span>
             {% endif %}
         </div>
-        {% if product.stock %}
+        {% if product.is_available %}
         <div class="detail-actions">
             <form method="post" action="{% url 'shop:add_to_cart' product.id %}" class="detail-action js-add-to-cart">
                 {% csrf_token %}

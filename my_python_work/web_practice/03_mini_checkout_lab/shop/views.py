@@ -15,6 +15,7 @@ from .cart import (
     get_cart_items,
     get_cart_count,
     get_cart_total,
+    cart_requires_shipping,
     remove_product,
     update_product,
 )
@@ -81,7 +82,7 @@ def checkout(request):
         "shop/checkout.html",
         {
             "title": "Checkout",
-            "form": CheckoutForm(),
+            "form": CheckoutForm(requires_shipping=cart_requires_shipping(items)),
             "items": items,
             "cart_total": get_cart_total(items),
         },
@@ -95,7 +96,10 @@ def checkout_review(request):
         messages.info(request, "Your cart is empty.")
         return redirect("shop:cart_detail")
 
-    form = CheckoutForm(request.POST)
+    form = CheckoutForm(
+        request.POST,
+        requires_shipping=cart_requires_shipping(items),
+    )
     if not form.is_valid():
         return render(
             request,
@@ -133,16 +137,19 @@ def checkout_review(request):
 
 @require_POST
 def place_order(request):
-    checkout_data = request.session.get(CHECKOUT_SESSION_KEY, {})
-    form = CheckoutForm(checkout_data)
-    if not form.is_valid():
-        messages.info(request, "Please enter your checkout details again.")
-        return redirect("shop:checkout")
-
     items = get_cart_items(request)
     if not items:
         messages.info(request, "Your cart is empty.")
         return redirect("shop:cart_detail")
+
+    checkout_data = request.session.get(CHECKOUT_SESSION_KEY, {})
+    form = CheckoutForm(
+        checkout_data,
+        requires_shipping=cart_requires_shipping(items),
+    )
+    if not form.is_valid():
+        messages.info(request, "Please enter your checkout details again.")
+        return redirect("shop:checkout")
 
     cart_total = get_cart_total(items)
     with transaction.atomic():
@@ -163,6 +170,7 @@ def place_order(request):
                     order=order,
                     product=item["product"],
                     product_name=item["product"].name,
+                    product_type=item["product"].product_type,
                     unit_price=item["product"].price,
                     quantity=item["quantity"],
                     line_total=item["line_total"],
@@ -229,7 +237,7 @@ def add_to_cart(request, product_id):
     product = get_object_or_404(Product, pk=product_id, is_active=True)
     wants_json = request.headers.get("X-Requested-With") == "XMLHttpRequest"
 
-    if product.stock <= 0:
+    if not product.is_available:
         message = f"{product.name} is out of stock."
         if wants_json:
             return JsonResponse(
@@ -262,7 +270,7 @@ def update_cart(request, product_id):
         messages.error(request, "Quantity must be a whole number.")
     else:
         update_product(request, product, quantity)
-        if quantity > product.stock:
+        if product.inventory_tracked and quantity > product.stock:
             messages.info(
                 request,
                 f"{product.name} was limited to the {product.stock} available.",

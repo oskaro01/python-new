@@ -39,6 +39,7 @@
                 <dd>Not sent yet</dd>
                 {% endif %}
             </div>
+        {% if order.shipping_address or order.shipping_city or order.shipping_country %}
         <div>
             <dt>Shipping address</dt>
             <dd>
@@ -47,6 +48,7 @@
                 {{ order.shipping_country }}
             </dd>
         </div>
+        {% endif %}
         </dl>
 
         {% if order.payment_status == "pending" %}

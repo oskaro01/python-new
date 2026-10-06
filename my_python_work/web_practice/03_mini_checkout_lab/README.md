@@ -14,7 +14,7 @@ Personal Dictionary app.
 7. [Lesson 42: Receipt Email](42_receipt_email/README.md)
 8. [Lesson 43: Tests, Security, and Deployment](43_tests_security_deployment/README.md)
 9. [Lesson 44: Postgres and Resend Deployment](44_postgres_resend_deployment/README.md)
-10. Planned: Product Types and Inventory
+10. [Lesson 45: Product Types and Inventory](45_product_types_inventory/README.md)
 11. Planned: Shipping Methods and Costs
 12. Planned: Real Payment Sandbox
 13. Planned: Payment Callbacks and Verification

@@ -15,19 +15,22 @@
     <article class="product-card">
         <div class="product-card-top">
             <span class="product-mark">{{ product.name|first|upper }}</span>
-            {% if product.stock %}
+            {% if product.product_type == "digital" %}
+            <span class="stock stock-available">Digital delivery</span>
+            {% elif product.stock %}
             <span class="stock stock-available">In stock</span>
             {% else %}
             <span class="stock stock-empty">Out of stock</span>
             {% endif %}
         </div>
+        <p class="product-type">{{ product.get_product_type_display }}</p>
         <h2><a href="{% url 'shop:product_detail' product.slug %}">{{ product.name }}</a></h2>
         <p class="product-description">{{ product.description|truncatewords:22 }}</p>
         <div class="product-card-bottom">
             <strong class="price">${{ product.price|floatformat:2 }}</strong>
             <div class="action-group">
                 <a class="button" href="{% url 'shop:product_detail' product.slug %}">View details</a>
-                {% if product.stock %}
+                {% if product.is_available %}
                 <form method="post" action="{% url 'shop:add_to_cart' product.id %}" class="js-add-to-cart">
                     {% csrf_token %}
                     <input type="hidden" name="return_to" value="catalog">

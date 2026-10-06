@@ -41,6 +41,34 @@ class ProductCatalogTests(TestCase):
         self.assertContains(response, "Canvas Tote")
         self.assertContains(response, "$12.50")
 
+    def test_digital_product_with_zero_stock_can_be_added(self):
+        digital_product = Product.objects.create(
+            name="Pixel Wallpaper",
+            slug="pixel-wallpaper",
+            description="A downloadable wallpaper.",
+            price=Decimal("4.99"),
+            product_type=Product.DIGITAL,
+            stock=0,
+        )
+
+        response = self.client.post(
+            reverse("shop:add_to_cart", kwargs={"product_id": digital_product.pk}),
+        )
+
+        self.assertRedirects(response, reverse("shop:product_list"))
+        self.assertEqual(self.client.session["cart"], {str(digital_product.pk): 1})
+
+    def test_physical_product_with_zero_stock_cannot_be_added(self):
+        self.active_product.stock = 0
+        self.active_product.save(update_fields=["stock", "updated_at"])
+
+        response = self.client.post(
+            reverse("shop:add_to_cart", kwargs={"product_id": self.active_product.pk}),
+        )
+
+        self.assertRedirects(response, reverse("shop:product_list"))
+        self.assertNotIn("cart", self.client.session)
+
     def test_inactive_product_detail_returns_not_found(self):
         response = self.client.get(
             reverse("shop:product_detail", kwargs={"slug": "hidden-sample"})
@@ -253,11 +281,46 @@ class ProductCatalogTests(TestCase):
         self.assertEqual(order.shipping_postal_code, "1205")
         self.assertEqual(order.shipping_country, "Bangladesh")
         self.assertEqual(item.product_name, "Canvas Tote")
+        self.assertEqual(item.product_type, Product.PHYSICAL)
         self.assertEqual(item.unit_price, Decimal("12.50"))
         self.assertEqual(item.quantity, 1)
         self.assertEqual(item.line_total, Decimal("12.50"))
         self.assertNotIn("cart", self.client.session)
         self.assertNotIn("checkout_customer", self.client.session)
+
+    def test_digital_only_checkout_does_not_require_shipping(self):
+        self.active_product.delete()
+        digital_product = Product.objects.create(
+            name="Digital Guide",
+            slug="digital-guide",
+            description="A downloadable guide.",
+            price=Decimal("3.00"),
+            product_type=Product.DIGITAL,
+            stock=0,
+        )
+        self.client.post(
+            reverse("shop:add_to_cart", kwargs={"product_id": digital_product.pk}),
+        )
+
+        response = self.client.post(
+            reverse("shop:checkout_review"),
+            {
+                "full_name": "Ayzal Yohan",
+                "email": "ayzal@example.com",
+                "phone": "",
+                "notes": "",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Place order")
+        self.assertNotContains(response, "Shipping address<br>")
+
+        self.client.post(reverse("shop:place_order"))
+        order = Order.objects.get()
+        item = OrderItem.objects.get(order=order)
+        self.assertEqual(order.shipping_address, "")
+        self.assertEqual(item.product_type, Product.DIGITAL)
 
     def test_simulate_payment_marks_current_order_paid(self):
         self.client.post(
