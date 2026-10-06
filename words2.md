@@ -343,3 +343,11 @@ Django Stripe checkout payment completion webhook
 or leave it empty.
 Click:
 Create destination
+
+====
+les48>>
+In your Stripe Dashboard webhook endpoint, enable these three events:
+
+checkout.session.completed
+checkout.session.async_payment_succeeded
+checkout.session.async_payment_failed

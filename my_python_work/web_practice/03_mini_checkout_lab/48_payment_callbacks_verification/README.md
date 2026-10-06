@@ -12,6 +12,27 @@ clear to the customer.
 - A prominent paid, pending, or failed payment notice on the order page
 - Receipt sending only after confirmed payment
 
+## Why Async Events Matter
+
+Some payment methods finish immediately. Others first complete the Checkout
+Session and confirm the money later. That is why the browser return page is
+not enough to mark an order paid.
+
+```text
+checkout.session.completed
+  card payment: payment_status may already be paid
+  delayed payment: keep the order pending
+
+checkout.session.async_payment_succeeded
+  mark the order paid and fulfill it
+
+checkout.session.async_payment_failed
+  mark the payment failed and do not fulfill it
+```
+
+The handler is idempotent: if Stripe retries an event, the paid order and
+receipt are not processed a second time.
+
 ## Events
 
 ```text
@@ -49,4 +70,4 @@ handles immediate and delayed results, and communicates that state clearly.
 
 ## Next Lesson
 
-Lesson 49 connects paid physical orders to fulfillment and courier tracking.
+Lesson 49 connects verified paid physical orders to inventory and fulfillment.

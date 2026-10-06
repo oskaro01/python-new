@@ -39,6 +39,7 @@ class OrderAdmin(admin.ModelAdmin):
         "payment_status",
         "payment_provider",
         "payment_method",
+        "inventory_status",
         "shipping_method",
         "shipping_amount",
         "receipt_sent_at",
@@ -60,6 +61,8 @@ class OrderAdmin(admin.ModelAdmin):
         "payment_provider",
         "payment_reference",
         "payment_method",
+        "inventory_status",
+        "inventory_deducted_at",
         "shipping_amount",
         "total_amount",
     )

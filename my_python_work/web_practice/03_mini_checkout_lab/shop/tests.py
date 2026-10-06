@@ -360,6 +360,9 @@ class ProductCatalogTests(TestCase):
         )
         order.refresh_from_db()
         self.assertEqual(order.payment_status, Order.PAYMENT_PAID)
+        self.assertEqual(order.inventory_status, Order.INVENTORY_DEDUCTED)
+        self.active_product.refresh_from_db()
+        self.assertEqual(self.active_product.stock, 3)
         self.assertEqual(order.status, Order.PENDING)
         self.assertIsNotNone(order.receipt_sent_at)
         self.assertEqual(len(mail.outbox), 1)
@@ -511,6 +514,7 @@ class ProductCatalogTests(TestCase):
         self.assertEqual(response.status_code, 200)
         order.refresh_from_db()
         self.assertEqual(order.payment_status, Order.PAYMENT_PAID)
+        self.assertEqual(order.inventory_status, Order.INVENTORY_NOT_REQUIRED)
         self.assertEqual(order.payment_reference, "pi_test_async_123")
         self.assertEqual(len(mail.outbox), 1)
 
@@ -546,6 +550,54 @@ class ProductCatalogTests(TestCase):
         self.assertEqual(order.payment_reference, "pi_test_async_456")
         self.assertIsNone(order.receipt_sent_at)
         self.assertEqual(len(mail.outbox), 0)
+
+    def test_paid_order_cannot_deduct_more_stock_when_webhook_repeats(self):
+        self.active_product.stock = 1
+        self.active_product.save(update_fields=["stock", "updated_at"])
+        order = Order.objects.create(
+            full_name="Ayzal Yohan",
+            email="ayzal@example.com",
+            total_amount=Decimal("12.50"),
+        )
+        OrderItem.objects.create(
+            order=order,
+            product=self.active_product,
+            product_name=self.active_product.name,
+            product_type=Product.PHYSICAL,
+            unit_price=self.active_product.price,
+            quantity=1,
+            line_total=self.active_product.price,
+        )
+        event = {
+            "type": "checkout.session.completed",
+            "data": {
+                "object": {
+                    "id": "cs_test_inventory_123",
+                    "payment_intent": "pi_test_inventory_123",
+                    "payment_status": "paid",
+                    "metadata": {"order_id": str(order.pk)},
+                }
+            },
+        }
+
+        with patch("shop.views.construct_stripe_event", return_value=event):
+            self.client.post(
+                reverse("shop:stripe_webhook"),
+                data=b"{}",
+                content_type="application/json",
+                HTTP_STRIPE_SIGNATURE="test-signature",
+            )
+            self.client.post(
+                reverse("shop:stripe_webhook"),
+                data=b"{}",
+                content_type="application/json",
+                HTTP_STRIPE_SIGNATURE="test-signature",
+            )
+
+        order.refresh_from_db()
+        self.active_product.refresh_from_db()
+        self.assertEqual(order.inventory_status, Order.INVENTORY_DEDUCTED)
+        self.assertEqual(self.active_product.stock, 0)
 
     def test_order_page_highlights_confirmed_payment(self):
         order = Order.objects.create(

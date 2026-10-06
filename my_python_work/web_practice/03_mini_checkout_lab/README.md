@@ -18,9 +18,10 @@ Personal Dictionary app.
 11. [Lesson 46: Shipping Methods and Costs](46_shipping_methods_costs/README.md)
 12. [Lesson 47: Real Payment Sandbox](47_real_payment_sandbox/README.md)
 13. [Lesson 48: Payment Callbacks and Verification](48_payment_callbacks_verification/README.md)
-14. Planned: Physical Fulfillment and Tracking
-15. Planned: Secure Digital Fulfillment
-16. Planned: Order History and Customer Purchases
+14. [Lesson 49: Inventory And Fulfillment Foundation](49_inventory_fulfillment_foundation/README.md)
+15. Planned: Courier API and Tracking
+16. Planned: Secure Digital Fulfillment
+17. Planned: Order History and Customer Purchases
 
 Each lesson has its own README so we can study, verify, and commit one
 checkpoint at a time.
@@ -68,7 +69,6 @@ site. It does not use the Personal Dictionary database.
 
 ## Not Built Yet
 
-The lab currently has demo payment status and receipt email delivery. Real
-payment processing, shipping integrations, fulfillment workflows, and customer
-purchase history are planned as separate lessons. The final design will support
+Courier API integration, secure digital delivery, refunds, and customer
+purchase history are planned as separate lessons. The final design supports
 physical, digital, and hybrid products rather than only digital downloads.

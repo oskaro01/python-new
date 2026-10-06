@@ -22,6 +22,7 @@ from .cart import (
 )
 from .forms import CheckoutForm
 from .emails import send_order_receipt
+from .inventory import deduct_paid_order_inventory
 from .models import Order, OrderItem, Product
 from .payments import (
     PaymentConfigurationError,
@@ -64,6 +65,7 @@ def confirm_stripe_payment(session):
                 "updated_at",
             ]
         )
+        deduct_paid_order_inventory(order)
         try:
             send_order_receipt(order)
         except Exception:
@@ -367,6 +369,7 @@ def simulate_payment(request, order_id):
                 "updated_at",
             ]
         )
+        deduct_paid_order_inventory(order)
         try:
             send_order_receipt(order)
         except Exception:

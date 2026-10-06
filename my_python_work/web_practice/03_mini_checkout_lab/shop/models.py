@@ -74,10 +74,28 @@ class Order(models.Model):
         (PAYMENT_FAILED, "Failed"),
     ]
 
+    INVENTORY_NOT_REQUIRED = "not_required"
+    INVENTORY_PENDING = "pending"
+    INVENTORY_DEDUCTED = "deducted"
+    INVENTORY_UNAVAILABLE = "unavailable"
+
+    INVENTORY_STATUS_CHOICES = [
+        (INVENTORY_NOT_REQUIRED, "Not required"),
+        (INVENTORY_PENDING, "Pending"),
+        (INVENTORY_DEDUCTED, "Deducted"),
+        (INVENTORY_UNAVAILABLE, "Unavailable"),
+    ]
+
     payment_provider = models.CharField(max_length=40, blank=True)
     payment_reference = models.CharField(max_length=120, blank=True)
     payment_method = models.CharField(max_length=40, blank=True)
     paid_at = models.DateTimeField(null=True, blank=True)
+    inventory_status = models.CharField(
+        max_length=20,
+        choices=INVENTORY_STATUS_CHOICES,
+        default=INVENTORY_PENDING,
+    )
+    inventory_deducted_at = models.DateTimeField(null=True, blank=True)
 
     full_name = models.CharField(max_length=120)
     email = models.EmailField()
