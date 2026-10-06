@@ -17,7 +17,7 @@ Personal Dictionary app.
 10. [Lesson 45: Product Types and Inventory](45_product_types_inventory/README.md)
 11. [Lesson 46: Shipping Methods and Costs](46_shipping_methods_costs/README.md)
 12. [Lesson 47: Real Payment Sandbox](47_real_payment_sandbox/README.md)
-13. Planned: Payment Callbacks and Verification
+13. [Lesson 48: Payment Callbacks and Verification](48_payment_callbacks_verification/README.md)
 14. Planned: Physical Fulfillment and Tracking
 15. Planned: Secure Digital Fulfillment
 16. Planned: Order History and Customer Purchases

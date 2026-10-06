@@ -37,6 +37,67 @@ LAST_ORDER_SESSION_KEY = "last_order_id"
 logger = logging.getLogger(__name__)
 
 
+def confirm_stripe_payment(session):
+    order_id = (session.get("metadata") or {}).get("order_id")
+    if not order_id or session.get("payment_status") != "paid":
+        return
+
+    with transaction.atomic():
+        order = Order.objects.select_for_update().filter(pk=order_id).first()
+        if not order or order.payment_status == Order.PAYMENT_PAID:
+            return
+
+        order.payment_status = Order.PAYMENT_PAID
+        order.payment_provider = "stripe"
+        order.payment_reference = session.get("payment_intent") or session.get(
+            "id", ""
+        )
+        order.payment_method = "card"
+        order.paid_at = timezone.now()
+        order.save(
+            update_fields=[
+                "payment_status",
+                "payment_provider",
+                "payment_reference",
+                "payment_method",
+                "paid_at",
+                "updated_at",
+            ]
+        )
+        try:
+            send_order_receipt(order)
+        except Exception:
+            logger.exception("Receipt email failed for order %s", order.pk)
+        else:
+            order.receipt_sent_at = timezone.now()
+            order.save(update_fields=["receipt_sent_at", "updated_at"])
+
+
+def fail_stripe_payment(session):
+    order_id = (session.get("metadata") or {}).get("order_id")
+    if not order_id:
+        return
+
+    with transaction.atomic():
+        order = Order.objects.select_for_update().filter(pk=order_id).first()
+        if not order or order.payment_status != Order.PAYMENT_PENDING:
+            return
+
+        order.payment_status = Order.PAYMENT_FAILED
+        order.payment_provider = "stripe"
+        order.payment_reference = session.get("payment_intent") or session.get(
+            "id", ""
+        )
+        order.save(
+            update_fields=[
+                "payment_status",
+                "payment_provider",
+                "payment_reference",
+                "updated_at",
+            ]
+        )
+
+
 @require_GET
 def product_list(request):
     products = Product.objects.filter(is_active=True)
@@ -272,35 +333,14 @@ def stripe_webhook(request):
     except (PaymentConfigurationError, ValueError, TypeError):
         return HttpResponse("Invalid webhook", status=400)
 
-    if event["type"] == "checkout.session.completed":
-        session = event["data"]["object"]
-        order_id = (session.get("metadata") or {}).get("order_id")
-        if order_id and session.get("payment_status") == "paid":
-            with transaction.atomic():
-                order = Order.objects.select_for_update().filter(pk=order_id).first()
-                if order and order.payment_status == Order.PAYMENT_PENDING:
-                    order.payment_status = Order.PAYMENT_PAID
-                    order.payment_provider = "stripe"
-                    order.payment_reference = session.get("payment_intent") or session.get("id", "")
-                    order.payment_method = "card"
-                    order.paid_at = timezone.now()
-                    order.save(
-                        update_fields=[
-                            "payment_status",
-                            "payment_provider",
-                            "payment_reference",
-                            "payment_method",
-                            "paid_at",
-                            "updated_at",
-                        ]
-                    )
-                    try:
-                        send_order_receipt(order)
-                    except Exception:
-                        logger.exception("Receipt email failed for order %s", order.pk)
-                    else:
-                        order.receipt_sent_at = timezone.now()
-                        order.save(update_fields=["receipt_sent_at", "updated_at"])
+    session = event["data"]["object"]
+    if event["type"] in {
+        "checkout.session.completed",
+        "checkout.session.async_payment_succeeded",
+    }:
+        confirm_stripe_payment(session)
+    elif event["type"] == "checkout.session.async_payment_failed":
+        fail_stripe_payment(session)
 
     return JsonResponse({"received": True})
 

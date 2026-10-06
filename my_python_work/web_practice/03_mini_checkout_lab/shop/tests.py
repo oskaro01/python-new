@@ -482,6 +482,89 @@ class ProductCatalogTests(TestCase):
         self.assertIsNotNone(order.receipt_sent_at)
         self.assertEqual(len(mail.outbox), 1)
 
+    def test_async_stripe_success_confirms_pending_order(self):
+        order = Order.objects.create(
+            full_name="Ayzal Yohan",
+            email="ayzal@example.com",
+            total_amount=Decimal("12.50"),
+        )
+        event = {
+            "type": "checkout.session.async_payment_succeeded",
+            "data": {
+                "object": {
+                    "id": "cs_test_async_123",
+                    "payment_intent": "pi_test_async_123",
+                    "payment_status": "paid",
+                    "metadata": {"order_id": str(order.pk)},
+                }
+            },
+        }
+
+        with patch("shop.views.construct_stripe_event", return_value=event):
+            response = self.client.post(
+                reverse("shop:stripe_webhook"),
+                data=b"{}",
+                content_type="application/json",
+                HTTP_STRIPE_SIGNATURE="test-signature",
+            )
+
+        self.assertEqual(response.status_code, 200)
+        order.refresh_from_db()
+        self.assertEqual(order.payment_status, Order.PAYMENT_PAID)
+        self.assertEqual(order.payment_reference, "pi_test_async_123")
+        self.assertEqual(len(mail.outbox), 1)
+
+    def test_async_stripe_failure_marks_pending_order_failed(self):
+        order = Order.objects.create(
+            full_name="Ayzal Yohan",
+            email="ayzal@example.com",
+            total_amount=Decimal("12.50"),
+        )
+        event = {
+            "type": "checkout.session.async_payment_failed",
+            "data": {
+                "object": {
+                    "id": "cs_test_async_456",
+                    "payment_intent": "pi_test_async_456",
+                    "payment_status": "unpaid",
+                    "metadata": {"order_id": str(order.pk)},
+                }
+            },
+        }
+
+        with patch("shop.views.construct_stripe_event", return_value=event):
+            response = self.client.post(
+                reverse("shop:stripe_webhook"),
+                data=b"{}",
+                content_type="application/json",
+                HTTP_STRIPE_SIGNATURE="test-signature",
+            )
+
+        self.assertEqual(response.status_code, 200)
+        order.refresh_from_db()
+        self.assertEqual(order.payment_status, Order.PAYMENT_FAILED)
+        self.assertEqual(order.payment_reference, "pi_test_async_456")
+        self.assertIsNone(order.receipt_sent_at)
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_order_page_highlights_confirmed_payment(self):
+        order = Order.objects.create(
+            full_name="Ayzal Yohan",
+            email="ayzal@example.com",
+            payment_status=Order.PAYMENT_PAID,
+            total_amount=Decimal("12.50"),
+        )
+        session = self.client.session
+        session["last_order_id"] = order.pk
+        session.save()
+
+        response = self.client.get(
+            reverse("shop:order_success", kwargs={"order_id": order.pk})
+        )
+
+        self.assertContains(response, "Payment confirmed")
+        self.assertContains(response, "payment-confirmation-success")
+
     def test_order_success_requires_the_current_session(self):
         order = Order.objects.create(
             full_name="Someone Else",

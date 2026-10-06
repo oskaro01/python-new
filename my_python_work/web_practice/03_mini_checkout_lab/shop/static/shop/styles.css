@@ -719,6 +719,37 @@ textarea:focus {
     text-align: center;
 }
 
+.payment-confirmation {
+    display: grid;
+    gap: 3px;
+    margin: 18px 0 24px;
+    padding: 14px 16px;
+    border: 1px solid;
+    border-left-width: 4px;
+    border-radius: 6px;
+}
+
+.payment-confirmation strong { font-size: 1rem; }
+.payment-confirmation span { font-size: 0.9rem; }
+
+.payment-confirmation-success {
+    border-color: #86c6b5;
+    background: #e7f4f0;
+    color: #176554;
+}
+
+.payment-confirmation-pending {
+    border-color: #e1bd68;
+    background: #fff8e7;
+    color: #765a17;
+}
+
+.payment-confirmation-error {
+    border-color: #d7a8aa;
+    background: #fff1f1;
+    color: #8d363a;
+}
+
 .order-items { margin: 26px 0; }
 .order-items h2 { margin-bottom: 12px; }
 

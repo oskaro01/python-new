@@ -69,4 +69,5 @@ own explicit handling.
 
 ## Next Lesson
 
-Lesson 48 connects paid physical orders to a courier/fulfillment provider.
+Lesson 48 handles immediate and delayed payment callbacks and highlights the
+verified payment result for the customer.

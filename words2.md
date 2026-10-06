@@ -191,178 +191,155 @@ The architecture checkpoint is complete and the tests pass. One small practical 
 
 
 
-Ran commands
-
-
-
-Reconnecting /5
-
-
-
-
-
-Reconnecting... waiting for network
-
-
-
-
-
-Reconnecting... waiting for network
-
-
-
-
-
-Reconnecting... waiting for network
-
-
-
-
-
-Reconnecting... waiting for network
-
-
-
-
-
-Reconnecting... waiting for network
-
-
-
-
-
-Reconnecting... waiting for network
-
-
-
-
-
-Reconnecting... waiting for network
-
-
-
-
-
-Reconnecting... waiting for network
-
-
-
-
-
-Reconnecting... waiting for network
-
-
-
-
-
-Reconnecting... waiting for network
-
-
-
-
-
-Reconnecting... waiting for network
-
-
-
-
-
-Reconnecting... waiting for network
-
-
-
-
-
-Reconnecting... waiting for network
-
-
-
-
-
-Reconnecting... waiting for network
-
-
-
-
-
-Reconnecting... waiting for network
-
-
-
-
-
-Reconnecting... waiting for network
-
-
-
-
-
-Reconnecting... waiting for network
-
-
-
-
-
-Reconnecting... waiting for network
-
-
-
-
-
-Reconnecting... waiting for network
-
-
-
-
-
-Reconnecting... waiting for network
-
-
-
-
-
-Reconnecting... waiting for network
-
-
-
-
-
-Reconnecting... waiting for network
-
-
-
-
-
-Reconnecting... waiting for network
-
-
-
-
-
-Reconnecting... waiting for network
-
-
-
-
-
-Reconnecting... waiting for network
-
-
-
-
-
-Reconnecting... waiting for network
-
-
-
-
-
-Reconnecting... waiting for network
-
-
-
-
 
 The Stripe SDK is installed now. I’m adding focused tests for the two things that matter most here: starting a hosted checkout saves the provider reference, and a signed webhook changes the order to paid exactly once. That gives us a real safety net before any keys enter the picture.
 
 Everything now passes with the new payment tests. I’m applying the migration to the local checkout database as the final step; no server will be left running afterward.
+
+===
+
+
+You’re right. We should finish the Stripe sandbox connection before moving to Lesson 48. The code structure is ready, but we have not yet connected your actual test credentials and webhook.
+We still need to complete this checklist:
+1. Get a Stripe test-mode secret key:
+STRIPE_SECRET_KEY=sk_test_...
+
+https://dashboard.stripe.com/acct_1SKex0EmKunnQdQQ/test/apikeys?utm_source=chatgpt.com
+
+2. Configure the project:
+PAYMENT_PROVIDER=stripe
+PAYMENT_CURRENCY=usd
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+Keep these in local environment variables or Render environment settings. Never commit them or send them here.
+3. Start the local server:
+.\.venv\Scripts\python.exe my_python_work\web_practice\03_mini_checkout_lab\manage.py runserver 8001
+4. Forward Stripe events to Django using the Stripe CLI:
+stripe listen --forward-to localhost:8001/payments/stripe/webhook/
+Stripe CLI will display a webhook signing secret beginning with whsec_. That becomes STRIPE_WEBHOOK_SECRET.
+5. Test the complete flow:
+Create order
+→ Click Pay securely
+→ Stripe test checkout
+→ Use a Stripe test card
+→ Stripe sends checkout.session.completed
+→ Django verifies the signature
+→ Order becomes paid
+→ Receipt is sent
+Stripe’s Checkout flow uses a hosted Checkout Session, and the provider recommends using webhooks for fulfillment rather than trusting only the browser return page. Checkout Sessions · Stripe webhook endpoints
+There is one small production detail we should handle before calling this payment lesson complete: support asynchronous payment events such as delayed success and failure. Our current code handles the normal successful card event, which is enough for the first sandbox test. After we verify that flow, we’ll add the async events and then move to Lesson 48.
+So the planned order is:
+Finish Stripe sandbox test
+→ Add async payment success/failure handling
+→ Verify receipt and database state
+→ Begin physical fulfillment and courier tracking
+We are not missing a new architectural lesson. We simply need to connect and verify the credentials now.
+
+
+
+==
+
+
+
+That error means the Stripe CLI is not installed. The Python stripe package and the stripe terminal command are two separate things.
+In PowerShell, install the CLI globally:
+winget install Stripe.StripeCLI
+That is Stripe’s official Windows installation command. Stripe CLI repository
+After installation, completely close and reopen the VS Code terminal, then verify:
+stripe version
+Next, authenticate:
+stripe login
+Your browser will open so you can authorize the CLI. Then use one terminal for the webhook listener:
+
+stripe listen --api-key="$env:STRIPE_SECRET_KEY" --events="checkout.session.completed" --forward-to="http://127.0.0.1:8001/payments/stripe/webhook/"
+
+It will print something like:
+Your webhook signing secret is whsec_...
+
+in another terminal >> 
+In a PowerShell terminal, configure Django using your own test values:
+$env:PAYMENT_PROVIDER="stripe"
+$env:PAYMENT_CURRENCY="usd"
+$env:STRIPE_SECRET_KEY="sk_test_your_key_here"
+$env:STRIPE_WEBHOOK_SECRET="whsec_secret_from_stripe_listen"
+
+You can verify the non-secret settings safely:
+
+
+$env:PAYMENT_PROVIDER
+$env:PAYMENT_CURRENCY
+
+if ($env:STRIPE_WEBHOOK_SECRET) {
+    Write-Host "Stripe webhook is loaded"
+} else {
+    Write-Host "Stripe webhook is missing"
+}
+
+if ($env:STRIPE_SECRET_KEY) {
+    Write-Host "Stripe key is loaded"
+} else {
+    Write-Host "Stripe key is missing"
+} 
+
+
+It should print:
+stripe
+usd
+Then:
+.\.venv\Scripts\python.exe my_python_work\web_practice\03_mini_checkout_lab\manage.py runserver 8001
+Now create a new order:
+Add product
+→ Cart
+→ Checkout
+→ Place order
+→ Order success page
+Do not paste either secret here or commit them. After that, the Pay securely button should redirect you to Stripe’s test checkout, and the CLI will forward the payment webhook back to Django.
+
+
+imp>> 
+The two terminals are:
+Django server: http://127.0.0.1:8001
+Stripe listener: 
+
+Card:
+4242 4242 4242 4242
+
+Expiry:
+Any future date
+
+CVC:
+Any 3 digits
+
+ZIP:
+Any number
+
+====
+
+Render Production Webhook Setup >>>>
+
+https://dashboard.stripe.com/test/webhooks
+
++ Add destination
+
+Event destination scope: Your account
+Payload style: Snapshot
+Select event: checkout > checkout.session.completed
+
+Destination name: mini-checkout-render-webhook
+
+Endpoint URL (Important)
+In the Endpoint URL box, enter your Render webhook URL.
+It should look like:
+https://YOUR-RENDER-APP-NAME.onrender.com/payments/stripe/webhook/
+
+Example:
+https://mini-checkout-lab.onrender.com/payments/stripe/webhook/
+
+
+Description (optional)
+You can write:
+Django Stripe checkout payment completion webhook
+
+or leave it empty.
+Click:
+Create destination

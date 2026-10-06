@@ -9,9 +9,20 @@
         <p class="eyebrow">Order received</p>
         <h1>Order #{{ order.id }} placed</h1>
         {% if order.payment_status == "paid" %}
-        <p class="muted">Your payment has been recorded. The order is still pending fulfillment.</p>
+        <div class="payment-confirmation payment-confirmation-success" role="status">
+            <strong>Payment confirmed</strong>
+            <span>Your receipt has been sent. This order is waiting for fulfillment.</span>
+        </div>
+        {% elif order.payment_status == "failed" %}
+        <div class="payment-confirmation payment-confirmation-error" role="alert">
+            <strong>Payment unsuccessful</strong>
+            <span>The order has not been paid. Please try checkout again.</span>
+        </div>
         {% else %}
-        <p class="muted">Your order is pending. Payment has not been processed.</p>
+        <div class="payment-confirmation payment-confirmation-pending" role="status">
+            <strong>Payment pending</strong>
+            <span>Your order is saved, but payment has not been confirmed yet.</span>
+        </div>
         {% endif %}
 
         <dl class="review-details">
