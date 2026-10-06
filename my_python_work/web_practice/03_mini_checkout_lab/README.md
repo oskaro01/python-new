@@ -16,7 +16,7 @@ Personal Dictionary app.
 9. [Lesson 44: Postgres and Resend Deployment](44_postgres_resend_deployment/README.md)
 10. [Lesson 45: Product Types and Inventory](45_product_types_inventory/README.md)
 11. [Lesson 46: Shipping Methods and Costs](46_shipping_methods_costs/README.md)
-12. Planned: Real Payment Sandbox
+12. [Lesson 47: Real Payment Sandbox](47_real_payment_sandbox/README.md)
 13. Planned: Payment Callbacks and Verification
 14. Planned: Physical Fulfillment and Tracking
 15. Planned: Secure Digital Fulfillment

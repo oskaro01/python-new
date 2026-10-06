@@ -74,6 +74,11 @@ class Order(models.Model):
         (PAYMENT_FAILED, "Failed"),
     ]
 
+    payment_provider = models.CharField(max_length=40, blank=True)
+    payment_reference = models.CharField(max_length=120, blank=True)
+    payment_method = models.CharField(max_length=40, blank=True)
+    paid_at = models.DateTimeField(null=True, blank=True)
+
     full_name = models.CharField(max_length=120)
     email = models.EmailField()
     phone = models.CharField(max_length=30, blank=True)

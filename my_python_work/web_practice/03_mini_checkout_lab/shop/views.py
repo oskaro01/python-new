@@ -4,9 +4,10 @@ import logging
 
 from django.contrib import messages
 from django.db import transaction
-from django.http import Http404, JsonResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
 
 from .cart import (
@@ -22,6 +23,12 @@ from .cart import (
 from .forms import CheckoutForm
 from .emails import send_order_receipt
 from .models import Order, OrderItem, Product
+from .payments import (
+    PaymentConfigurationError,
+    construct_stripe_event,
+    create_stripe_checkout_session,
+    stripe_is_configured,
+)
 from .shipping import shipping_cost
 
 
@@ -217,8 +224,85 @@ def order_success(request, order_id):
         {
             "title": "Order placed",
             "order": order,
+            "stripe_payment_enabled": stripe_is_configured(),
         },
     )
+
+
+@require_POST
+def start_payment(request, order_id):
+    if request.session.get(LAST_ORDER_SESSION_KEY) != order_id:
+        raise Http404
+
+    order = get_object_or_404(
+        Order.objects.prefetch_related("items"),
+        pk=order_id,
+    )
+    if order.payment_status != Order.PAYMENT_PENDING:
+        return redirect("shop:order_success", order_id=order.pk)
+
+    try:
+        session = create_stripe_checkout_session(order, request)
+    except PaymentConfigurationError as error:
+        messages.error(request, str(error))
+        return redirect("shop:order_success", order_id=order.pk)
+
+    order.payment_provider = "stripe"
+    order.payment_reference = session.id
+    order.payment_method = "card"
+    order.save(
+        update_fields=[
+            "payment_provider",
+            "payment_reference",
+            "payment_method",
+            "updated_at",
+        ]
+    )
+    return redirect(session.url)
+
+
+@csrf_exempt
+@require_POST
+def stripe_webhook(request):
+    try:
+        event = construct_stripe_event(
+            request.body,
+            request.headers.get("Stripe-Signature", ""),
+        )
+    except (PaymentConfigurationError, ValueError, TypeError):
+        return HttpResponse("Invalid webhook", status=400)
+
+    if event["type"] == "checkout.session.completed":
+        session = event["data"]["object"]
+        order_id = (session.get("metadata") or {}).get("order_id")
+        if order_id and session.get("payment_status") == "paid":
+            with transaction.atomic():
+                order = Order.objects.select_for_update().filter(pk=order_id).first()
+                if order and order.payment_status == Order.PAYMENT_PENDING:
+                    order.payment_status = Order.PAYMENT_PAID
+                    order.payment_provider = "stripe"
+                    order.payment_reference = session.get("payment_intent") or session.get("id", "")
+                    order.payment_method = "card"
+                    order.paid_at = timezone.now()
+                    order.save(
+                        update_fields=[
+                            "payment_status",
+                            "payment_provider",
+                            "payment_reference",
+                            "payment_method",
+                            "paid_at",
+                            "updated_at",
+                        ]
+                    )
+                    try:
+                        send_order_receipt(order)
+                    except Exception:
+                        logger.exception("Receipt email failed for order %s", order.pk)
+                    else:
+                        order.receipt_sent_at = timezone.now()
+                        order.save(update_fields=["receipt_sent_at", "updated_at"])
+
+    return JsonResponse({"received": True})
 
 
 @require_POST
@@ -229,7 +313,20 @@ def simulate_payment(request, order_id):
     order = get_object_or_404(Order, pk=order_id)
     if order.payment_status == Order.PAYMENT_PENDING:
         order.payment_status = Order.PAYMENT_PAID
-        order.save(update_fields=["payment_status", "updated_at"])
+        order.payment_provider = "demo"
+        order.payment_reference = f"demo-order-{order.pk}"
+        order.payment_method = "demo"
+        order.paid_at = timezone.now()
+        order.save(
+            update_fields=[
+                "payment_status",
+                "payment_provider",
+                "payment_reference",
+                "payment_method",
+                "paid_at",
+                "updated_at",
+            ]
+        )
         try:
             send_order_receipt(order)
         except Exception:

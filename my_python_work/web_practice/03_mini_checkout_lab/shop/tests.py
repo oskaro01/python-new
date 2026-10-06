@@ -1,4 +1,6 @@
 from decimal import Decimal
+from types import SimpleNamespace
+from unittest.mock import patch
 
 from django.core import mail
 from django.test import Client, TestCase
@@ -115,6 +117,7 @@ class ProductCatalogTests(TestCase):
             reverse("shop:checkout_review"),
             reverse("shop:place_order"),
             reverse("shop:simulate_payment", kwargs={"order_id": 1}),
+            reverse("shop:start_payment", kwargs={"order_id": 1}),
         ]
 
         for endpoint in endpoints:
@@ -395,6 +398,89 @@ class ProductCatalogTests(TestCase):
         item = OrderItem.objects.get()
         self.assertEqual(item.unit_price, Decimal("12.50"))
         self.assertEqual(item.line_total, Decimal("12.50"))
+
+    def test_start_payment_saves_provider_checkout_reference(self):
+        order = Order.objects.create(
+            full_name="Ayzal Yohan",
+            email="ayzal@example.com",
+            total_amount=Decimal("12.50"),
+        )
+        OrderItem.objects.create(
+            order=order,
+            product=self.active_product,
+            product_name=self.active_product.name,
+            unit_price=self.active_product.price,
+            quantity=1,
+            line_total=self.active_product.price,
+        )
+        session = self.client.session
+        session["last_order_id"] = order.pk
+        session.save()
+
+        provider_session = SimpleNamespace(
+            id="cs_test_checkout_123",
+            url="https://checkout.stripe.test/session/123",
+        )
+        with patch(
+            "shop.views.create_stripe_checkout_session",
+            return_value=provider_session,
+        ):
+            response = self.client.post(
+                reverse("shop:start_payment", kwargs={"order_id": order.pk})
+            )
+
+        self.assertRedirects(
+            response,
+            provider_session.url,
+            fetch_redirect_response=False,
+        )
+        order.refresh_from_db()
+        self.assertEqual(order.payment_provider, "stripe")
+        self.assertEqual(order.payment_reference, provider_session.id)
+        self.assertEqual(order.payment_method, "card")
+        self.assertEqual(order.payment_status, Order.PAYMENT_PENDING)
+
+    def test_paid_stripe_webhook_confirms_order_once(self):
+        order = Order.objects.create(
+            full_name="Ayzal Yohan",
+            email="ayzal@example.com",
+            total_amount=Decimal("12.50"),
+        )
+        event = {
+            "type": "checkout.session.completed",
+            "data": {
+                "object": {
+                    "id": "cs_test_checkout_123",
+                    "payment_intent": "pi_test_123",
+                    "payment_status": "paid",
+                    "metadata": {"order_id": str(order.pk)},
+                }
+            },
+        }
+
+        with patch("shop.views.construct_stripe_event", return_value=event):
+            first_response = self.client.post(
+                reverse("shop:stripe_webhook"),
+                data=b"{}",
+                content_type="application/json",
+                HTTP_STRIPE_SIGNATURE="test-signature",
+            )
+            second_response = self.client.post(
+                reverse("shop:stripe_webhook"),
+                data=b"{}",
+                content_type="application/json",
+                HTTP_STRIPE_SIGNATURE="test-signature",
+            )
+
+        self.assertEqual(first_response.status_code, 200)
+        self.assertEqual(second_response.status_code, 200)
+        order.refresh_from_db()
+        self.assertEqual(order.payment_status, Order.PAYMENT_PAID)
+        self.assertEqual(order.payment_provider, "stripe")
+        self.assertEqual(order.payment_reference, "pi_test_123")
+        self.assertIsNotNone(order.paid_at)
+        self.assertIsNotNone(order.receipt_sent_at)
+        self.assertEqual(len(mail.outbox), 1)
 
     def test_order_success_requires_the_current_session(self):
         order = Order.objects.create(
