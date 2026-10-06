@@ -13,6 +13,8 @@
             <a class="brand" href="{% url 'pages:word_list' %}">Dictionary</a>
             <nav aria-label="Main navigation">
                 <a href="{% url 'pages:word_list' %}">Words</a>
+                <a href="{% url 'pages:focus_first_list' %}">Focus first</a>
+                <a href="{% url 'pages:manage_words' %}">Manage</a>
                 <a href="{% url 'pages:new_word' %}">Add word</a>
                 <a href="{% url 'pages:about' %}">About</a>
                 {% if perms.dictionary.view_all_words %}

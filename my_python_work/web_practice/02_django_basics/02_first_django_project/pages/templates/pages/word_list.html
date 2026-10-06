@@ -3,8 +3,13 @@
 {% block content %}
 <div class="page-heading">
     <div>
+        {% if focus_only %}
+        <h1>Focus first</h1>
+        <p class="muted">Your most important daily-use words.</p>
+        {% else %}
         <h1>Your words</h1>
         <p class="muted">Your saved vocabulary, in one place.</p>
+        {% endif %}
     </div>
     <div class="action-group">
         <a class="button button-primary" href="{% url 'pages:new_word' %}">Add word</a>
@@ -16,7 +21,7 @@
     <label for="word-search">Search</label>
     <input id="word-search" type="search" name="q" value="{{ query }}" placeholder="Word, meaning, or example">
     <button type="submit">Search</button>
-    {% if query %}<a href="{% url 'pages:word_list' %}">Clear</a>{% endif %}
+    {% if query %}<a href="{% if focus_only %}{% url 'pages:focus_first_list' %}{% else %}{% url 'pages:word_list' %}{% endif %}">Clear</a>{% endif %}
 </form>
 
 <p class="muted">
@@ -29,15 +34,19 @@
 <div class="word-list">
 {% for entry in words %}
 <article class="word-row">
-    <div>
+    <div class="word-row-content">
         <h2><a href="{% url 'pages:word_detail' entry.pk %}">{{ entry.word }}</a></h2>
         {% if entry.meaning %}<p>{{ entry.meaning }}</p>{% else %}<p class="muted">No meaning added</p>{% endif %}
     </div>
-    {% if entry.category %}<span class="word-category">{{ entry.category }}</span>{% endif %}
+    <div class="word-row-meta">
+        {% if entry.category %}<span class="word-category">{{ entry.category }}</span>{% endif %}
+    </div>
 </article>
 {% empty %}
 {% if query %}
 <p class="empty-state">No words match your search.</p>
+{% elif focus_only %}
+<p class="empty-state">No words are marked Focus first yet.</p>
 {% else %}
 <p class="empty-state">No words saved yet. Add your first word to begin.</p>
 {% endif %}
@@ -46,13 +55,9 @@
 
 {% if words.paginator.num_pages > 1 %}
 <div class="pagination">
-    {% if words.has_previous %}
-    <a href="?q={{ query|urlencode }}&amp;page={{ words.previous_page_number }}">Previous</a>
-    {% endif %}
+    {% if words.has_previous %}<a href="?q={{ query|urlencode }}&amp;page={{ words.previous_page_number }}">Previous</a>{% endif %}
     <span>Page {{ words.number }} of {{ words.paginator.num_pages }}</span>
-    {% if words.has_next %}
-    <a href="?q={{ query|urlencode }}&amp;page={{ words.next_page_number }}">Next</a>
-    {% endif %}
+    {% if words.has_next %}<a href="?q={{ query|urlencode }}&amp;page={{ words.next_page_number }}">Next</a>{% endif %}
 </div>
 {% endif %}
 {% endblock %}

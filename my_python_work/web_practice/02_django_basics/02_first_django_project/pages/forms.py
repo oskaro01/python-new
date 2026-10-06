@@ -15,10 +15,14 @@ class WordForm(forms.ModelForm):
 
     class Meta:
         model = Word
-        fields = ["word", "meaning", "example"]
+        fields = ["word", "meaning", "example", "focus_first"]
+        labels = {
+            "focus_first": "Focus first",
+        }
         help_texts = {
             "word": "Required. The word you want to remember.",
             "meaning": "Optional for now.",
+            "focus_first": "Keep this important daily-use word at the top of your list.",
         }
         widgets = {
             "word": forms.TextInput(attrs={"placeholder": "serene"}),

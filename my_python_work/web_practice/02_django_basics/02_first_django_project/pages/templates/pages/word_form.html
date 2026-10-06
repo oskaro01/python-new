@@ -34,6 +34,15 @@
         {{ form.category_name.errors }}
     </div>
 
+    <div class="checkbox-field">
+        {{ form.focus_first }}
+        <div>
+            <label for="{{ form.focus_first.id_for_label }}">Focus first</label>
+            <p class="help-text">{{ form.focus_first.help_text }}</p>
+        </div>
+        {{ form.focus_first.errors }}
+    </div>
+
     <div class="action-group">
         <button type="submit">Save word</button>
         <a class="button" href="{% url 'pages:word_list' %}">Cancel</a>

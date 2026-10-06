@@ -77,7 +77,7 @@ button.button-danger-solid:hover { background: #941e15; color: #fff; }
 .search-form { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin: 0 0 22px; }
 .search-form label { font-weight: 600; }
 .search-form input { flex: 1 1 250px; max-width: 440px; }
-input, textarea {
+input, textarea, select {
     width: 100%;
     min-width: 0;
     padding: 9px 11px;
@@ -87,8 +87,25 @@ input, textarea {
     color: #111;
     font: inherit;
 }
-input:focus, textarea:focus { outline: 2px solid #3f5f9f; outline-offset: 2px; }
+input:focus, textarea:focus, select:focus { outline: 2px solid #3f5f9f; outline-offset: 2px; }
 textarea { resize: vertical; }
+input[type="checkbox"] { width: 18px; height: 18px; padding: 0; accent-color: #3f5f9f; }
+
+.bulk-toolbar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 10px;
+    padding: 10px 12px;
+    border: 1px solid #c9ccd1;
+    border-radius: 4px;
+    background: #fff;
+}
+.select-page-control { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; }
+.bulk-action-label { margin-left: auto; font-weight: 600; }
+.bulk-toolbar select { width: auto; min-width: 210px; }
+.selection-count { min-width: 78px; color: #6b7078; font-size: 0.85rem; }
 
 .word-list { border: 1px solid #c9ccd1; border-radius: 4px; background: #fff; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.14); }
 .word-row {
@@ -99,6 +116,9 @@ textarea { resize: vertical; }
     padding: 10px 18px;
     border-bottom: 1px solid #e5e5e5;
 }
+.word-row > .word-selector { flex: 0 0 auto; margin-top: 3px; }
+.word-row-content { flex: 1 1 auto; min-width: 0; }
+.word-row-meta { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 8px; }
 .word-row:last-child { border-bottom: 0; }
 .word-row h2 { margin-bottom: 2px; line-height: 1.25; }
 .word-row p { margin: 0; color: #6b7078; line-height: 1.35; overflow-wrap: anywhere; }
@@ -139,9 +159,23 @@ textarea { resize: vertical; }
 .form-page .form-panel + p { margin-top: 20px; }
 .field { display: grid; gap: 6px; }
 .field label { font-weight: 600; }
+.checkbox-field { display: grid; grid-template-columns: 18px 1fr; align-items: start; gap: 4px 10px; }
+.checkbox-field label { font-weight: 600; }
+.checkbox-field .errorlist { grid-column: 2; }
 .help-text { margin: 0; font-size: 0.85rem; }
 .errorlist { margin: 0; padding-left: 20px; color: #b42318; }
 .panel { padding: 20px; border: 1px solid #c9ccd1; border-radius: 4px; background: #fff; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.14); }
+.import-example { margin-top: 20px; }
+.import-example pre {
+    margin: 10px 0 0;
+    padding: 16px;
+    overflow-x: auto;
+    border: 1px solid #c9ccd1;
+    border-radius: 4px;
+    background: #fff;
+    color: #1c1e21;
+    line-height: 1.45;
+}
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -216,6 +250,10 @@ textarea { resize: vertical; }
     .page-heading { align-items: flex-start; flex-direction: column; }
     .search-form input { flex-basis: 100%; max-width: none; }
     .word-row { flex-direction: column; gap: 8px; }
+    .word-row > .word-selector { margin-top: 0; }
+    .word-row-meta { justify-content: flex-start; }
+    .bulk-action-label { width: 100%; margin-left: 0; }
+    .bulk-toolbar select { flex: 1 1 190px; min-width: 0; }
     .form-panel { padding: 18px; }
     .form-page .form-panel {
         padding-block: 24px;

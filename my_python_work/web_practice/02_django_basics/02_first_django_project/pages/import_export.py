@@ -8,7 +8,7 @@ from pathlib import Path
 from django.http import HttpResponse
 
 
-EXPORT_FIELDS = ("word", "meaning", "example", "category")
+EXPORT_FIELDS = ("word", "meaning", "example", "category", "focus_first")
 ALLOWED_EXTENSIONS = {".csv", ".json"}
 MAX_FILE_SIZE = 1_000_000
 MAX_IMPORT_ROWS = 5_000
@@ -21,6 +21,7 @@ def word_rows(words):
             "meaning": word.meaning,
             "example": word.example,
             "category": word.category.name if word.category else "",
+            "focus_first": word.focus_first,
         }
 
 
@@ -89,3 +90,10 @@ def row_text(row, *keys):
         if value is not None:
             return str(value).strip()
     return ""
+
+
+def row_bool(row, key):
+    value = row.get(key, False)
+    if isinstance(value, bool):
+        return value
+    return str(value).strip().casefold() in {"1", "true", "yes", "on"}

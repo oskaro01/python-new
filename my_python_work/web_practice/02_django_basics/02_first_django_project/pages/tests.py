@@ -139,6 +139,7 @@ class WordAccessTests(TestCase):
                 "meaning": "full of life",
                 "example": "The colors were vivid.",
                 "category_name": "adjective",
+                "focus_first": "on",
             },
         )
         self.assertRedirects(create_response, reverse("pages:word_list"))
@@ -146,6 +147,7 @@ class WordAccessTests(TestCase):
         new_word = Word.objects.get(word="vivid")
         self.assertEqual(new_word.owner, self.user)
         self.assertEqual(new_word.category, self.category)
+        self.assertTrue(new_word.focus_first)
 
         edit_response = self.client.post(
             reverse("pages:edit_word", args=[new_word.pk]),
@@ -154,6 +156,7 @@ class WordAccessTests(TestCase):
                 "meaning": "bright and lively",
                 "example": "The colors were vivid.",
                 "category_name": "adjective",
+                "focus_first": "on",
             },
         )
         self.assertRedirects(
@@ -176,6 +179,97 @@ class WordAccessTests(TestCase):
 
         self.assertContains(response, "serene")
         self.assertNotContains(response, "stern")
+
+    def test_word_list_shows_fifty_words_per_page(self):
+        Word.objects.bulk_create(
+            [
+                Word(owner=self.user, word=f"word-{number:02d}")
+                for number in range(50)
+            ]
+        )
+        self.login_user()
+
+        first_page = self.client.get(reverse("pages:word_list"))
+        second_page = self.client.get(reverse("pages:word_list"), {"page": 2})
+
+        self.assertEqual(len(first_page.context["words"]), 50)
+        self.assertEqual(len(second_page.context["words"]), 1)
+
+    def test_focus_first_words_are_listed_before_regular_words(self):
+        Word.objects.create(owner=self.user, word="zebra", focus_first=True)
+        self.login_user()
+
+        response = self.client.get(reverse("pages:word_list"))
+        listed_words = [entry.word for entry in response.context["words"]]
+
+        self.assertEqual(listed_words[0], "zebra")
+
+    def test_focus_first_page_shows_only_focused_words(self):
+        Word.objects.create(owner=self.user, word="daily", focus_first=True)
+        self.login_user()
+
+        response = self.client.get(reverse("pages:focus_first_list"))
+
+        self.assertContains(response, "daily")
+        self.assertContains(response, "Focus first")
+        self.assertNotContains(response, "serene")
+
+    def test_words_page_links_to_focus_first_page(self):
+        self.login_user()
+
+        response = self.client.get(reverse("pages:word_list"))
+
+        self.assertContains(response, reverse("pages:focus_first_list"))
+
+    def test_word_pages_do_not_show_bulk_checkboxes(self):
+        self.login_user()
+
+        words_response = self.client.get(reverse("pages:word_list"))
+        focus_response = self.client.get(reverse("pages:focus_first_list"))
+
+        self.assertNotContains(words_response, 'name="selected_words"')
+        self.assertNotContains(focus_response, 'name="selected_words"')
+
+    def test_manage_page_contains_bulk_controls(self):
+        self.login_user()
+
+        response = self.client.get(reverse("pages:manage_words"))
+
+        self.assertContains(response, "Manage words")
+        self.assertContains(response, 'name="selected_words"')
+        self.assertContains(response, "Delete selected")
+
+    def test_bulk_focus_only_changes_the_current_users_words(self):
+        self.login_user()
+
+        response = self.client.post(
+            reverse("pages:bulk_word_action"),
+            {
+                "action": "focus",
+                "selected_words": [self.own_word.pk, self.other_word.pk],
+                "return_to": "focus",
+            },
+        )
+
+        self.assertRedirects(response, reverse("pages:focus_first_list"))
+        self.own_word.refresh_from_db()
+        self.other_word.refresh_from_db()
+        self.assertTrue(self.own_word.focus_first)
+        self.assertFalse(self.other_word.focus_first)
+
+    def test_bulk_delete_only_removes_the_current_users_words(self):
+        self.login_user()
+
+        self.client.post(
+            reverse("pages:bulk_word_action"),
+            {
+                "action": "delete",
+                "selected_words": [self.own_word.pk, self.other_word.pk],
+            },
+        )
+
+        self.assertFalse(Word.objects.filter(pk=self.own_word.pk).exists())
+        self.assertTrue(Word.objects.filter(pk=self.other_word.pk).exists())
 
 
 class ImportExportTests(TestCase):
@@ -202,7 +296,7 @@ class ImportExportTests(TestCase):
         content = response.content.decode("utf-8")
 
         self.assertEqual(response.status_code, 200)
-        self.assertIn("word,meaning,example,category", content)
+        self.assertIn("word,meaning,example,category,focus_first", content)
         self.assertIn("serene", content)
         self.assertNotIn("private-word", content)
 
@@ -212,6 +306,13 @@ class ImportExportTests(TestCase):
 
         self.assertEqual(len(data), 1)
         self.assertEqual(data[0]["word"], "serene")
+        self.assertFalse(data[0]["focus_first"])
+
+    def test_import_page_shows_json_structure_example(self):
+        response = self.client.get(reverse("pages:import_words"))
+
+        self.assertContains(response, "JSON structure")
+        self.assertContains(response, '"focus_first": true')
 
     def test_json_import_assigns_owner_and_skips_duplicate(self):
         content = json.dumps(
@@ -221,6 +322,7 @@ class ImportExportTests(TestCase):
                     "word": "stern",
                     "meaning": "serious",
                     "category": "adjective",
+                    "focus_first": True,
                 },
             ]
         ).encode("utf-8")
@@ -241,6 +343,7 @@ class ImportExportTests(TestCase):
         imported_word = Word.objects.get(word="stern")
         self.assertEqual(imported_word.owner, self.user)
         self.assertEqual(imported_word.category.owner, self.user)
+        self.assertTrue(imported_word.focus_first)
 
 
 class PermissionTests(TestCase):

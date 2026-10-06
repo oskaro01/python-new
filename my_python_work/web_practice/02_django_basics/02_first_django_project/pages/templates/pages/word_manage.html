@@ -1,0 +1,100 @@
+{% extends "pages/base.html" %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <h1>Manage words</h1>
+        <p class="muted">Select words to update or delete them together.</p>
+    </div>
+    <a class="button" href="{% url 'pages:word_list' %}">Back to words</a>
+</div>
+
+<form method="get" class="search-form">
+    <label for="manage-word-search">Search</label>
+    <input id="manage-word-search" type="search" name="q" value="{{ query }}" placeholder="Word, meaning, or example">
+    <button type="submit">Search</button>
+    {% if query %}<a href="{% url 'pages:manage_words' %}">Clear</a>{% endif %}
+</form>
+
+{% if words %}
+<form method="post" action="{% url 'pages:bulk_word_action' %}" id="bulk-word-form">
+    {% csrf_token %}
+    <input type="hidden" name="return_to" value="manage">
+    <div class="bulk-toolbar">
+        <label class="select-page-control" for="select-page">
+            <input type="checkbox" id="select-page">
+            Select page
+        </label>
+        <label class="bulk-action-label" for="bulk-action">Action</label>
+        <select id="bulk-action" name="action" required>
+            <option value="">Choose action</option>
+            <option value="focus">Move to Focus first</option>
+            <option value="unfocus">Remove from Focus first</option>
+            <option value="delete">Delete selected</option>
+        </select>
+        <button type="submit">Apply</button>
+        <span class="selection-count" id="selection-count" aria-live="polite">0 selected</span>
+    </div>
+
+    <div class="word-list">
+    {% for entry in words %}
+    <article class="word-row">
+        <input class="word-selector" type="checkbox" name="selected_words" value="{{ entry.pk }}" aria-label="Select {{ entry.word }}">
+        <div class="word-row-content">
+            <h2><a href="{% url 'pages:word_detail' entry.pk %}">{{ entry.word }}</a></h2>
+            {% if entry.meaning %}<p>{{ entry.meaning }}</p>{% else %}<p class="muted">No meaning added</p>{% endif %}
+        </div>
+        <div class="word-row-meta">
+            {% if entry.category %}<span class="word-category">{{ entry.category }}</span>{% endif %}
+        </div>
+    </article>
+    {% endfor %}
+    </div>
+</form>
+{% elif query %}
+<div class="word-list"><p class="empty-state">No words match your search.</p></div>
+{% else %}
+<div class="word-list"><p class="empty-state">No words saved yet.</p></div>
+{% endif %}
+
+{% if words.paginator.num_pages > 1 %}
+<div class="pagination">
+    {% if words.has_previous %}<a href="?q={{ query|urlencode }}&amp;page={{ words.previous_page_number }}">Previous</a>{% endif %}
+    <span>Page {{ words.number }} of {{ words.paginator.num_pages }}</span>
+    {% if words.has_next %}<a href="?q={{ query|urlencode }}&amp;page={{ words.next_page_number }}">Next</a>{% endif %}
+</div>
+{% endif %}
+
+{% if words %}
+<script>
+    const bulkForm = document.querySelector("#bulk-word-form");
+    const selectPage = document.querySelector("#select-page");
+    const wordSelectors = [...document.querySelectorAll(".word-selector")];
+    const selectionCount = document.querySelector("#selection-count");
+    const actionSelect = document.querySelector("#bulk-action");
+
+    function updateSelection() {
+        const selected = wordSelectors.filter((checkbox) => checkbox.checked).length;
+        selectionCount.textContent = `${selected} selected`;
+        selectPage.checked = selected === wordSelectors.length;
+        selectPage.indeterminate = selected > 0 && selected < wordSelectors.length;
+    }
+
+    selectPage.addEventListener("change", () => {
+        wordSelectors.forEach((checkbox) => { checkbox.checked = selectPage.checked; });
+        updateSelection();
+    });
+    wordSelectors.forEach((checkbox) => checkbox.addEventListener("change", updateSelection));
+    bulkForm.addEventListener("submit", (event) => {
+        if (!wordSelectors.some((checkbox) => checkbox.checked)) {
+            event.preventDefault();
+            selectionCount.textContent = "Select at least one word";
+            return;
+        }
+        if (actionSelect.value === "delete" && !window.confirm("Delete the selected words? This cannot be undone.")) {
+            event.preventDefault();
+        }
+    });
+</script>
+{% endif %}
+{% endblock %}

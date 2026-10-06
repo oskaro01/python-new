@@ -12,7 +12,7 @@ from django.db.models import Count, Q
 from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.views.decorators.http import require_GET, require_http_methods
+from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from dictionary.models import Category, Word
 
@@ -21,6 +21,7 @@ from .import_export import (
     csv_response,
     json_response,
     read_import_rows,
+    row_bool,
     row_text,
 )
 from .database_schema import get_database_schema
@@ -141,7 +142,35 @@ def new_word(request):
 
 
 @login_required
-def word_list(request):
+def word_list(request, focus_only=False):
+    words = Word.objects.select_related("category").filter(owner=request.user)
+    query = request.GET.get("q", "").strip()
+
+    if focus_only:
+        words = words.filter(focus_first=True)
+    if query:
+        words = words.filter(
+            Q(word__icontains=query)
+            | Q(meaning__icontains=query)
+            | Q(example__icontains=query)
+        )
+    words = words.order_by("-focus_first", "word")
+    page = Paginator(words, 50).get_page(request.GET.get("page"))
+    return render(request, "pages/word_list.html", {
+        "title": "Words",
+        "words": page,
+        "query": query,
+        "focus_only": focus_only,
+    })
+
+
+@login_required
+def focus_first_list(request):
+    return word_list(request, focus_only=True)
+
+
+@login_required
+def manage_words(request):
     words = Word.objects.select_related("category").filter(owner=request.user)
     query = request.GET.get("q", "").strip()
 
@@ -151,12 +180,52 @@ def word_list(request):
             | Q(meaning__icontains=query)
             | Q(example__icontains=query)
         )
-    page = Paginator(words, 5).get_page(request.GET.get("page"))
-    return render(request, "pages/word_list.html", {
-        "title": "Words",
+
+    page = Paginator(words.order_by("-focus_first", "word"), 50).get_page(
+        request.GET.get("page")
+    )
+    return render(request, "pages/word_manage.html", {
+        "title": "Manage words",
         "words": page,
         "query": query,
     })
+
+
+@login_required
+@require_POST
+def bulk_word_action(request):
+    selected_ids = request.POST.getlist("selected_words")
+    action = request.POST.get("action", "")
+    return_to = request.POST.get("return_to")
+    redirect_name = (
+        "pages:focus_first_list"
+        if return_to == "focus"
+        else "pages:manage_words"
+        if return_to == "manage"
+        else "pages:word_list"
+    )
+
+    if not selected_ids:
+        messages.info(request, "Select at least one word first.")
+        return redirect(redirect_name)
+
+    words = Word.objects.filter(owner=request.user, pk__in=selected_ids)
+    selected_count = words.count()
+
+    if action == "focus":
+        words.update(focus_first=True)
+        messages.success(request, f"{selected_count} word(s) moved to Focus first.")
+    elif action == "unfocus":
+        words.update(focus_first=False)
+        messages.success(request, f"{selected_count} word(s) removed from Focus first.")
+    elif action == "delete":
+        words.delete()
+        clear_staff_dashboard_cache()
+        messages.success(request, f"{selected_count} word(s) deleted.")
+    else:
+        messages.error(request, "Choose a valid bulk action.")
+
+    return redirect(redirect_name)
 
 
 @login_required
@@ -214,6 +283,7 @@ def import_words(request):
                         "meaning": row_text(row, "meaning"),
                         "example": row_text(row, "example"),
                         "category_name": row_text(row, "category", "category_name"),
+                        "focus_first": row_bool(row, "focus_first"),
                     },
                     user=request.user,
                 )

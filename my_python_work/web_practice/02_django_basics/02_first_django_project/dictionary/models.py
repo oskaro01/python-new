@@ -42,6 +42,10 @@ class Word(models.Model):
         null=True,
         blank=True,
     )
+    focus_first = models.BooleanField(
+        default=False,
+        help_text="Show this word before the rest of your dictionary.",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
