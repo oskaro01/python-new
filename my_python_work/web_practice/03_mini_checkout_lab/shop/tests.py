@@ -235,6 +235,7 @@ class ProductCatalogTests(TestCase):
                 "shipping_city": "Dhaka",
                 "shipping_postal_code": "1205",
                 "shipping_country": "Bangladesh",
+                "shipping_method": "standard",
                 "notes": "Please leave at the front desk.",
             },
         )
@@ -261,6 +262,7 @@ class ProductCatalogTests(TestCase):
                 "shipping_city": "Dhaka",
                 "shipping_postal_code": "1205",
                 "shipping_country": "Bangladesh",
+                "shipping_method": "standard",
                 "notes": "",
             },
         )
@@ -275,7 +277,9 @@ class ProductCatalogTests(TestCase):
         )
         self.assertEqual(order.status, Order.PENDING)
         self.assertEqual(order.payment_status, Order.PAYMENT_PENDING)
-        self.assertEqual(order.total_amount, Decimal("12.50"))
+        self.assertEqual(order.total_amount, Decimal("17.50"))
+        self.assertEqual(order.shipping_method, "standard")
+        self.assertEqual(order.shipping_amount, Decimal("5.00"))
         self.assertEqual(order.shipping_address, "12 River Road")
         self.assertEqual(order.shipping_city, "Dhaka")
         self.assertEqual(order.shipping_postal_code, "1205")
@@ -336,6 +340,7 @@ class ProductCatalogTests(TestCase):
                 "shipping_city": "Dhaka",
                 "shipping_postal_code": "1205",
                 "shipping_country": "Bangladesh",
+                "shipping_method": "standard",
                 "notes": "",
             },
         )
@@ -378,6 +383,7 @@ class ProductCatalogTests(TestCase):
                 "shipping_city": "Dhaka",
                 "shipping_postal_code": "1205",
                 "shipping_country": "Bangladesh",
+                "shipping_method": "standard",
                 "notes": "",
             },
         )

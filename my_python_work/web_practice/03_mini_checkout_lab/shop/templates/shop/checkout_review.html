@@ -27,6 +27,12 @@
                 <dd>{{ customer.phone }}</dd>
             </div>
             {% endif %}
+            {% if customer.shipping_method %}
+            <div>
+                <dt>Shipping method</dt>
+                <dd>{{ customer.shipping_method|title }}</dd>
+            </div>
+            {% endif %}
             {% if customer.shipping_address or customer.shipping_city or customer.shipping_country %}
             <div>
                 <dt>Shipping address</dt>
@@ -66,8 +72,18 @@
             {% endfor %}
         </ul>
         <div class="summary-total">
-            <span>Total</span>
+            <span>Subtotal</span>
             <strong>${{ cart_total|floatformat:2 }}</strong>
+        </div>
+        {% if customer.shipping_method %}
+        <div class="summary-total">
+            <span>Shipping</span>
+            <strong>${{ shipping_amount|floatformat:2 }}</strong>
+        </div>
+        {% endif %}
+        <div class="summary-total">
+            <span>Total</span>
+            <strong>${{ order_total|floatformat:2 }}</strong>
         </div>
     </aside>
 </section>

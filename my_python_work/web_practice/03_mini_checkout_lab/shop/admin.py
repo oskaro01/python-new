@@ -37,11 +37,13 @@ class OrderAdmin(admin.ModelAdmin):
         "email",
         "status",
         "payment_status",
+        "shipping_method",
+        "shipping_amount",
         "receipt_sent_at",
         "total_amount",
         "created_at",
     )
-    list_filter = ("status", "payment_status", "created_at")
+    list_filter = ("status", "payment_status", "shipping_method", "created_at")
     search_fields = (
         "full_name",
         "email",
@@ -52,6 +54,7 @@ class OrderAdmin(admin.ModelAdmin):
         "created_at",
         "updated_at",
         "receipt_sent_at",
+        "shipping_amount",
         "total_amount",
     )
     inlines = [OrderItemInline]

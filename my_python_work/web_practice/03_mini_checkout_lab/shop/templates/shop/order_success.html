@@ -31,6 +31,12 @@
                 <dt>Payment status</dt>
                 <dd>{{ order.get_payment_status_display }}</dd>
             </div>
+            {% if order.shipping_method %}
+            <div>
+                <dt>Shipping method</dt>
+                <dd>{{ order.shipping_method|title }} - ${{ order.shipping_amount|floatformat:2 }}</dd>
+            </div>
+            {% endif %}
             <div>
                 <dt>Receipt</dt>
                 {% if order.receipt_sent_at %}

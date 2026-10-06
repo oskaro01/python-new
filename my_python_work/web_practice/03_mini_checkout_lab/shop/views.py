@@ -22,6 +22,7 @@ from .cart import (
 from .forms import CheckoutForm
 from .emails import send_order_receipt
 from .models import Order, OrderItem, Product
+from .shipping import shipping_cost
 
 
 CHECKOUT_SESSION_KEY = "checkout_customer"
@@ -123,6 +124,12 @@ def checkout_review(request):
         messages.info(request, "Your cart is no longer available.")
         return redirect("shop:cart_detail")
 
+    shipping_amount = (
+        shipping_cost(form.cleaned_data["shipping_method"])
+        if form.cleaned_data["shipping_method"]
+        else 0
+    )
+
     return render(
         request,
         "shop/checkout_review.html",
@@ -131,6 +138,8 @@ def checkout_review(request):
             "customer": form.cleaned_data,
             "items": items,
             "cart_total": get_cart_total(items),
+            "shipping_amount": shipping_amount,
+            "order_total": get_cart_total(items) + shipping_amount,
         },
     )
 
@@ -152,6 +161,11 @@ def place_order(request):
         return redirect("shop:checkout")
 
     cart_total = get_cart_total(items)
+    shipping_amount = (
+        shipping_cost(form.cleaned_data["shipping_method"])
+        if cart_requires_shipping(items)
+        else 0
+    )
     with transaction.atomic():
         order = Order.objects.create(
             full_name=form.cleaned_data["full_name"],
@@ -161,8 +175,10 @@ def place_order(request):
             shipping_city=form.cleaned_data["shipping_city"],
             shipping_postal_code=form.cleaned_data["shipping_postal_code"],
             shipping_country=form.cleaned_data["shipping_country"],
+            shipping_method=form.cleaned_data["shipping_method"],
+            shipping_amount=shipping_amount,
             notes=form.cleaned_data["notes"],
-            total_amount=cart_total,
+            total_amount=cart_total + shipping_amount,
         )
         OrderItem.objects.bulk_create(
             [

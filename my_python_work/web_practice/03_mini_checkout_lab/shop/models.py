@@ -81,6 +81,12 @@ class Order(models.Model):
     shipping_city = models.CharField(max_length=100, default="")
     shipping_postal_code = models.CharField(max_length=20, default="")
     shipping_country = models.CharField(max_length=80, default="")
+    shipping_method = models.CharField(max_length=30, default="")
+    shipping_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0,
+    )
     notes = models.TextField(blank=True)
     status = models.CharField(
         max_length=20,

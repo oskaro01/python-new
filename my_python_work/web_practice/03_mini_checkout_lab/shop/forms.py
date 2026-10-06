@@ -2,6 +2,8 @@
 
 from django import forms
 
+from .shipping import shipping_choices
+
 
 class CheckoutForm(forms.Form):
     full_name = forms.CharField(max_length=120, label="Full name")
@@ -11,6 +13,11 @@ class CheckoutForm(forms.Form):
     shipping_city = forms.CharField(max_length=100, label="City")
     shipping_postal_code = forms.CharField(max_length=20, label="Postal code")
     shipping_country = forms.CharField(max_length=80, label="Country")
+    shipping_method = forms.ChoiceField(
+        choices=(),
+        label="Shipping method",
+        required=False,
+    )
     notes = forms.CharField(
         required=False,
         label="Order notes",
@@ -19,6 +26,15 @@ class CheckoutForm(forms.Form):
 
     def __init__(self, *args, requires_shipping=True, **kwargs):
         super().__init__(*args, **kwargs)
+        if requires_shipping:
+            self.fields["shipping_method"].choices = [
+                ("", "Choose a shipping method")
+            ] + shipping_choices()
+            self.fields["shipping_method"].required = True
+        else:
+            self.fields["shipping_method"].choices = [
+                ("", "No shipping required")
+            ]
         if not requires_shipping:
             for field_name in (
                 "shipping_address",
