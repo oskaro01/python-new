@@ -21,8 +21,10 @@ Personal Dictionary app.
 14. [Lesson 49: Inventory And Fulfillment Foundation](49_inventory_fulfillment_foundation/README.md)
 15. [Lesson 50: Shipment Records and Courier Boundary](50_shipment_records_courier_boundary/README.md)
 16. [Lesson 51: Pathao Courier API](51_pathao_courier_api/README.md)
-17. Planned: Secure Digital Fulfillment
-17. Planned: Order History and Customer Purchases
+17. [Lesson 52: Secure Digital Fulfillment](52_secure_digital_fulfillment/README.md)
+18. **Pending:** Pathao location IDs and webhook integration (sandbox `522`)
+19. **Pending:** bKash sandbox payment and webhook integration
+20. Planned: Order History and Customer Purchases
 
 Each lesson has its own README so we can study, verify, and commit one
 checkpoint at a time.
@@ -70,6 +72,6 @@ site. It does not use the Personal Dictionary database.
 
 ## Not Built Yet
 
-Courier API integration, secure digital delivery, refunds, and customer
-purchase history are planned as separate lessons. The final design supports
-physical, digital, and hybrid products rather than only digital downloads.
+Pathao API completion, bKash, refunds, and customer purchase history remain
+planned lessons. The final design supports physical, digital, and hybrid
+products rather than only digital downloads.

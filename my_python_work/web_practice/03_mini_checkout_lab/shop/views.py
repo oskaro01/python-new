@@ -1,10 +1,13 @@
 """Public product catalog views."""
 
 import logging
+from pathlib import Path
 
 from django.contrib import messages
+from django.core import signing
+from django.core.files.storage import default_storage
 from django.db import transaction
-from django.http import Http404, HttpResponse, JsonResponse
+from django.http import FileResponse, Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
@@ -22,6 +25,7 @@ from .cart import (
 )
 from .forms import CheckoutForm
 from .emails import send_order_receipt
+from .downloads import build_download_url, read_download_token
 from .inventory import deduct_paid_order_inventory
 from .models import Order, OrderItem, Product
 from .payments import (
@@ -263,6 +267,7 @@ def place_order(request):
                     unit_price=item["product"].price,
                     quantity=item["quantity"],
                     line_total=item["line_total"],
+                    digital_file_name=item["product"].digital_file.name,
                 )
                 for item in items
             ]
@@ -284,14 +289,53 @@ def order_success(request, order_id):
         Order.objects.prefetch_related("items"),
         pk=order_id,
     )
+    download_items = []
+    if order.payment_status == Order.PAYMENT_PAID:
+        for item in order.items.all():
+            if (
+                item.product_type in {Product.DIGITAL, Product.HYBRID}
+                and item.digital_file_name
+            ):
+                item.download_url = build_download_url(request, item)
+                download_items.append(item)
     return render(
         request,
         "shop/order_success.html",
         {
             "title": "Order placed",
             "order": order,
+            "download_items": download_items,
             "stripe_payment_enabled": stripe_is_configured(),
         },
+    )
+
+
+@require_GET
+def download_order_item(request, order_id, item_id):
+    token = request.GET.get("token", "")
+    try:
+        token_data = read_download_token(token)
+    except (signing.BadSignature, signing.SignatureExpired):
+        raise Http404 from None
+    if token_data != {"order_id": order_id, "item_id": item_id}:
+        raise Http404
+
+    item = get_object_or_404(
+        OrderItem.objects.select_related("order"),
+        pk=item_id,
+        order_id=order_id,
+        product_type__in=[Product.DIGITAL, Product.HYBRID],
+    )
+    if item.order.payment_status != Order.PAYMENT_PAID or not item.digital_file_name:
+        raise Http404
+    try:
+        file_handle = default_storage.open(item.digital_file_name, "rb")
+    except FileNotFoundError:
+        raise Http404 from None
+    return FileResponse(
+        file_handle,
+        as_attachment=True,
+        filename=Path(item.digital_file_name).name,
     )
 
 

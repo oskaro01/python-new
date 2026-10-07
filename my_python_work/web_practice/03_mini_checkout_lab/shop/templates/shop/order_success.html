@@ -114,6 +114,19 @@
             </div>
         </div>
 
+        {% if download_items %}
+        <div class="digital-downloads">
+            <h2>Digital downloads</h2>
+            {% for item in download_items %}
+            <div class="digital-download-row">
+                <span>{{ item.product_name }}</span>
+                <a class="button" href="{{ item.download_url }}">Download</a>
+            </div>
+            {% endfor %}
+            <p>Download links expire for security. Reload this page to create a fresh link.</p>
+        </div>
+        {% endif %}
+
         <a class="button button-primary" href="{% url 'shop:product_list' %}">Continue shopping</a>
     </div>
 </section>

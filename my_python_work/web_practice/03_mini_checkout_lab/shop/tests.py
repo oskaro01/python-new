@@ -1,11 +1,14 @@
 from decimal import Decimal
+import tempfile
 from types import SimpleNamespace
 from unittest.mock import patch
 
 from django.core import mail
-from django.test import Client, TestCase
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
+from .downloads import create_download_token
 from .models import Order, OrderItem, Product, Shipment
 from .shipping import create_shipment_for_order, update_shipment_status
 
@@ -694,3 +697,77 @@ class FulfillmentTests(TestCase):
         self.assertIsNotNone(shipment.delivered_at)
         self.assertEqual(self.order.fulfillment_status, Order.FULFILLMENT_DELIVERED)
         self.assertEqual(self.order.status, Order.COMPLETED)
+
+
+class SecureDigitalFulfillmentTests(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.media_directory = tempfile.TemporaryDirectory()
+        cls.media_override = override_settings(MEDIA_ROOT=cls.media_directory.name)
+        cls.media_override.enable()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.media_override.disable()
+        cls.media_directory.cleanup()
+        super().tearDownClass()
+
+    def setUp(self):
+        self.product = Product.objects.create(
+            name="Digital Guide",
+            slug="secure-digital-guide",
+            price=Decimal("4.00"),
+            product_type=Product.DIGITAL,
+            digital_file=SimpleUploadedFile(
+                "guide.txt",
+                b"Private paid content",
+                content_type="text/plain",
+            ),
+        )
+        self.order = Order.objects.create(
+            full_name="Ayzal Yohan",
+            email="ayzal@example.com",
+            payment_status=Order.PAYMENT_PAID,
+            total_amount=Decimal("4.00"),
+        )
+        self.item = OrderItem.objects.create(
+            order=self.order,
+            product=self.product,
+            product_name=self.product.name,
+            product_type=Product.DIGITAL,
+            unit_price=self.product.price,
+            quantity=1,
+            line_total=self.product.price,
+            digital_file_name=self.product.digital_file.name,
+        )
+
+    def download_url(self, token=None):
+        token = token or create_download_token(self.item)
+        return (
+            reverse(
+                "shop:download_order_item",
+                kwargs={"order_id": self.order.pk, "item_id": self.item.pk},
+            )
+            + f"?token={token}"
+        )
+
+    def test_paid_customer_can_download_the_private_file(self):
+        response = self.client.get(self.download_url())
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(b"".join(response.streaming_content), b"Private paid content")
+        self.assertIn("attachment", response.headers["Content-Disposition"])
+
+    def test_unpaid_order_cannot_download(self):
+        self.order.payment_status = Order.PAYMENT_PENDING
+        self.order.save(update_fields=["payment_status", "updated_at"])
+
+        response = self.client.get(self.download_url())
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_modified_token_is_rejected(self):
+        response = self.client.get(self.download_url(token="not-a-valid-token"))
+
+        self.assertEqual(response.status_code, 404)

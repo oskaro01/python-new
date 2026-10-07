@@ -490,3 +490,31 @@ You collected the authentication credentials. We still need the store ID and rec
 Pathao confirms that API integration is available through the Merchant Panel’s Developer API section, and its current integration flow supports API credentials plus webhook configuration. Pathao Developer API help, Pathao API and webhook information
 The manual sandbox remains available, so we won’t accidentally create real deliveries during testing. Django checks pass and all 32 tests pass.
 Next lesson: Pathao webhook integration, where courier status updates will automatically change our shipment from Created to In transit, Delivered, or Exception.
+
+=====
+We don’t need to stop the project because Pathao’s sandbox is temporarily unreachable.
+What we do now
+1. Keep local fulfillment on:
+FULFILLMENT_PROVIDER=manual
+2. Continue with the next lesson: Pathao webhook handling.
+We can build and test the webhook locally using mocked Pathao events:
+Pathao sends status update
+→ Our webhook verifies the secret
+→ Shipment status changes
+→ Order status changes
+3. Add proper address mapping afterward:
+Customer selects city
+→ Customer selects zone
+→ Customer selects area
+→ We send Pathao’s IDs
+This is better than guessing IDs or storing only "Dhaka" as text.
+4. Retry the Pathao sandbox later. If it still returns 522, contact Pathao support and ask:
+Is https://courier-api-sandbox.pathao.com currently available, and where can I retrieve the city, zone, and area lists for the sandbox API?
+
+So our path is:
+Manual sandbox fulfillment
+→ Build webhook logic
+→ Build address ID selection
+→ Retry Pathao API
+→ Switch provider from manual to pathao
+Nothing is broken in our project. The blocker is only Pathao’s sandbox server response.

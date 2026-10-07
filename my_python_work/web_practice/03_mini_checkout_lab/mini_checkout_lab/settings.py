@@ -104,6 +104,10 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+MEDIA_ROOT = BASE_DIR / "private_media"
+DIGITAL_DOWNLOAD_MAX_AGE = int(
+    os.environ.get("DIGITAL_DOWNLOAD_MAX_AGE", "86400")
+)
 
 if not DEBUG:
     MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")

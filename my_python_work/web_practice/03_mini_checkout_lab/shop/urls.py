@@ -15,6 +15,11 @@ urlpatterns = [
     path("checkout/review/", views.checkout_review, name="checkout_review"),
     path("checkout/place-order/", views.place_order, name="place_order"),
     path("orders/<int:order_id>/success/", views.order_success, name="order_success"),
+    path(
+        "orders/<int:order_id>/items/<int:item_id>/download/",
+        views.download_order_item,
+        name="download_order_item",
+    ),
     path("orders/<int:order_id>/pay/", views.start_payment, name="start_payment"),
     path("orders/<int:order_id>/simulate-payment/", views.simulate_payment, name="simulate_payment"),
     path("payments/stripe/webhook/", views.stripe_webhook, name="stripe_webhook"),

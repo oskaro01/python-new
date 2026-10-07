@@ -20,6 +20,7 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     stock = models.PositiveIntegerField(default=0)
     weight_grams = models.PositiveIntegerField(default=0)
+    digital_file = models.FileField(upload_to="digital_products/", blank=True)
     product_type = models.CharField(
         max_length=20,
         choices=PRODUCT_TYPE_CHOICES,
@@ -181,6 +182,7 @@ class OrderItem(models.Model):
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.PositiveIntegerField()
     line_total = models.DecimalField(max_digits=10, decimal_places=2)
+    digital_file_name = models.CharField(max_length=500, blank=True)
 
     class Meta:
         ordering = ["pk"]
