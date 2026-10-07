@@ -19,6 +19,7 @@ class Product(models.Model):
     description = models.TextField(blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     stock = models.PositiveIntegerField(default=0)
+    weight_grams = models.PositiveIntegerField(default=0)
     product_type = models.CharField(
         max_length=20,
         choices=PRODUCT_TYPE_CHOICES,
@@ -86,6 +87,24 @@ class Order(models.Model):
         (INVENTORY_UNAVAILABLE, "Unavailable"),
     ]
 
+    FULFILLMENT_NOT_REQUIRED = "not_required"
+    FULFILLMENT_READY = "ready"
+    FULFILLMENT_SHIPMENT_CREATED = "shipment_created"
+    FULFILLMENT_IN_TRANSIT = "in_transit"
+    FULFILLMENT_OUT_FOR_DELIVERY = "out_for_delivery"
+    FULFILLMENT_DELIVERED = "delivered"
+    FULFILLMENT_EXCEPTION = "exception"
+
+    FULFILLMENT_STATUS_CHOICES = [
+        (FULFILLMENT_NOT_REQUIRED, "Not required"),
+        (FULFILLMENT_READY, "Ready for fulfillment"),
+        (FULFILLMENT_SHIPMENT_CREATED, "Shipment created"),
+        (FULFILLMENT_IN_TRANSIT, "In transit"),
+        (FULFILLMENT_OUT_FOR_DELIVERY, "Out for delivery"),
+        (FULFILLMENT_DELIVERED, "Delivered"),
+        (FULFILLMENT_EXCEPTION, "Delivery exception"),
+    ]
+
     payment_provider = models.CharField(max_length=40, blank=True)
     payment_reference = models.CharField(max_length=120, blank=True)
     payment_method = models.CharField(max_length=40, blank=True)
@@ -96,6 +115,11 @@ class Order(models.Model):
         default=INVENTORY_PENDING,
     )
     inventory_deducted_at = models.DateTimeField(null=True, blank=True)
+    fulfillment_status = models.CharField(
+        max_length=30,
+        choices=FULFILLMENT_STATUS_CHOICES,
+        default=FULFILLMENT_READY,
+    )
 
     full_name = models.CharField(max_length=120)
     email = models.EmailField()
@@ -161,3 +185,37 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"{self.product_name} x {self.quantity}"
+
+
+class Shipment(models.Model):
+    CREATED = "created"
+    IN_TRANSIT = "in_transit"
+    OUT_FOR_DELIVERY = "out_for_delivery"
+    DELIVERED = "delivered"
+    EXCEPTION = "exception"
+
+    STATUS_CHOICES = [
+        (CREATED, "Created"),
+        (IN_TRANSIT, "In transit"),
+        (OUT_FOR_DELIVERY, "Out for delivery"),
+        (DELIVERED, "Delivered"),
+        (EXCEPTION, "Exception"),
+    ]
+
+    order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name="shipment")
+    provider = models.CharField(max_length=40)
+    provider_reference = models.CharField(max_length=120, blank=True)
+    tracking_number = models.CharField(max_length=120, blank=True)
+    tracking_url = models.URLField(blank=True)
+    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default=CREATED)
+    provider_payload = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    shipped_at = models.DateTimeField(null=True, blank=True)
+    delivered_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Shipment for order #{self.order_id}"

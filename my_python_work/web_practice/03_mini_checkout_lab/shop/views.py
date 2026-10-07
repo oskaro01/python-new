@@ -30,7 +30,7 @@ from .payments import (
     create_stripe_checkout_session,
     stripe_is_configured,
 )
-from .shipping import shipping_cost
+from .shipping import mark_order_ready_for_fulfillment, shipping_cost
 
 
 CHECKOUT_SESSION_KEY = "checkout_customer"
@@ -66,6 +66,7 @@ def confirm_stripe_payment(session):
             ]
         )
         deduct_paid_order_inventory(order)
+        mark_order_ready_for_fulfillment(order)
         try:
             send_order_receipt(order)
         except Exception:
@@ -370,6 +371,7 @@ def simulate_payment(request, order_id):
             ]
         )
         deduct_paid_order_inventory(order)
+        mark_order_ready_for_fulfillment(order)
         try:
             send_order_receipt(order)
         except Exception:

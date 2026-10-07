@@ -40,7 +40,9 @@ Customer clicks "Buy Now".
 Database:
 Order:
 ID: #1001
+
 Status: Pending
+
 Product: iPhone Case
 Quantity: 1
 
@@ -56,6 +58,7 @@ checkout.session.completed
 
 Database:
 Order:
+
 Status: Paid
 
 Still:
@@ -76,8 +79,8 @@ Stock:
 50 → 49
 
 Order:
-Status:
-Processing
+
+Status: Processing
 
 Now you are preparing the order.
 4. Shipment creation
@@ -104,6 +107,7 @@ PT123456789
 
 Database:
 Order:
+
 Status: Shipped
 
 Tracking:
@@ -130,8 +134,8 @@ PT123456789
 
 6. Delivered
 Final:
-Order Status:
-Delivered
+Order 
+Status: Delivered
 
 Fulfillment complete ✅
 In your Django Stripe project:

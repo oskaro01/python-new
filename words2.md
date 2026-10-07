@@ -351,3 +351,13 @@ In your Stripe Dashboard webhook endpoint, enable these three events:
 checkout.session.completed
 checkout.session.async_payment_succeeded
 checkout.session.async_payment_failed
+
+=====
+
+I found your notes and the current state. We already have shipping method selection and inventory deduction, but shop/shipping.py is still only pricing logic; there is no shipment record, courier adapter, tracking state, or webhook update yet. I’m going to add that missing layer in a provider-neutral way first, so later a Pathao/DHL/FedEx integration replaces one adapter instead of rewriting the order system.
+
+The lesson will have two parts: a durable Shipment record tied to each order, and a courier-provider boundary with a local sandbox adapter. That lets us demonstrate the full state flow today (paid → ready → shipment created → in transit → delivered) while keeping the database contract ready for a real courier API later. I’m editing the model, service, admin workflow, customer status page, and tests together so the pieces stay consistent.
+
+The core fulfillment layer is in place now: paid orders can become “ready,” admins can create a sandbox shipment, the system stores a provider reference and tracking number, and shipment status changes update the order automatically. I’m running Django’s checks and migration generation next; this is where we catch any model/admin wiring mistakes before we document the lesson.
+
+Checks are clean: the project now has 32 passing tests, including shipment creation, duplicate protection, and tracking-status transitions. I’m doing one final review of the generated migration and diff, then I’ll give you the exact admin exercise for today so you can see the fulfillment lifecycle yourself.

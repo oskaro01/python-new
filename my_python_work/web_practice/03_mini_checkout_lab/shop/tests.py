@@ -6,7 +6,8 @@ from django.core import mail
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from .models import Order, OrderItem, Product
+from .models import Order, OrderItem, Product, Shipment
+from .shipping import create_shipment_for_order, update_shipment_status
 
 
 class ProductCatalogTests(TestCase):
@@ -633,3 +634,62 @@ class ProductCatalogTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 404)
+
+
+class FulfillmentTests(TestCase):
+    def setUp(self):
+        self.product = Product.objects.create(
+            name="Canvas Tote",
+            slug="canvas-tote-fulfillment",
+            price=Decimal("12.50"),
+            stock=2,
+        )
+        self.order = Order.objects.create(
+            full_name="Ayzal Yohan",
+            email="ayzal@example.com",
+            shipping_address="12 River Road",
+            shipping_city="Dhaka",
+            shipping_postal_code="1205",
+            shipping_country="Bangladesh",
+            payment_status=Order.PAYMENT_PAID,
+            inventory_status=Order.INVENTORY_DEDUCTED,
+            fulfillment_status=Order.FULFILLMENT_READY,
+            total_amount=Decimal("17.50"),
+        )
+        OrderItem.objects.create(
+            order=self.order,
+            product=self.product,
+            product_name=self.product.name,
+            product_type=Product.PHYSICAL,
+            unit_price=self.product.price,
+            quantity=1,
+            line_total=self.product.price,
+        )
+
+    def test_paid_ready_order_gets_one_sandbox_shipment(self):
+        shipment = create_shipment_for_order(self.order)
+
+        self.assertEqual(shipment.provider, "manual")
+        self.assertEqual(shipment.tracking_number, f"DEMO-{self.order.pk:06d}")
+        self.order.refresh_from_db()
+        self.assertEqual(
+            self.order.fulfillment_status,
+            Order.FULFILLMENT_SHIPMENT_CREATED,
+        )
+        self.assertEqual(create_shipment_for_order(self.order).pk, shipment.pk)
+        self.assertEqual(Shipment.objects.count(), 1)
+
+    def test_shipment_status_updates_order_and_timestamps(self):
+        shipment = create_shipment_for_order(self.order)
+
+        update_shipment_status(shipment, Shipment.IN_TRANSIT)
+        shipment.refresh_from_db()
+        self.order.refresh_from_db()
+        self.assertIsNotNone(shipment.shipped_at)
+        self.assertEqual(self.order.fulfillment_status, Order.FULFILLMENT_IN_TRANSIT)
+
+        update_shipment_status(shipment, Shipment.DELIVERED)
+        shipment.refresh_from_db()
+        self.order.refresh_from_db()
+        self.assertIsNotNone(shipment.delivered_at)
+        self.assertEqual(self.order.fulfillment_status, Order.FULFILLMENT_DELIVERED)

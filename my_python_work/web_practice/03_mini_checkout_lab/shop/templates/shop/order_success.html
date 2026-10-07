@@ -46,6 +46,20 @@
                 <dt>Inventory</dt>
                 <dd>{{ order.get_inventory_status_display }}</dd>
             </div>
+            <div>
+                <dt>Fulfillment</dt>
+                <dd>{{ order.get_fulfillment_status_display }}</dd>
+            </div>
+            {% if order.shipment %}
+            <div>
+                <dt>Tracking</dt>
+                <dd>
+                    {% if order.shipment.tracking_url %}<a href="{{ order.shipment.tracking_url }}">{% endif %}
+                    {{ order.shipment.tracking_number }}
+                    {% if order.shipment.tracking_url %}</a>{% endif %}
+                </dd>
+            </div>
+            {% endif %}
             {% if order.shipping_method %}
             <div>
                 <dt>Shipping method</dt>

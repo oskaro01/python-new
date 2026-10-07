@@ -2,12 +2,21 @@
 
 from django.contrib import admin
 
-from .models import Order, OrderItem, Product
+from .models import Order, OrderItem, Product, Shipment
+from .shipping import create_shipment_for_order, update_shipment_status
 
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ("name", "product_type", "price", "stock", "is_active", "updated_at")
+    list_display = (
+        "name",
+        "product_type",
+        "price",
+        "stock",
+        "weight_grams",
+        "is_active",
+        "updated_at",
+    )
     list_filter = ("product_type", "is_active")
     list_editable = ("price", "stock", "is_active")
     search_fields = ("name", "description")
@@ -29,6 +38,22 @@ class OrderItemInline(admin.TabularInline):
     )
 
 
+class ShipmentInline(admin.StackedInline):
+    model = Shipment
+    extra = 0
+    readonly_fields = (
+        "provider",
+        "provider_reference",
+        "tracking_number",
+        "tracking_url",
+        "provider_payload",
+        "created_at",
+        "updated_at",
+        "shipped_at",
+        "delivered_at",
+    )
+
+
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     list_display = (
@@ -40,13 +65,21 @@ class OrderAdmin(admin.ModelAdmin):
         "payment_provider",
         "payment_method",
         "inventory_status",
+        "fulfillment_status",
         "shipping_method",
         "shipping_amount",
         "receipt_sent_at",
         "total_amount",
         "created_at",
     )
-    list_filter = ("status", "payment_status", "shipping_method", "created_at")
+    list_filter = (
+        "status",
+        "payment_status",
+        "inventory_status",
+        "fulfillment_status",
+        "shipping_method",
+        "created_at",
+    )
     search_fields = (
         "full_name",
         "email",
@@ -63,8 +96,51 @@ class OrderAdmin(admin.ModelAdmin):
         "payment_method",
         "inventory_status",
         "inventory_deducted_at",
+        "fulfillment_status",
         "shipping_amount",
         "total_amount",
     )
-    inlines = [OrderItemInline]
+    inlines = [OrderItemInline, ShipmentInline]
+    actions = ["create_sandbox_shipments"]
     ordering = ("-created_at",)
+
+    @admin.action(description="Create sandbox shipment for paid orders")
+    def create_sandbox_shipments(self, request, queryset):
+        created = 0
+        for order in queryset:
+            already_exists = Shipment.objects.filter(order=order).exists()
+            try:
+                shipment = create_shipment_for_order(order)
+            except (RuntimeError, ValueError) as error:
+                self.message_user(request, f"Order #{order.pk}: {error}", level="WARNING")
+            else:
+                if not already_exists:
+                    created += 1
+        self.message_user(request, f"Created {created} sandbox shipment(s).")
+
+
+@admin.register(Shipment)
+class ShipmentAdmin(admin.ModelAdmin):
+    list_display = ("order", "provider", "tracking_number", "status", "updated_at")
+    list_filter = ("provider", "status")
+    search_fields = ("tracking_number", "provider_reference", "order__email")
+    readonly_fields = (
+        "order",
+        "provider",
+        "provider_reference",
+        "tracking_number",
+        "tracking_url",
+        "provider_payload",
+        "created_at",
+        "updated_at",
+        "shipped_at",
+        "delivered_at",
+    )
+
+    def save_model(self, request, obj, form, change):
+        old_status = None
+        if change:
+            old_status = Shipment.objects.get(pk=obj.pk).status
+        super().save_model(request, obj, form, change)
+        if old_status != obj.status:
+            update_shipment_status(obj, obj.status)
