@@ -364,7 +364,7 @@ class ProductCatalogTests(TestCase):
         self.assertEqual(order.inventory_status, Order.INVENTORY_DEDUCTED)
         self.active_product.refresh_from_db()
         self.assertEqual(self.active_product.stock, 3)
-        self.assertEqual(order.status, Order.PENDING)
+        self.assertEqual(order.status, Order.PROCESSING)
         self.assertIsNotNone(order.receipt_sent_at)
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, ["ayzal@example.com"])
@@ -693,3 +693,4 @@ class FulfillmentTests(TestCase):
         self.order.refresh_from_db()
         self.assertIsNotNone(shipment.delivered_at)
         self.assertEqual(self.order.fulfillment_status, Order.FULFILLMENT_DELIVERED)
+        self.assertEqual(self.order.status, Order.COMPLETED)

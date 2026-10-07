@@ -68,13 +68,21 @@ def mark_order_ready_for_fulfillment(order):
 
     if order.inventory_status == Order.INVENTORY_NOT_REQUIRED:
         status = Order.FULFILLMENT_NOT_REQUIRED
+        order_status = Order.COMPLETED
     elif order.inventory_status == Order.INVENTORY_DEDUCTED:
         status = Order.FULFILLMENT_READY
+        order_status = Order.PROCESSING
     else:
         return
+    update_fields = []
     if order.fulfillment_status != status:
         order.fulfillment_status = status
-        order.save(update_fields=["fulfillment_status", "updated_at"])
+        update_fields.append("fulfillment_status")
+    if order.status != order_status:
+        order.status = order_status
+        update_fields.append("status")
+    if update_fields:
+        order.save(update_fields=[*update_fields, "updated_at"])
 
 
 def create_shipment_for_order(order):
@@ -149,7 +157,27 @@ def update_shipment_status(shipment, status):
             Shipment.DELIVERED: Order.FULFILLMENT_DELIVERED,
             Shipment.EXCEPTION: Order.FULFILLMENT_EXCEPTION,
         }[status]
-        if shipment.order.fulfillment_status != order_status:
+        desired_order_status = (
+            Order.COMPLETED
+            if status == Shipment.DELIVERED
+            else Order.PROCESSING
+        )
+        if (
+            shipment.order.fulfillment_status != order_status
+            or shipment.order.status != desired_order_status
+        ):
             shipment.order.fulfillment_status = order_status
-            shipment.order.save(update_fields=["fulfillment_status", "updated_at"])
+            update_fields = ["fulfillment_status", "updated_at"]
+            if status == Shipment.DELIVERED:
+                shipment.order.status = Order.COMPLETED
+                update_fields.append("status")
+            elif status in {
+                Shipment.CREATED,
+                Shipment.IN_TRANSIT,
+                Shipment.OUT_FOR_DELIVERY,
+                Shipment.EXCEPTION,
+            }:
+                shipment.order.status = Order.PROCESSING
+                update_fields.append("status")
+            shipment.order.save(update_fields=update_fields)
         return shipment

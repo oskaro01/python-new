@@ -56,12 +56,14 @@ class Product(models.Model):
 
 class Order(models.Model):
     PENDING = "pending"
-    PAID = "paid"
+    PROCESSING = "processing"
+    COMPLETED = "completed"
     CANCELLED = "cancelled"
 
     STATUS_CHOICES = [
         (PENDING, "Pending"),
-        (PAID, "Paid"),
+        (PROCESSING, "Processing"),
+        (COMPLETED, "Completed"),
         (CANCELLED, "Cancelled"),
     ]
 

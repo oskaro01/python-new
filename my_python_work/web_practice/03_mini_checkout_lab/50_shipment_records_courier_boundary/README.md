@@ -22,6 +22,18 @@ tracking number, tracking URL, current status, timestamps, and the raw provider
 payload. A real courier adapter can therefore be added without changing the
 checkout or payment code.
 
+The Admin page shows three related but separate lifecycles:
+
+- **Order status** answers whether the order is pending, being processed,
+  completed, or cancelled.
+- **Payment status** answers whether money is pending, paid, failed, or
+  refunded in a future lesson.
+- **Fulfillment status** answers whether delivery is ready, shipped, in
+  transit, or delivered.
+
+After this lesson, a paid physical order being shipped should show `Processing`
+and `Delivered` should eventually move it to `Completed`.
+
 ## What We Built
 
 - `Order.fulfillment_status` for the customer-facing delivery lifecycle

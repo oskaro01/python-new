@@ -49,6 +49,7 @@ def confirm_stripe_payment(session):
             return
 
         order.payment_status = Order.PAYMENT_PAID
+        order.status = Order.PROCESSING
         order.payment_provider = "stripe"
         order.payment_reference = session.get("payment_intent") or session.get(
             "id", ""
@@ -58,6 +59,7 @@ def confirm_stripe_payment(session):
         order.save(
             update_fields=[
                 "payment_status",
+                "status",
                 "payment_provider",
                 "payment_reference",
                 "payment_method",
@@ -356,6 +358,7 @@ def simulate_payment(request, order_id):
     order = get_object_or_404(Order, pk=order_id)
     if order.payment_status == Order.PAYMENT_PENDING:
         order.payment_status = Order.PAYMENT_PAID
+        order.status = Order.PROCESSING
         order.payment_provider = "demo"
         order.payment_reference = f"demo-order-{order.pk}"
         order.payment_method = "demo"
@@ -363,6 +366,7 @@ def simulate_payment(request, order_id):
         order.save(
             update_fields=[
                 "payment_status",
+                "status",
                 "payment_provider",
                 "payment_reference",
                 "payment_method",
