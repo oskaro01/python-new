@@ -196,8 +196,9 @@ The Stripe SDK is installed now. I’m adding focused tests for the two things t
 
 Everything now passes with the new payment tests. I’m applying the migration to the local checkout database as the final step; no server will be left running afterward.
 
-===
-
+====
+stripe impli >> 
+====
 
 You’re right. We should finish the Stripe sandbox connection before moving to Lesson 48. The code structure is ready, but we have not yet connected your actual test credentials and webhook.
 We still need to complete this checklist:
@@ -361,3 +362,131 @@ The lesson will have two parts: a durable Shipment record tied to each order, an
 The core fulfillment layer is in place now: paid orders can become “ready,” admins can create a sandbox shipment, the system stores a provider reference and tracking number, and shipment status changes update the order automatically. I’m running Django’s checks and migration generation next; this is where we catch any model/admin wiring mistakes before we document the lesson.
 
 Checks are clean: the project now has 32 passing tests, including shipment creation, duplicate protection, and tracking-status transitions. I’m doing one final review of the generated migration and diff, then I’ll give you the exact admin exercise for today so you can see the fulfillment lifecycle yourself.
+
+====
+
+Yes, exactly. Shipping providers connect through APIs much like Stripe.
+How courier integration works
+Customer places order
+→ Stripe/bKash confirms payment
+→ Our system deducts inventory
+→ Our server calls courier API
+→ Courier creates a consignment
+→ Courier returns tracking number
+→ We save it in Shipment
+→ Courier sends status updates through webhook
+→ Our order becomes delivered
+Our courier request would contain information such as:
+Merchant/order reference
+Customer name and phone
+Delivery address
+Package weight
+COD amount or prepaid amount
+Product description
+The courier returns something like:
+consignment_id: "PT123456"
+tracking_code: "PT123456"
+status: "Pending"
+Then we save that information and show it to the customer.
+Pathao officially advertises a Developer API and webhook integration with a callback URL and secret. Their merchant onboarding is handled through the Pathao merchant platform. Pathao Developer API and webhook announcement, Pathao Merchant Portal
+For courier sandboxes, it depends on the provider. Some offer test credentials or a test account, while others only provide API access after merchant approval. I could verify Pathao’s API and webhook availability, but I did not find a clearly public sandbox environment, so we should not invent one. We can keep our current manual sandbox provider for local testing until Pathao gives us credentials.
+bKash later
+Yes, we can absolutely add bKash webhooks in the future.
+The flow would be:
+Our server requests a bKash payment
+→ Customer is redirected to bKash checkout
+→ bKash returns payment information
+→ Our server verifies/query-checks the payment
+→ bKash sends a notification/webhook
+→ We mark the order paid
+→ Inventory and fulfillment begin
+→ Receipt is sent
+bKash provides a demo merchant portal for testing Checkout, Tokenized Checkout, and webhook notifications. bKash Demo Merchant Portal
+We should build bKash as another payment adapter beside Stripe:
+StripePaymentProvider
+BkashPaymentProvider
+ManualPaymentProvider
+All of them should eventually produce the same internal result:
+payment_status = paid
+payment_provider = stripe or bkash
+payment_reference = provider transaction ID
+That means fulfillment does not care whether the customer paid through Stripe or bKash. It only begins after our backend verifies that the payment succeeded.
+
+
+
+
+
+
+https://merchant.pathao.com/courier/dashboard
+
+
+
+====
+
+Lesson 51 is wired :3
+We added a real PathaoCourierProvider that can:
+1. Request a Pathao access token.
+2. Build a consignment request.
+3. Send the paid order to Pathao.
+4. Save the returned consignment/tracking reference in Shipment.
+The provider is still disabled by default:
+FULFILLMENT_PROVIDER=manual
+To use Pathao deliberately, configure:
+FULFILLMENT_PROVIDER=pathao
+PATHAO_BASE_URL=your_base_url
+PATHAO_CLIENT_ID=your_client_id
+PATHAO_CLIENT_SECRET=your_client_secret
+PATHAO_USERNAME=your_username
+PATHAO_PASSWORD=your_password
+PATHAO_STORE_ID=your_store_id
+PATHAO_SENDER_NAME=your_store_name
+PATHAO_SENDER_PHONE=your_phone
+
+In PowerShell, set your credentials temporarily in the same terminal:
+$env:PATHAO_BASE_URL="https://courier-api-sandbox.pathao.com"
+$env:PATHAO_CLIENT_ID="7N1aMJQbWm"
+$env:PATHAO_CLIENT_SECRET="wRcaibZkUdSNz2EI9ZyuXLlNrnAv0TdPUPXMnD39"
+$env:PATHAO_USERNAME="test@pathao.com"
+$env:PATHAO_PASSWORD="lovePathao"
+
+        The problem is not the city, zone, or area IDs yet. The problem is that the sandbox server itself is returning:
+        522 Connection timed out
+        You confirmed this with both:
+        Invoke-RestMethod ...
+        and:
+        curl https://courier-api-sandbox.pathao.com
+        So Pathao’s sandbox API is currently unreachable. Until the token endpoint responds, we cannot request the city list.
+        When it becomes available, the order will be:
+        Issue token
+        → Request city list
+        → Select city ID
+        → Request zone list
+        → Select zone ID
+        → Request area list
+        → Select area ID
+        Use this corrected request when trying again:
+        $tokenBody = @{
+        client_id = $env:PATHAO_CLIENT_ID
+        client_secret = $env:PATHAO_CLIENT_SECRET
+        username = $env:PATHAO_USERNAME
+        password = $env:PATHAO_PASSWORD
+        grant_type = "password"
+        } | ConvertTo-Json
+
+        $tokenResponse = Invoke-RestMethod `
+        -Uri "$env:PATHAO_BASE_URL/aladdin/api/v1/issue-token" `
+        -Method Post `
+        -ContentType "application/json" `
+        -Body $tokenBody
+
+        $tokenResponse | ConvertTo-Json -Depth 10
+        For now, keep:
+        FULFILLMENT_PROVIDER=manual
+
+PATHAO_RECIPIENT_CITY_ID=...
+PATHAO_RECIPIENT_ZONE_ID=...
+PATHAO_RECIPIENT_AREA_ID=...
+You collected the authentication credentials. We still need the store ID and recipient city/zone/area IDs, because Pathao requires structured location IDs rather than only "Dhaka" as text.
+Pathao confirms that API integration is available through the Merchant Panel’s Developer API section, and its current integration flow supports API credentials plus webhook configuration. Pathao Developer API help, Pathao API and webhook information
+The manual sandbox remains available, so we won’t accidentally create real deliveries during testing. Django checks pass and all 32 tests pass.
+Next lesson: Pathao webhook integration, where courier status updates will automatically change our shipment from Created to In transit, Delivered, or Exception.
