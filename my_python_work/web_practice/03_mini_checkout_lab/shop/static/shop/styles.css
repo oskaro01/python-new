@@ -838,6 +838,10 @@ textarea:focus {
     width: 100%;
 }
 
+.payment-actions .button-danger {
+    background: transparent;
+}
+
 .digital-downloads {
     margin: 22px 0;
     padding: 18px 0;

@@ -74,3 +74,26 @@ def construct_stripe_event(payload, signature):
         signature,
         settings.STRIPE_WEBHOOK_SECRET,
     )
+
+
+def refund_payment(order):
+    """Refund one paid order and return the provider refund reference."""
+
+    if order.payment_status == order.PAYMENT_REFUNDED:
+        return order.refund_reference
+    if order.payment_status != order.PAYMENT_PAID:
+        raise PaymentConfigurationError("Only paid orders can be refunded.")
+
+    if order.payment_provider == "demo":
+        return f"demo-refund-order-{order.pk}"
+    if order.payment_provider != "stripe" or not stripe_is_configured():
+        raise PaymentConfigurationError("This order has no refundable payment provider.")
+
+    import stripe
+
+    stripe.api_key = settings.STRIPE_SECRET_KEY
+    refund = stripe.Refund.create(
+        payment_intent=order.payment_reference,
+        idempotency_key=f"order-{order.pk}-refund",
+    )
+    return refund.id

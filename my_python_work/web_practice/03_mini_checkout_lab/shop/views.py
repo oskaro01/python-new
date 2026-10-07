@@ -36,6 +36,7 @@ from .payments import (
     create_stripe_checkout_session,
     stripe_is_configured,
 )
+from .refunds import CancellationNotAllowed, cancel_order
 from .shipping import mark_order_ready_for_fulfillment, shipping_cost
 
 
@@ -326,6 +327,19 @@ def order_history(request):
     )
 
 
+@require_POST
+def cancel_order_view(request, order_id):
+    order = get_object_or_404(Order, pk=order_id)
+    is_owner = request.user.is_authenticated and order.customer_id == request.user.id
+    if request.session.get(LAST_ORDER_SESSION_KEY) != order_id and not is_owner:
+        raise Http404
+    try:
+        cancel_order(order, request.POST.get("reason", "").strip())
+    except CancellationNotAllowed as error:
+        messages.error(request, str(error))
+    else:
+        messages.success(request, "Order cancelled. Any eligible refund was recorded.")
+    return redirect("shop:order_success", order_id=order_id)
 def register(request):
     if request.user.is_authenticated:
         return redirect("shop:order_history")

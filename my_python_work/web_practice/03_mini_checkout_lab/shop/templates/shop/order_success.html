@@ -25,6 +25,21 @@
         </div>
         {% endif %}
 
+        {% if order.status == "cancelled" %}
+        <div class="payment-confirmation payment-confirmation-error" role="status">
+            <strong>Order cancelled</strong>
+            <span>Payment status: {{ order.get_payment_status_display }}.</span>
+        </div>
+        {% elif order.status == "pending" or order.status == "processing" %}
+        {% if not order.shipment %}
+        <form method="post" action="{% url 'shop:cancel_order' order.id %}" class="payment-actions">
+            {% csrf_token %}
+            <input type="hidden" name="reason" value="Customer requested cancellation">
+            <button class="button button-danger" type="submit">Cancel order</button>
+        </form>
+        {% endif %}
+        {% endif %}
+
         <dl class="review-details">
             <div>
                 <dt>Customer</dt>

@@ -3,6 +3,7 @@
 from django.contrib import admin
 
 from .models import Order, OrderItem, Product, Shipment
+from .refunds import CancellationNotAllowed, cancel_order
 from .shipping import create_shipment_for_order, update_shipment_status
 
 
@@ -66,6 +67,7 @@ class OrderAdmin(admin.ModelAdmin):
         "payment_status",
         "payment_provider",
         "payment_method",
+        "refund_reference",
         "inventory_status",
         "fulfillment_status",
         "shipping_method",
@@ -97,6 +99,7 @@ class OrderAdmin(admin.ModelAdmin):
         "payment_provider",
         "payment_reference",
         "payment_method",
+        "refund_reference",
         "inventory_status",
         "inventory_deducted_at",
         "fulfillment_status",
@@ -104,7 +107,7 @@ class OrderAdmin(admin.ModelAdmin):
         "total_amount",
     )
     inlines = [OrderItemInline, ShipmentInline]
-    actions = ["create_sandbox_shipments"]
+    actions = ["create_sandbox_shipments", "cancel_selected_orders"]
     ordering = ("-created_at",)
 
     @admin.action(description="Create sandbox shipment for paid orders")
@@ -120,6 +123,22 @@ class OrderAdmin(admin.ModelAdmin):
                 if not already_exists:
                     created += 1
         self.message_user(request, f"Created {created} sandbox shipment(s).")
+
+    @admin.action(description="Cancel selected orders and refund when eligible")
+    def cancel_selected_orders(self, request, queryset):
+        cancelled = 0
+        for order in queryset:
+            try:
+                cancel_order(order, "Cancelled by admin")
+            except (CancellationNotAllowed, RuntimeError, ValueError) as error:
+                self.message_user(
+                    request,
+                    f"Order #{order.pk}: {error}",
+                    level="WARNING",
+                )
+            else:
+                cancelled += 1
+        self.message_user(request, f"Cancelled {cancelled} order(s).")
 
 
 @admin.register(Shipment)

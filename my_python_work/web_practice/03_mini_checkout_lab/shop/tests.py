@@ -11,6 +11,7 @@ from django.urls import reverse
 
 from .downloads import create_download_token
 from .models import Order, OrderItem, Product, Shipment
+from .refunds import CancellationNotAllowed, cancel_order
 from .shipping import create_shipment_for_order, update_shipment_status
 
 
@@ -826,3 +827,64 @@ class AccountOrderHistoryTests(TestCase):
             response,
             f"/accounts/login/?next={reverse('shop:order_history')}",
         )
+
+
+class RefundAndCancellationTests(TestCase):
+    def setUp(self):
+        self.product = Product.objects.create(
+            name="Refundable Tote",
+            slug="refundable-tote",
+            price=Decimal("12.50"),
+            stock=2,
+        )
+        self.order = Order.objects.create(
+            full_name="Ayzal Yohan",
+            email="ayzal@example.com",
+            status=Order.PROCESSING,
+            payment_status=Order.PAYMENT_PAID,
+            payment_provider="demo",
+            payment_reference="demo-order-1",
+            inventory_status=Order.INVENTORY_DEDUCTED,
+            total_amount=Decimal("12.50"),
+        )
+        OrderItem.objects.create(
+            order=self.order,
+            product=self.product,
+            product_name=self.product.name,
+            product_type=Product.PHYSICAL,
+            unit_price=self.product.price,
+            quantity=1,
+            line_total=self.product.price,
+        )
+
+    def test_paid_cancellation_refunds_and_restores_stock_once(self):
+        cancel_order(self.order, "Customer changed their mind")
+
+        self.order.refresh_from_db()
+        self.product.refresh_from_db()
+        self.assertEqual(self.order.status, Order.CANCELLED)
+        self.assertEqual(self.order.payment_status, Order.PAYMENT_REFUNDED)
+        self.assertEqual(self.order.inventory_status, Order.INVENTORY_RESTORED)
+        self.assertEqual(self.product.stock, 3)
+        self.assertTrue(self.order.refund_reference)
+
+        cancel_order(self.order)
+        self.product.refresh_from_db()
+        self.assertEqual(self.product.stock, 3)
+
+    def test_pending_order_can_cancel_without_refund(self):
+        self.order.payment_status = Order.PAYMENT_PENDING
+        self.order.inventory_status = Order.INVENTORY_PENDING
+        self.order.save(update_fields=["payment_status", "inventory_status", "updated_at"])
+
+        cancel_order(self.order)
+
+        self.order.refresh_from_db()
+        self.assertEqual(self.order.status, Order.CANCELLED)
+        self.assertEqual(self.order.payment_status, Order.PAYMENT_PENDING)
+
+    def test_shipped_order_requires_return_workflow(self):
+        Shipment.objects.create(order=self.order, provider="manual")
+
+        with self.assertRaises(CancellationNotAllowed):
+            cancel_order(self.order)

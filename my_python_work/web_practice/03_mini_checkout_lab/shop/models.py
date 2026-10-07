@@ -72,23 +72,27 @@ class Order(models.Model):
     PAYMENT_PENDING = "pending"
     PAYMENT_PAID = "paid"
     PAYMENT_FAILED = "failed"
+    PAYMENT_REFUNDED = "refunded"
 
     PAYMENT_STATUS_CHOICES = [
         (PAYMENT_PENDING, "Pending"),
         (PAYMENT_PAID, "Paid"),
         (PAYMENT_FAILED, "Failed"),
+        (PAYMENT_REFUNDED, "Refunded"),
     ]
 
     INVENTORY_NOT_REQUIRED = "not_required"
     INVENTORY_PENDING = "pending"
     INVENTORY_DEDUCTED = "deducted"
     INVENTORY_UNAVAILABLE = "unavailable"
+    INVENTORY_RESTORED = "restored"
 
     INVENTORY_STATUS_CHOICES = [
         (INVENTORY_NOT_REQUIRED, "Not required"),
         (INVENTORY_PENDING, "Pending"),
         (INVENTORY_DEDUCTED, "Deducted"),
         (INVENTORY_UNAVAILABLE, "Unavailable"),
+        (INVENTORY_RESTORED, "Restored"),
     ]
 
     FULFILLMENT_NOT_REQUIRED = "not_required"
@@ -126,6 +130,7 @@ class Order(models.Model):
         default=INVENTORY_PENDING,
     )
     inventory_deducted_at = models.DateTimeField(null=True, blank=True)
+    inventory_restored_at = models.DateTimeField(null=True, blank=True)
     fulfillment_status = models.CharField(
         max_length=30,
         choices=FULFILLMENT_STATUS_CHOICES,
@@ -157,6 +162,8 @@ class Order(models.Model):
         default=PAYMENT_PENDING,
     )
     receipt_sent_at = models.DateTimeField(null=True, blank=True)
+    refund_reference = models.CharField(max_length=120, blank=True)
+    refunded_at = models.DateTimeField(null=True, blank=True)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
