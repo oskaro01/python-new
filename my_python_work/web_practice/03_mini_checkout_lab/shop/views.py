@@ -3,6 +3,8 @@
 import logging
 from pathlib import Path
 
+from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core import signing
 from django.core.files.storage import default_storage
@@ -23,7 +25,7 @@ from .cart import (
     remove_product,
     update_product,
 )
-from .forms import CheckoutForm
+from .forms import CheckoutForm, RegisterForm
 from .emails import send_order_receipt
 from .downloads import build_download_url, read_download_token
 from .inventory import deduct_paid_order_inventory
@@ -245,6 +247,7 @@ def place_order(request):
     )
     with transaction.atomic():
         order = Order.objects.create(
+            customer=request.user if request.user.is_authenticated else None,
             full_name=form.cleaned_data["full_name"],
             email=form.cleaned_data["email"],
             phone=form.cleaned_data["phone"],
@@ -282,13 +285,13 @@ def place_order(request):
 
 @require_GET
 def order_success(request, order_id):
-    if request.session.get(LAST_ORDER_SESSION_KEY) != order_id:
-        raise Http404
-
     order = get_object_or_404(
         Order.objects.prefetch_related("items"),
         pk=order_id,
     )
+    is_owner = request.user.is_authenticated and order.customer_id == request.user.id
+    if request.session.get(LAST_ORDER_SESSION_KEY) != order_id and not is_owner:
+        raise Http404
     download_items = []
     if order.payment_status == Order.PAYMENT_PAID:
         for item in order.items.all():
@@ -307,6 +310,34 @@ def order_success(request, order_id):
             "download_items": download_items,
             "stripe_payment_enabled": stripe_is_configured(),
         },
+    )
+
+
+@login_required
+@require_GET
+def order_history(request):
+    orders = Order.objects.filter(customer=request.user).prefetch_related(
+        "items", "shipment"
+    )
+    return render(
+        request,
+        "shop/order_history.html",
+        {"title": "My orders", "orders": orders},
+    )
+
+
+def register(request):
+    if request.user.is_authenticated:
+        return redirect("shop:order_history")
+    form = RegisterForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        user = form.save()
+        login(request, user)
+        return redirect("shop:product_list")
+    return render(
+        request,
+        "registration/register.html",
+        {"title": "Create account", "form": form},
     )
 
 

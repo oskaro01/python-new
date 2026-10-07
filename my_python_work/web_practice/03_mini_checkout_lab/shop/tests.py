@@ -5,6 +5,7 @@ from unittest.mock import patch
 
 from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.contrib.auth import get_user_model
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
@@ -771,3 +772,57 @@ class SecureDigitalFulfillmentTests(TestCase):
         response = self.client.get(self.download_url(token="not-a-valid-token"))
 
         self.assertEqual(response.status_code, 404)
+
+
+class AccountOrderHistoryTests(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username="ayzal",
+            email="ayzal@example.com",
+            password="Strong-test-password-123",
+        )
+        self.order = Order.objects.create(
+            customer=self.user,
+            full_name="Ayzal Yohan",
+            email="ayzal@example.com",
+            total_amount=Decimal("4.00"),
+        )
+
+    def test_user_can_register(self):
+        response = self.client.post(
+            reverse("shop:register"),
+            {
+                "username": "new-customer",
+                "email": "new@example.com",
+                "password1": "Strong-test-password-123",
+                "password2": "Strong-test-password-123",
+            },
+        )
+
+        self.assertRedirects(response, reverse("shop:product_list"))
+        self.assertTrue(self.client.session.get("_auth_user_id"))
+
+    def test_authenticated_customer_sees_only_owned_orders(self):
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse("shop:order_history"))
+
+        self.assertContains(response, f"Order #{self.order.pk}")
+
+    def test_authenticated_owner_can_reopen_order_page(self):
+        self.client.force_login(self.user)
+
+        response = self.client.get(
+            reverse("shop:order_success", kwargs={"order_id": self.order.pk})
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Order status")
+
+    def test_guest_is_redirected_from_order_history(self):
+        response = self.client.get(reverse("shop:order_history"))
+
+        self.assertRedirects(
+            response,
+            f"/accounts/login/?next={reverse('shop:order_history')}",
+        )

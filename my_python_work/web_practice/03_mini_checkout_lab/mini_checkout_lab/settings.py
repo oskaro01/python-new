@@ -58,6 +58,9 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = "mini_checkout_lab.urls"
+LOGIN_REDIRECT_URL = "/orders/"
+LOGOUT_REDIRECT_URL = "/"
+LOGIN_URL = "/accounts/login/"
 
 TEMPLATES = [
     {

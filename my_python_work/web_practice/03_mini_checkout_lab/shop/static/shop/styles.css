@@ -362,6 +362,48 @@ button.button-primary:hover {
 .back-link { display: inline-block; margin-bottom: 18px; }
 .messages { margin-bottom: 22px; }
 
+.nav-logout-form { margin: 0; }
+.nav-logout-form button {
+    border: 0;
+    padding: 7px 9px;
+    background: transparent;
+    color: var(--ink);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 600;
+}
+.nav-logout-form button:hover { background: rgba(255, 255, 255, 0.7); }
+
+.account-panel {
+    width: min(100%, 520px);
+    margin: 24px auto;
+    padding: 28px;
+}
+.stacked-form p { display: grid; gap: 6px; margin-bottom: 15px; }
+.stacked-form input {
+    width: 100%;
+    padding: 11px 12px;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    background: #fff;
+    color: var(--ink);
+}
+.stacked-form ul { margin: 4px 0 0; padding-left: 20px; color: var(--muted); font-size: 0.86rem; }
+.history-list { display: grid; gap: 12px; }
+.history-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    align-items: center;
+    gap: 18px;
+    padding: 18px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface);
+}
+.history-row div { display: grid; gap: 5px; }
+.history-row span { color: var(--muted); font-size: 0.9rem; }
+
 .toast-stack {
     position: fixed;
     right: 20px;

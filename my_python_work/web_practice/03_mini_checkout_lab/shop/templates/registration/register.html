@@ -1,0 +1,13 @@
+{% extends "shop/base.html" %}
+
+{% block content %}
+<section class="form-panel account-panel">
+    <p class="eyebrow">Customer account</p>
+    <h1>Create an account</h1>
+    <form method="post" class="stacked-form">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button class="button button-primary" type="submit">Create account</button>
+    </form>
+</section>
+{% endblock %}

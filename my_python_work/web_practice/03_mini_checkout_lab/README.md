@@ -24,7 +24,7 @@ Personal Dictionary app.
 17. [Lesson 52: Secure Digital Fulfillment](52_secure_digital_fulfillment/README.md)
 18. **Pending:** Pathao location IDs and webhook integration (sandbox `522`)
 19. **Pending:** bKash sandbox payment and webhook integration
-20. Planned: Order History and Customer Purchases
+20. [Lesson 53: Customer Accounts and Order History](53_customer_accounts_order_history/README.md)
 
 Each lesson has its own README so we can study, verify, and commit one
 checkpoint at a time.
@@ -72,6 +72,6 @@ site. It does not use the Personal Dictionary database.
 
 ## Not Built Yet
 
-Pathao API completion, bKash, refunds, and customer purchase history remain
-planned lessons. The final design supports physical, digital, and hybrid
-products rather than only digital downloads.
+Pathao API completion, bKash, and refunds remain planned lessons. The final
+design supports physical, digital, and hybrid products rather than only digital
+downloads.

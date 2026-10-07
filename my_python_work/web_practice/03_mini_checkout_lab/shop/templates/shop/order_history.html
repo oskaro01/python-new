@@ -1,0 +1,32 @@
+{% extends "shop/base.html" %}
+
+{% block content %}
+<section class="page-heading">
+    <p class="eyebrow">Customer account</p>
+    <h1>My orders</h1>
+    <p>Orders placed while signed in will appear here.</p>
+</section>
+
+<section class="history-list">
+    {% for order in orders %}
+    <article class="history-row">
+        <div>
+            <strong>Order #{{ order.id }}</strong>
+            <span>{{ order.created_at|date:"M j, Y" }}</span>
+        </div>
+        <div>
+            <span>{{ order.get_status_display }}</span>
+            <span>{{ order.get_payment_status_display }}</span>
+            <span>{{ order.get_fulfillment_status_display }}</span>
+        </div>
+        <a class="button" href="{% url 'shop:order_success' order.id %}">View order</a>
+    </article>
+    {% empty %}
+    <div class="empty-state">
+        <h2>No orders yet</h2>
+        <p>Once you check out while signed in, your purchases will be saved here.</p>
+        <a class="button button-primary" href="{% url 'shop:product_list' %}">Browse products</a>
+    </div>
+    {% endfor %}
+</section>
+{% endblock %}

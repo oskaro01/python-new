@@ -1,5 +1,6 @@
 """Product models for the ecommerce learning lab."""
 
+from django.conf import settings
 from django.db import models
 
 
@@ -109,6 +110,13 @@ class Order(models.Model):
     ]
 
     payment_provider = models.CharField(max_length=40, blank=True)
+    customer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="shop_orders",
+    )
     payment_reference = models.CharField(max_length=120, blank=True)
     payment_method = models.CharField(max_length=40, blank=True)
     paid_at = models.DateTimeField(null=True, blank=True)

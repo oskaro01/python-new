@@ -35,6 +35,7 @@ class OrderItemInline(admin.TabularInline):
         "unit_price",
         "quantity",
         "line_total",
+        "digital_file_name",
     )
 
 
@@ -58,6 +59,7 @@ class ShipmentInline(admin.StackedInline):
 class OrderAdmin(admin.ModelAdmin):
     list_display = (
         "id",
+        "customer",
         "full_name",
         "email",
         "status",
@@ -83,6 +85,7 @@ class OrderAdmin(admin.ModelAdmin):
     search_fields = (
         "full_name",
         "email",
+        "customer__username",
         "shipping_city",
         "shipping_postal_code",
     )

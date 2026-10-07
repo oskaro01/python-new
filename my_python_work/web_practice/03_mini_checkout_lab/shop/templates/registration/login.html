@@ -1,0 +1,15 @@
+{% extends "shop/base.html" %}
+
+{% block content %}
+<section class="form-panel account-panel">
+    <p class="eyebrow">Customer account</p>
+    <h1>Log in</h1>
+    <form method="post" class="stacked-form">
+        {% csrf_token %}
+        {{ form.as_p }}
+        {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+        <button class="button button-primary" type="submit">Log in</button>
+    </form>
+    <p>New here? <a href="{% url 'shop:register' %}">Create an account</a>.</p>
+</section>
+{% endblock %}
