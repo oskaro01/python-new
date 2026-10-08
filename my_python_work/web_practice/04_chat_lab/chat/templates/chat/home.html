@@ -8,19 +8,25 @@
     <link rel="stylesheet" href="{% static 'chat/styles.css' %}">
 </head>
 <body>
-    <main class="shell">
-        <section class="panel">
-            <p class="eyebrow">Signed in</p>
-            <h1>Welcome, {{ user.get_username }}.</h1>
-            <h2>Inbox</h2>
+    <main class="chat-shell">
+        <aside class="inbox-sidebar">
+            <div class="sidebar-heading">
+                <div>
+                    <p class="eyebrow">Chat Lab</p>
+                    <h1>Messages</h1>
+                </div>
+                <span class="avatar">{{ user.username|first|upper }}</span>
+            </div>
+            <label class="search-label" for="conversation-search">Search conversations</label>
+            <input id="conversation-search" type="search" placeholder="Search">
             {% for conversation in conversations %}
                 <a class="conversation-row" href="{% url 'chat:conversation_detail' conversation.id %}">
-                    <strong>Conversation {{ conversation.id }}</strong>
-                    <span>
+                    <span class="avatar avatar-small">{{ conversation.id }}</span>
+                    <span class="conversation-copy"><strong>Conversation {{ conversation.id }}</strong><span>
                         {% for participant in conversation.participants.all %}
                             {{ participant.user.username }}{% if not forloop.last %}, {% endif %}
                         {% endfor %}
-                    </span>
+                    </span></span>
                 </a>
             {% empty %}
                 <p class="intro">Your inbox is empty.</p>
@@ -29,6 +35,11 @@
                 {% csrf_token %}
                 <button class="button button-muted" type="submit">Sign out</button>
             </form>
+        </aside>
+        <section class="chat-empty-state">
+            <p class="eyebrow">Your inbox</p>
+            <h2>Choose a conversation</h2>
+            <p class="intro">Select a conversation from the left to read and send messages.</p>
         </section>
     </main>
 </body>

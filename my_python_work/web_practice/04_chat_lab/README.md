@@ -106,6 +106,13 @@ it needs for left/right message alignment.
 The update excludes the current user as sender, so opening a thread does not
 pretend that the user has received their own message.
 
+## Lesson 07: Messenger-Style Inbox Shell
+
+The chat home now has the first major layout shape: a conversation list on the
+left and an empty active-thread area on the right. It is responsive and stacks
+on narrow screens. The search field is visual groundwork for a later search
+lesson; it does not filter yet.
+
 ## Learning Order
 
 We will build it in small checkpoints:
