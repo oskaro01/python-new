@@ -40,6 +40,10 @@ create duplicate receipt jobs.
 
 ## Run the Worker Locally
 
+Local credentials belong in `03_mini_checkout_lab/.env`. Copy
+`.env.example` to `.env`, fill in the values, and restart Django. The `.env`
+file is ignored by Git and should never be committed.
+
 From the repository root:
 
 ```powershell

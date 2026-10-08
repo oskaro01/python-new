@@ -518,3 +518,16 @@ Manual sandbox fulfillment
 → Retry Pathao API
 → Switch provider from manual to pathao
 Nothing is broken in our project. The blocker is only Pathao’s sandbox server response.
+
+=======
+
+The next project is 04 Chat Lab, starting with:
+1. User accounts and search
+2. Conversations
+3. Messages
+4. Inbox and history
+5. Participant permissions
+6. Read/unread state
+7. Moderation
+8. Tests and security
+9. Finally, real-time WebSockets with Django Channels

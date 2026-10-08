@@ -1,0 +1,4 @@
+{
+  "python.terminal.useEnvFile": true,
+  "python.envFile": "${workspaceFolder}/my_python_work/web_practice/03_mini_checkout_lab/.env"
+}

@@ -56,6 +56,11 @@ checkpoint at a time.
 
 ## Run The Current Project
 
+For local credentials, copy `.env.example` to `.env` inside this project and
+fill in the values. The real `.env` file is ignored by Git. Start Django from
+a fresh terminal after changing it so old PowerShell variables do not override
+the file.
+
 From the repository root:
 
 ```powershell
