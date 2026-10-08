@@ -7,10 +7,12 @@ from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase, override_settings
+from django.utils import timezone
 from django.urls import reverse
 
 from .downloads import create_download_token
-from .models import Order, OrderItem, Product, ReturnRequest, Shipment
+from .jobs import process_jobs
+from .models import BackgroundJob, Order, OrderItem, Product, ReturnRequest, Shipment
 from .refunds import CancellationNotAllowed, cancel_order
 from .returns import (
     ReturnNotAllowed,
@@ -375,6 +377,7 @@ class ProductCatalogTests(TestCase):
             response,
             reverse("shop:order_success", kwargs={"order_id": order.pk}),
         )
+        process_jobs()
         order.refresh_from_db()
         self.assertEqual(order.payment_status, Order.PAYMENT_PAID)
         self.assertEqual(order.inventory_status, Order.INVENTORY_DEDUCTED)
@@ -494,6 +497,7 @@ class ProductCatalogTests(TestCase):
 
         self.assertEqual(first_response.status_code, 200)
         self.assertEqual(second_response.status_code, 200)
+        process_jobs()
         order.refresh_from_db()
         self.assertEqual(order.payment_status, Order.PAYMENT_PAID)
         self.assertEqual(order.payment_provider, "stripe")
@@ -529,6 +533,7 @@ class ProductCatalogTests(TestCase):
             )
 
         self.assertEqual(response.status_code, 200)
+        process_jobs()
         order.refresh_from_db()
         self.assertEqual(order.payment_status, Order.PAYMENT_PAID)
         self.assertEqual(order.inventory_status, Order.INVENTORY_NOT_REQUIRED)
@@ -1013,3 +1018,53 @@ class ReturnWorkflowTests(TestCase):
         self.assertEqual(return_request.status, ReturnRequest.REJECTED)
         self.assertEqual(self.order.status, Order.COMPLETED)
         self.assertEqual(self.order.payment_status, Order.PAYMENT_PAID)
+
+
+class BackgroundJobTests(TestCase):
+    def setUp(self):
+        self.order = Order.objects.create(
+            full_name="Ayzal Yohan",
+            email="ayzal@example.com",
+            payment_status=Order.PAYMENT_PAID,
+            payment_provider="demo",
+            total_amount=Decimal("4.00"),
+        )
+
+    def test_receipt_is_queued_once_and_worker_sends_it(self):
+        from .jobs import enqueue_receipt_job
+
+        first_job = enqueue_receipt_job(self.order)
+        second_job = enqueue_receipt_job(self.order)
+
+        self.assertEqual(first_job.pk, second_job.pk)
+        self.assertEqual(BackgroundJob.objects.count(), 1)
+        self.assertEqual(first_job.status, BackgroundJob.QUEUED)
+
+        processed = process_jobs()
+
+        self.assertEqual(len(processed), 1)
+        first_job.refresh_from_db()
+        self.order.refresh_from_db()
+        self.assertEqual(first_job.status, BackgroundJob.SUCCEEDED)
+        self.assertEqual(first_job.attempts, 1)
+        self.assertIsNotNone(self.order.receipt_sent_at)
+        self.assertEqual(len(mail.outbox), 1)
+
+    def test_failed_job_records_error_and_can_be_retried(self):
+        from .jobs import enqueue_receipt_job
+
+        job = enqueue_receipt_job(self.order)
+        with patch("shop.jobs.send_order_receipt", side_effect=RuntimeError("mail down")):
+            process_jobs()
+
+        job.refresh_from_db()
+        self.assertEqual(job.status, BackgroundJob.FAILED)
+        self.assertEqual(job.attempts, 1)
+        self.assertEqual(job.last_error, "mail down")
+
+        job.available_at = timezone.now()
+        job.save(update_fields=["available_at", "updated_at"])
+        process_jobs()
+        job.refresh_from_db()
+        self.assertEqual(job.status, BackgroundJob.SUCCEEDED)
+        self.assertEqual(job.attempts, 2)

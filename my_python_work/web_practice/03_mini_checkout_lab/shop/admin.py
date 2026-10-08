@@ -1,8 +1,9 @@
 """Admin setup for the product catalog."""
 
 from django.contrib import admin
+from django.utils import timezone
 
-from .models import Order, OrderItem, Product, ReturnRequest, Shipment
+from .models import BackgroundJob, Order, OrderItem, Product, ReturnRequest, Shipment
 from .refunds import CancellationNotAllowed, cancel_order
 from .returns import (
     ReturnTransitionError,
@@ -287,3 +288,45 @@ class ReturnRequestAdmin(admin.ModelAdmin):
             complete_return,
             "Refunded and restocked {count} return(s).",
         )
+
+
+@admin.register(BackgroundJob)
+class BackgroundJobAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "job_type",
+        "order",
+        "status",
+        "attempts",
+        "available_at",
+        "completed_at",
+        "updated_at",
+    )
+    list_filter = ("job_type", "status", "created_at")
+    search_fields = ("idempotency_key", "order__email", "last_error")
+    readonly_fields = (
+        "job_type",
+        "order",
+        "idempotency_key",
+        "payload",
+        "status",
+        "attempts",
+        "max_attempts",
+        "available_at",
+        "locked_at",
+        "started_at",
+        "completed_at",
+        "last_error",
+        "created_at",
+        "updated_at",
+    )
+    actions = ["retry_selected_jobs"]
+
+    @admin.action(description="Retry selected failed jobs now")
+    def retry_selected_jobs(self, request, queryset):
+        changed = queryset.filter(status=BackgroundJob.FAILED).update(
+            status=BackgroundJob.QUEUED,
+            available_at=timezone.now(),
+            last_error="",
+        )
+        self.message_user(request, f"Queued {changed} failed job(s) for retry.")

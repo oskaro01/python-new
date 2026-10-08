@@ -27,6 +27,7 @@ Personal Dictionary app.
 20. [Lesson 53: Customer Accounts and Order History](53_customer_accounts_order_history/README.md)
 21. [Lesson 54: Refunds and Cancellations](54_refunds_cancellations/README.md)
 22. [Lesson 55: Returns and Reverse Logistics](55_returns_reverse_logistics/README.md)
+23. [Lesson 56: Background Jobs and Async Work](56_background_jobs_async/README.md)
 
 Each lesson has its own README so we can study, verify, and commit one
 checkpoint at a time.

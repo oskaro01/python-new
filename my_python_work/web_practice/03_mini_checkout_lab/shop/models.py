@@ -2,6 +2,7 @@
 
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 
 class Product(models.Model):
@@ -287,3 +288,56 @@ class ReturnRequest(models.Model):
 
     def __str__(self):
         return f"Return for order #{self.order_id}"
+
+
+class BackgroundJob(models.Model):
+    SEND_RECEIPT = "send_receipt"
+
+    JOB_TYPE_CHOICES = [
+        (SEND_RECEIPT, "Send receipt"),
+    ]
+
+    QUEUED = "queued"
+    RUNNING = "running"
+    SUCCEEDED = "succeeded"
+    FAILED = "failed"
+
+    STATUS_CHOICES = [
+        (QUEUED, "Queued"),
+        (RUNNING, "Running"),
+        (SUCCEEDED, "Succeeded"),
+        (FAILED, "Failed"),
+    ]
+
+    job_type = models.CharField(max_length=50, choices=JOB_TYPE_CHOICES)
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="background_jobs",
+    )
+    idempotency_key = models.CharField(max_length=160, unique=True)
+    payload = models.JSONField(default=dict, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=QUEUED)
+    attempts = models.PositiveIntegerField(default=0)
+    max_attempts = models.PositiveIntegerField(default=3)
+    available_at = models.DateTimeField(default=timezone.now)
+    locked_at = models.DateTimeField(null=True, blank=True)
+    started_at = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    last_error = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["available_at", "created_at"]
+        indexes = [
+            models.Index(
+                fields=["status", "available_at"],
+                name="job_status_available_idx",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.get_job_type_display()} #{self.pk} ({self.get_status_display()})"

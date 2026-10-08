@@ -1,6 +1,5 @@
 """Public product catalog views."""
 
-import logging
 from pathlib import Path
 
 from django.contrib.auth import login
@@ -26,9 +25,9 @@ from .cart import (
     update_product,
 )
 from .forms import CheckoutForm, RegisterForm, ReturnRequestForm
-from .emails import send_order_receipt
 from .downloads import build_download_url, read_download_token
 from .inventory import deduct_paid_order_inventory
+from .jobs import enqueue_receipt_job
 from .models import Order, OrderItem, Product, ReturnRequest
 from .payments import (
     PaymentConfigurationError,
@@ -43,9 +42,6 @@ from .shipping import mark_order_ready_for_fulfillment, shipping_cost
 
 CHECKOUT_SESSION_KEY = "checkout_customer"
 LAST_ORDER_SESSION_KEY = "last_order_id"
-logger = logging.getLogger(__name__)
-
-
 def confirm_stripe_payment(session):
     order_id = (session.get("metadata") or {}).get("order_id")
     if not order_id or session.get("payment_status") != "paid":
@@ -77,13 +73,7 @@ def confirm_stripe_payment(session):
         )
         deduct_paid_order_inventory(order)
         mark_order_ready_for_fulfillment(order)
-        try:
-            send_order_receipt(order)
-        except Exception:
-            logger.exception("Receipt email failed for order %s", order.pk)
-        else:
-            order.receipt_sent_at = timezone.now()
-            order.save(update_fields=["receipt_sent_at", "updated_at"])
+        enqueue_receipt_job(order)
 
 
 def fail_stripe_payment(session):
@@ -289,7 +279,7 @@ def place_order(request):
 def order_success(request, order_id):
     order = get_object_or_404(
         Order.objects.select_related("shipment", "return_request").prefetch_related(
-            "items"
+            "items", "background_jobs"
         ),
         pk=order_id,
     )
@@ -318,6 +308,7 @@ def order_success(request, order_id):
                 is_owner and order_can_be_returned(order)
             ),
             "return_form": ReturnRequestForm(),
+            "latest_background_job": order.background_jobs.order_by("-created_at").first(),
         },
     )
 
@@ -495,18 +486,11 @@ def simulate_payment(request, order_id):
         )
         deduct_paid_order_inventory(order)
         mark_order_ready_for_fulfillment(order)
-        try:
-            send_order_receipt(order)
-        except Exception:
-            logger.exception("Receipt email failed for order %s", order.pk)
-            messages.error(
-                request,
-                "Demo payment was recorded, but the receipt could not be sent.",
-            )
-        else:
-            order.receipt_sent_at = timezone.now()
-            order.save(update_fields=["receipt_sent_at", "updated_at"])
-            messages.success(request, "Demo payment marked as paid. Receipt sent.")
+        enqueue_receipt_job(order)
+        messages.success(
+            request,
+            "Demo payment marked as paid. Receipt queued for delivery.",
+        )
     else:
         messages.info(request, "This order already has a payment result.")
 

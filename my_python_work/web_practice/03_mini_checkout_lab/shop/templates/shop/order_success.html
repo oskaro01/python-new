@@ -123,6 +123,18 @@
                 <dd>Not sent yet</dd>
                 {% endif %}
             </div>
+            {% if latest_background_job %}
+            <div>
+                <dt>Receipt job</dt>
+                <dd>
+                    {{ latest_background_job.get_status_display }}
+                    (attempt {{ latest_background_job.attempts }})
+                    {% if latest_background_job.last_error %}
+                    <br>{{ latest_background_job.last_error }}
+                    {% endif %}
+                </dd>
+            </div>
+            {% endif %}
         {% if order.shipping_address or order.shipping_city or order.shipping_country %}
         <div>
             <dt>Shipping address</dt>
