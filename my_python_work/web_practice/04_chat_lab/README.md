@@ -74,6 +74,17 @@ The route is:
 /chat/conversations/<conversation_id>/
 ```
 
+## Lesson 04: Inbox Conversation List
+
+The authenticated chat home now loads the current user's conversations only.
+Each row links to the protected conversation detail page and shows the thread
+participants. `distinct()` prevents duplicate rows when the database query
+joins through the participant table.
+
+This is the first piece of the Messenger-style layout. The next UI step will
+replace the simple rows with a two-column inbox and active-thread layout after
+message sending exists.
+
 ## Learning Order
 
 We will build it in small checkpoints:

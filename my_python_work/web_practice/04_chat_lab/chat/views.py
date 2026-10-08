@@ -8,7 +8,12 @@ def landing(request):
 
 @login_required
 def chat_home(request):
-    return render(request, "chat/home.html")
+    conversations = (
+        Conversation.objects.filter(participants__user=request.user)
+        .prefetch_related("participants__user")
+        .distinct()
+    )
+    return render(request, "chat/home.html", {"conversations": conversations})
 
 
 @login_required

@@ -12,7 +12,19 @@
         <section class="panel">
             <p class="eyebrow">Signed in</p>
             <h1>Welcome, {{ user.get_username }}.</h1>
-            <p class="intro">Your inbox will live here once we add conversations.</p>
+            <h2>Inbox</h2>
+            {% for conversation in conversations %}
+                <a class="conversation-row" href="{% url 'chat:conversation_detail' conversation.id %}">
+                    <strong>Conversation {{ conversation.id }}</strong>
+                    <span>
+                        {% for participant in conversation.participants.all %}
+                            {{ participant.user.username }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    </span>
+                </a>
+            {% empty %}
+                <p class="intro">Your inbox is empty.</p>
+            {% endfor %}
             <form method="post" action="{% url 'logout' %}">
                 {% csrf_token %}
                 <button class="button button-muted" type="submit">Sign out</button>
