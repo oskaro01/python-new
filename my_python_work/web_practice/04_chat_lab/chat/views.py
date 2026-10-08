@@ -1,6 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
@@ -15,6 +15,12 @@ def chat_home(request):
     conversations = (
         Conversation.objects.filter(participants__user=request.user)
         .prefetch_related("participants__user")
+        .annotate(
+            unread_count=Count(
+                "messages",
+                filter=Q(messages__is_read=False) & ~Q(messages__sender=request.user),
+            )
+        )
         .distinct()
     )
     query = request.GET.get("q", "").strip()

@@ -49,6 +49,7 @@
                             {{ participant.user.username }}{% if not forloop.last %}, {% endif %}
                         {% endfor %}
                     </span></span>
+                    {% if conversation.unread_count %}<b class="unread-badge">{{ conversation.unread_count }}</b>{% endif %}
                 </a>
             {% empty %}
                 <p class="intro">Your inbox is empty.</p>

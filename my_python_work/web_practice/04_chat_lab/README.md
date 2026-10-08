@@ -188,6 +188,13 @@ private two-person conversation, or reuses the existing one for that pair.
 The action is a `POST` protected by CSRF, and users cannot start a conversation
 with themselves.
 
+## Lesson 09: Inbox Unread Counts
+
+The inbox now annotates each conversation with unread messages received from
+other participants. Messages sent by the current user do not increase the
+badge. Opening the conversation uses the existing read-state update, so the
+badge disappears naturally after the thread is viewed.
+
 ## Current Foundation
 
 The project now includes authentication, conversations, participants, message
