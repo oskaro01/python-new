@@ -181,6 +181,13 @@ This will not try to recreate all of Facebook Messenger. We will start with
 private text conversations and add complexity only when the underlying
 concept is understood.
 
+## Lesson 08: Find a User and Start a Conversation
+
+The inbox search can now find users by username. Selecting a result creates a
+private two-person conversation, or reuses the existing one for that pair.
+The action is a `POST` protected by CSRF, and users cannot start a conversation
+with themselves.
+
 ## Current Foundation
 
 The project now includes authentication, conversations, participants, message

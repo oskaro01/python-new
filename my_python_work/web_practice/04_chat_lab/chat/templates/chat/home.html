@@ -17,8 +17,22 @@
                 </div>
                 <span class="avatar">{{ user.username|first|upper }}</span>
             </div>
-            <label class="search-label" for="conversation-search">Search conversations</label>
-            <input id="conversation-search" type="search" placeholder="Search">
+            <form method="get">
+                <label class="search-label" for="conversation-search">Find a person</label>
+                <input id="conversation-search" name="q" type="search" value="{{ query }}" placeholder="Search users">
+            </form>
+            {% if query %}
+                <div class="user-results">
+                    {% for found_user in users %}
+                        <form method="post" action="{% url 'chat:start_conversation' found_user.id %}">
+                            {% csrf_token %}
+                            <button class="user-result" type="submit">Chat with <strong>{{ found_user.username }}</strong></button>
+                        </form>
+                    {% empty %}
+                        <p class="intro">No matching users.</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
             {% for conversation in conversations %}
                 <a class="conversation-row" href="{% url 'chat:conversation_detail' conversation.id %}">
                     <span class="avatar avatar-small">{{ conversation.id }}</span>

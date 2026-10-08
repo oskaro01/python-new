@@ -75,6 +75,21 @@ body {
     margin-bottom: 16px;
 }
 
+.user-results {
+    margin-bottom: 16px;
+}
+
+.user-result {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #d8d2c8;
+    border-radius: 6px;
+    color: #14213d;
+    background: #ffffff;
+    text-align: left;
+    cursor: pointer;
+}
+
 .chat-empty-state {
     display: grid;
     place-content: center;
