@@ -57,6 +57,23 @@ left, the selected conversation in the main panel, and a composer fixed at the
 bottom of that conversation. We will build that after participant-only access
 and normal message forms are in place.
 
+## Lesson 03: Participant-Only Access
+
+Conversation pages now require both conditions:
+
+1. The visitor must be signed in.
+2. The signed-in user must be a participant in that conversation.
+
+The permission check happens inside the database query. A non-participant
+receives a normal `404` response instead of learning that someone else's
+conversation exists. This is a useful privacy boundary for private messaging.
+
+The route is:
+
+```text
+/chat/conversations/<conversation_id>/
+```
+
 ## Learning Order
 
 We will build it in small checkpoints:

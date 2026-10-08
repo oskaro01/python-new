@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Conversation | Chat Lab</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'chat/styles.css' %}">
+</head>
+<body>
+    <main class="shell">
+        <section class="panel">
+            <p class="eyebrow">Conversation {{ conversation.pk }}</p>
+            <h1>Private thread</h1>
+            <p class="intro">Only participants can open this conversation.</p>
+            {% for message in conversation.messages.all %}
+                <p><strong>{{ message.sender }}</strong>: {{ message.body }}</p>
+            {% empty %}
+                <p class="intro">No messages yet.</p>
+            {% endfor %}
+            <a class="button button-muted" href="{% url 'chat:home' %}">Back to inbox</a>
+        </section>
+    </main>
+</body>
+</html>
