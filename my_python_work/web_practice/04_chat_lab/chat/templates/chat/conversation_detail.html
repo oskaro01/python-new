@@ -8,25 +8,43 @@
     <link rel="stylesheet" href="{% static 'chat/styles.css' %}">
 </head>
 <body>
-    <main class="shell">
-        <section class="panel">
-            <p class="eyebrow">Conversation {{ conversation.pk }}</p>
-            <h1>Private thread</h1>
-            <p class="intro">Only participants can open this conversation.</p>
-            {% for message in conversation.messages.all %}
-                <p class="message {% if message.sender_id == user.id %}message-own{% else %}message-other{% endif %}">
-                    <strong>{{ message.sender }}</strong>: {{ message.body }}
-                    <small>{{ message.created_at|date:"M j, g:i A" }}</small>
-                </p>
-            {% empty %}
-                <p class="intro">No messages yet.</p>
-            {% endfor %}
-            <form method="post">
+    <main class="messenger-shell">
+        <aside class="messenger-sidebar">
+            <div class="messenger-brand">Messages</div>
+            <a class="back-link" href="{% url 'chat:home' %}">All conversations</a>
+            <div class="mini-conversation">
+                <span class="avatar avatar-small">{{ conversation.id }}</span>
+                <strong>Conversation {{ conversation.id }}</strong>
+            </div>
+        </aside>
+        <section class="thread-panel">
+            <header class="thread-header">
+                <div>
+                    <h1>Conversation {{ conversation.id }}</h1>
+                    <p>
+                        {% for participant in conversation.participants.all %}
+                            {{ participant.user.username }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    </p>
+                </div>
+                <span class="thread-status">Private</span>
+            </header>
+            <div class="message-list">
+                {% for message in conversation.messages.all %}
+                    <article class="message {% if message.sender_id == user.id %}message-own{% else %}message-other{% endif %}">
+                        <strong>{{ message.sender }}</strong>
+                        <div>{{ message.body }}</div>
+                        <small>{{ message.created_at|date:"M j, g:i A" }}</small>
+                    </article>
+                {% empty %}
+                    <p class="intro">No messages yet.</p>
+                {% endfor %}
+            </div>
+            <form class="composer" method="post">
                 {% csrf_token %}
-                {{ form.as_p }}
-                <button class="button" type="submit">Send message</button>
+                {{ form.body }}
+                <button class="button" type="submit">Send</button>
             </form>
-            <a class="button button-muted" href="{% url 'chat:home' %}">Back to inbox</a>
         </section>
     </main>
 </body>

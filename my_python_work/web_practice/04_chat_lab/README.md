@@ -180,3 +180,18 @@ The exact model design may change after we practice the first working version.
 This will not try to recreate all of Facebook Messenger. We will start with
 private text conversations and add complexity only when the underlying
 concept is understood.
+
+## Current Foundation
+
+The project now includes authentication, conversations, participants, message
+sending, read state, participant-only access, and a Messenger-inspired thread
+screen with an inbox sidebar and bottom composer.
+
+Create local demo data with:
+
+```powershell
+..\..\..\.venv\Scripts\python.exe manage.py seed_demo_chat
+```
+
+Then sign in as `alice` with `alice-demo-password` or `bob` with
+`bob-demo-password`. These credentials are for local learning only.
