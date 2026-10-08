@@ -19,19 +19,43 @@ The project now has:
 Run it from this directory:
 
 ```powershell
-..\..\..\.venv\Scripts\python.exe manage.py runserver 8002
+..\..\..\.venv\Scripts\python.exe manage.py runserver 8003
 ```
 
-Open `http://127.0.0.1:8002/`. The `/chat/` page requires a Django user. Create
+Open `http://127.0.0.1:8003/`. The `/chat/` page requires a Django user. Create
 one with:
 
 ```powershell
 ..\..\..\.venv\Scripts\python.exe manage.py createsuperuser
 ```
 
-This lesson intentionally does not create conversations or messages yet. A
-message must belong to an authenticated sender, so identity and access are
-the foundation for the data model.
+The first lesson intentionally stopped before creating conversations or
+messages. A message must belong to an authenticated sender, so identity and
+access became the foundation for this data model.
+
+## Lesson 02: Conversation Data Model
+
+The first real chat entities are now defined:
+
+- `Conversation` groups one thread and tracks its latest activity.
+- `ConversationParticipant` connects users to conversations and prevents the
+  same user being added twice to one conversation.
+- `Message` stores the sender, body, read state, and creation time.
+
+The database is intentionally SQLite for local learning. Redis is not a
+replacement for these durable records. We will introduce Redis later for
+temporary state, caching, background jobs, and real-time delivery support.
+
+Create the migration after changing the models:
+
+```powershell
+..\..\..\.venv\Scripts\python.exe manage.py makemigrations chat
+```
+
+The future UI will follow the classic Messenger layout: an inbox list on the
+left, the selected conversation in the main panel, and a composer fixed at the
+bottom of that conversation. We will build that after participant-only access
+and normal message forms are in place.
 
 ## Learning Order
 
