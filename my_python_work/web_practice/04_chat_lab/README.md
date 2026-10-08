@@ -96,6 +96,16 @@ After a successful save, the view redirects back to the conversation. This
 post/redirect/get pattern prevents a browser refresh from submitting the same
 message again.
 
+## Lesson 06: Read State and Message Ownership
+
+Opening a conversation now marks unread messages from other participants as
+read. Messages sent by the current user remain separate from received messages
+in the template, which gives the future Messenger-style layout the information
+it needs for left/right message alignment.
+
+The update excludes the current user as sender, so opening a thread does not
+pretend that the user has received their own message.
+
 ## Learning Order
 
 We will build it in small checkpoints:

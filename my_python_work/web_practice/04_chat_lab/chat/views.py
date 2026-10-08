@@ -24,6 +24,7 @@ def conversation_detail(request, conversation_id):
         pk=conversation_id,
         participants__user=request.user,
     )
+    conversation.messages.filter(is_read=False).exclude(sender=request.user).update(is_read=True)
     if request.method == "POST":
         form = MessageForm(request.POST)
         if form.is_valid():

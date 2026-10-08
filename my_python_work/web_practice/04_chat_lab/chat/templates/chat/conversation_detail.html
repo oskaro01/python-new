@@ -14,7 +14,10 @@
             <h1>Private thread</h1>
             <p class="intro">Only participants can open this conversation.</p>
             {% for message in conversation.messages.all %}
-                <p><strong>{{ message.sender }}</strong>: {{ message.body }}</p>
+                <p class="message {% if message.sender_id == user.id %}message-own{% else %}message-other{% endif %}">
+                    <strong>{{ message.sender }}</strong>: {{ message.body }}
+                    <small>{{ message.created_at|date:"M j, g:i A" }}</small>
+                </p>
             {% empty %}
                 <p class="intro">No messages yet.</p>
             {% endfor %}
