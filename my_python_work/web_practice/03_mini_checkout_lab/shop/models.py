@@ -61,12 +61,14 @@ class Order(models.Model):
     PROCESSING = "processing"
     COMPLETED = "completed"
     CANCELLED = "cancelled"
+    RETURNED = "returned"
 
     STATUS_CHOICES = [
         (PENDING, "Pending"),
         (PROCESSING, "Processing"),
         (COMPLETED, "Completed"),
         (CANCELLED, "Cancelled"),
+        (RETURNED, "Returned"),
     ]
 
     PAYMENT_PENDING = "pending"
@@ -102,6 +104,7 @@ class Order(models.Model):
     FULFILLMENT_OUT_FOR_DELIVERY = "out_for_delivery"
     FULFILLMENT_DELIVERED = "delivered"
     FULFILLMENT_EXCEPTION = "exception"
+    FULFILLMENT_RETURNED = "returned"
 
     FULFILLMENT_STATUS_CHOICES = [
         (FULFILLMENT_NOT_REQUIRED, "Not required"),
@@ -111,6 +114,7 @@ class Order(models.Model):
         (FULFILLMENT_OUT_FOR_DELIVERY, "Out for delivery"),
         (FULFILLMENT_DELIVERED, "Delivered"),
         (FULFILLMENT_EXCEPTION, "Delivery exception"),
+        (FULFILLMENT_RETURNED, "Returned"),
     ]
 
     payment_provider = models.CharField(max_length=40, blank=True)
@@ -238,3 +242,48 @@ class Shipment(models.Model):
 
     def __str__(self):
         return f"Shipment for order #{self.order_id}"
+
+
+class ReturnRequest(models.Model):
+    REQUESTED = "requested"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+    IN_TRANSIT = "in_transit"
+    RECEIVED = "received"
+    REFUNDED = "refunded"
+
+    STATUS_CHOICES = [
+        (REQUESTED, "Requested"),
+        (APPROVED, "Approved"),
+        (REJECTED, "Rejected"),
+        (IN_TRANSIT, "Return in transit"),
+        (RECEIVED, "Received for inspection"),
+        (REFUNDED, "Refunded"),
+    ]
+
+    order = models.OneToOneField(
+        Order,
+        on_delete=models.CASCADE,
+        related_name="return_request",
+    )
+    reason = models.TextField()
+    status = models.CharField(
+        max_length=30,
+        choices=STATUS_CHOICES,
+        default=REQUESTED,
+    )
+    review_notes = models.TextField(blank=True)
+    pickup_provider = models.CharField(max_length=40, blank=True)
+    pickup_reference = models.CharField(max_length=120, blank=True)
+    tracking_number = models.CharField(max_length=120, blank=True)
+    requested_at = models.DateTimeField(auto_now_add=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    received_at = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-requested_at"]
+
+    def __str__(self):
+        return f"Return for order #{self.order_id}"

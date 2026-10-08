@@ -38,6 +38,40 @@
             <button class="button button-danger" type="submit">Cancel order</button>
         </form>
         {% endif %}
+
+        {% if return_request %}
+        <section class="return-panel" aria-labelledby="return-status-heading">
+            <p class="eyebrow">Reverse logistics</p>
+            <h2 id="return-status-heading">Return {{ return_request.get_status_display }}</h2>
+            <p>{{ return_request.reason }}</p>
+            {% if return_request.tracking_number %}
+            <dl class="review-details">
+                <div>
+                    <dt>Return tracking</dt>
+                    <dd>{{ return_request.tracking_number }}</dd>
+                </div>
+                <div>
+                    <dt>Pickup provider</dt>
+                    <dd>{{ return_request.pickup_provider|title }}</dd>
+                </div>
+            </dl>
+            {% endif %}
+            {% if return_request.review_notes %}
+            <p class="muted">{{ return_request.review_notes }}</p>
+            {% endif %}
+        </section>
+        {% elif can_request_return %}
+        <section class="return-panel" aria-labelledby="request-return-heading">
+            <p class="eyebrow">Need to send it back?</p>
+            <h2 id="request-return-heading">Request a return</h2>
+            <form method="post" action="{% url 'shop:request_return' order.id %}">
+                {% csrf_token %}
+                {{ return_form.reason.label_tag }}
+                {{ return_form.reason }}
+                <button class="button" type="submit">Submit return request</button>
+            </form>
+        </section>
+        {% endif %}
         {% endif %}
 
         <dl class="review-details">

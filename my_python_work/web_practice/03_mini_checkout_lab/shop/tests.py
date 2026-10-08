@@ -10,8 +10,18 @@ from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
 from .downloads import create_download_token
-from .models import Order, OrderItem, Product, Shipment
+from .models import Order, OrderItem, Product, ReturnRequest, Shipment
 from .refunds import CancellationNotAllowed, cancel_order
+from .returns import (
+    ReturnNotAllowed,
+    ReturnTransitionError,
+    approve_return,
+    complete_return,
+    mark_return_in_transit,
+    mark_return_received,
+    reject_return,
+    request_order_return,
+)
 from .shipping import create_shipment_for_order, update_shipment_status
 
 
@@ -124,6 +134,7 @@ class ProductCatalogTests(TestCase):
             reverse("shop:place_order"),
             reverse("shop:simulate_payment", kwargs={"order_id": 1}),
             reverse("shop:start_payment", kwargs={"order_id": 1}),
+            reverse("shop:request_return", kwargs={"order_id": 1}),
         ]
 
         for endpoint in endpoints:
@@ -888,3 +899,117 @@ class RefundAndCancellationTests(TestCase):
 
         with self.assertRaises(CancellationNotAllowed):
             cancel_order(self.order)
+
+
+class ReturnWorkflowTests(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username="return-customer",
+            password="Strong-test-password-123",
+        )
+        self.product = Product.objects.create(
+            name="Delivered Tote",
+            slug="delivered-tote",
+            price=Decimal("12.50"),
+            stock=2,
+        )
+        self.order = Order.objects.create(
+            customer=self.user,
+            full_name="Ayzal Yohan",
+            email="ayzal@example.com",
+            status=Order.COMPLETED,
+            payment_status=Order.PAYMENT_PAID,
+            payment_provider="demo",
+            payment_reference="demo-order-2",
+            inventory_status=Order.INVENTORY_DEDUCTED,
+            fulfillment_status=Order.FULFILLMENT_DELIVERED,
+            total_amount=Decimal("12.50"),
+        )
+        OrderItem.objects.create(
+            order=self.order,
+            product=self.product,
+            product_name=self.product.name,
+            product_type=Product.PHYSICAL,
+            unit_price=self.product.price,
+            quantity=1,
+            line_total=self.product.price,
+        )
+        self.shipment = Shipment.objects.create(
+            order=self.order,
+            provider="manual",
+            status=Shipment.DELIVERED,
+        )
+
+    def test_customer_can_request_return_for_delivered_order(self):
+        return_request = request_order_return(self.order, "The item arrived damaged.")
+
+        self.assertEqual(return_request.status, return_request.REQUESTED)
+        self.assertEqual(return_request.reason, "The item arrived damaged.")
+
+    def test_return_requires_delivered_physical_order(self):
+        self.shipment.status = Shipment.IN_TRANSIT
+        self.shipment.save(update_fields=["status", "updated_at"])
+
+        with self.assertRaises(ReturnNotAllowed):
+            request_order_return(self.order, "I changed my mind.")
+
+    def test_return_is_not_refunded_before_received(self):
+        return_request = request_order_return(self.order, "Wrong size.")
+        approve_return(return_request)
+
+        with self.assertRaises(ReturnTransitionError):
+            complete_return(return_request)
+
+        self.order.refresh_from_db()
+        self.assertEqual(self.order.payment_status, Order.PAYMENT_PAID)
+
+    def test_received_return_refunds_and_restores_once(self):
+        return_request = request_order_return(self.order, "Wrong size.")
+        approve_return(return_request)
+        mark_return_in_transit(return_request)
+        mark_return_received(return_request)
+        complete_return(return_request)
+
+        self.order.refresh_from_db()
+        self.product.refresh_from_db()
+        return_request.refresh_from_db()
+        self.assertEqual(return_request.status, ReturnRequest.REFUNDED)
+        self.assertEqual(self.order.status, Order.RETURNED)
+        self.assertEqual(self.order.payment_status, Order.PAYMENT_REFUNDED)
+        self.assertEqual(
+            self.order.fulfillment_status,
+            Order.FULFILLMENT_RETURNED,
+        )
+        self.assertEqual(self.order.inventory_status, Order.INVENTORY_RESTORED)
+        self.assertEqual(self.product.stock, 3)
+
+        complete_return(return_request)
+        self.product.refresh_from_db()
+        self.assertEqual(self.product.stock, 3)
+
+    def test_customer_return_endpoint_requires_owned_authenticated_order(self):
+        self.client.force_login(self.user)
+
+        response = self.client.post(
+            reverse("shop:request_return", kwargs={"order_id": self.order.pk}),
+            {"reason": "The item arrived damaged."},
+        )
+
+        self.assertRedirects(
+            response,
+            reverse("shop:order_success", kwargs={"order_id": self.order.pk}),
+        )
+        self.assertEqual(
+            self.order.return_request.status,
+            ReturnRequest.REQUESTED,
+        )
+
+    def test_rejected_return_does_not_change_order(self):
+        return_request = request_order_return(self.order, "No longer wanted.")
+        reject_return(return_request, "Return window exception.")
+
+        self.order.refresh_from_db()
+        return_request.refresh_from_db()
+        self.assertEqual(return_request.status, ReturnRequest.REJECTED)
+        self.assertEqual(self.order.status, Order.COMPLETED)
+        self.assertEqual(self.order.payment_status, Order.PAYMENT_PAID)

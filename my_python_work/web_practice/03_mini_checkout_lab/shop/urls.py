@@ -18,6 +18,11 @@ urlpatterns = [
     path("orders/", views.order_history, name="order_history"),
     path("orders/<int:order_id>/cancel/", views.cancel_order_view, name="cancel_order"),
     path(
+        "orders/<int:order_id>/return/",
+        views.request_return_view,
+        name="request_return",
+    ),
+    path(
         "orders/<int:order_id>/items/<int:item_id>/download/",
         views.download_order_item,
         name="download_order_item",

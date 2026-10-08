@@ -15,6 +15,19 @@ class RegisterForm(UserCreationForm):
         fields = ("username", "email", "password1", "password2")
 
 
+class ReturnRequestForm(forms.Form):
+    reason = forms.CharField(
+        label="Reason for return",
+        max_length=1000,
+        widget=forms.Textarea(
+            attrs={
+                "rows": 4,
+                "placeholder": "Tell us what is wrong with the delivered item",
+            }
+        ),
+    )
+
+
 class CheckoutForm(forms.Form):
     full_name = forms.CharField(max_length=120, label="Full name")
     email = forms.EmailField(label="Email address")

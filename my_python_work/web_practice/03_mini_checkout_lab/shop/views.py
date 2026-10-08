@@ -25,11 +25,11 @@ from .cart import (
     remove_product,
     update_product,
 )
-from .forms import CheckoutForm, RegisterForm
+from .forms import CheckoutForm, RegisterForm, ReturnRequestForm
 from .emails import send_order_receipt
 from .downloads import build_download_url, read_download_token
 from .inventory import deduct_paid_order_inventory
-from .models import Order, OrderItem, Product
+from .models import Order, OrderItem, Product, ReturnRequest
 from .payments import (
     PaymentConfigurationError,
     construct_stripe_event,
@@ -37,6 +37,7 @@ from .payments import (
     stripe_is_configured,
 )
 from .refunds import CancellationNotAllowed, cancel_order
+from .returns import ReturnNotAllowed, order_can_be_returned, request_order_return
 from .shipping import mark_order_ready_for_fulfillment, shipping_cost
 
 
@@ -287,7 +288,9 @@ def place_order(request):
 @require_GET
 def order_success(request, order_id):
     order = get_object_or_404(
-        Order.objects.prefetch_related("items"),
+        Order.objects.select_related("shipment", "return_request").prefetch_related(
+            "items"
+        ),
         pk=order_id,
     )
     is_owner = request.user.is_authenticated and order.customer_id == request.user.id
@@ -310,6 +313,11 @@ def order_success(request, order_id):
             "order": order,
             "download_items": download_items,
             "stripe_payment_enabled": stripe_is_configured(),
+            "return_request": ReturnRequest.objects.filter(order=order).first(),
+            "can_request_return": (
+                is_owner and order_can_be_returned(order)
+            ),
+            "return_form": ReturnRequestForm(),
         },
     )
 
@@ -340,6 +348,28 @@ def cancel_order_view(request, order_id):
     else:
         messages.success(request, "Order cancelled. Any eligible refund was recorded.")
     return redirect("shop:order_success", order_id=order_id)
+
+
+@require_POST
+@login_required
+def request_return_view(request, order_id):
+    order = get_object_or_404(Order, pk=order_id, customer=request.user)
+    form = ReturnRequestForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, "Please provide a reason for the return.")
+        return redirect("shop:order_success", order_id=order_id)
+    try:
+        request_order_return(order, form.cleaned_data["reason"])
+    except ReturnNotAllowed as error:
+        messages.error(request, str(error))
+    else:
+        messages.success(
+            request,
+            "Return requested. We will review it before arranging pickup.",
+        )
+    return redirect("shop:order_success", order_id=order_id)
+
+
 def register(request):
     if request.user.is_authenticated:
         return redirect("shop:order_history")

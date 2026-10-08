@@ -45,8 +45,8 @@ def deduct_paid_order_inventory(order):
         return True
 
 
-def restore_cancelled_order_inventory(order):
-    """Return deducted physical stock once when a paid order is cancelled."""
+def restore_order_inventory(order):
+    """Return deducted physical stock once after cancellation or return."""
 
     if order.inventory_status in {Order.INVENTORY_RESTORED, Order.INVENTORY_NOT_REQUIRED}:
         return True
@@ -73,3 +73,9 @@ def restore_cancelled_order_inventory(order):
         order.inventory_restored_at = timezone.now()
         order.save(update_fields=["inventory_status", "inventory_restored_at", "updated_at"])
     return True
+
+
+def restore_cancelled_order_inventory(order):
+    """Backward-compatible cancellation name used by the previous lesson."""
+
+    return restore_order_inventory(order)

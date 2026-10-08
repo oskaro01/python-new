@@ -2,8 +2,16 @@
 
 from django.contrib import admin
 
-from .models import Order, OrderItem, Product, Shipment
+from .models import Order, OrderItem, Product, ReturnRequest, Shipment
 from .refunds import CancellationNotAllowed, cancel_order
+from .returns import (
+    ReturnTransitionError,
+    approve_return,
+    complete_return,
+    mark_return_in_transit,
+    mark_return_received,
+    reject_return,
+)
 from .shipping import create_shipment_for_order, update_shipment_status
 
 
@@ -53,6 +61,25 @@ class ShipmentInline(admin.StackedInline):
         "updated_at",
         "shipped_at",
         "delivered_at",
+    )
+
+
+class ReturnRequestInline(admin.StackedInline):
+    model = ReturnRequest
+    extra = 0
+    can_delete = False
+    readonly_fields = (
+        "reason",
+        "status",
+        "review_notes",
+        "pickup_provider",
+        "pickup_reference",
+        "tracking_number",
+        "requested_at",
+        "reviewed_at",
+        "received_at",
+        "completed_at",
+        "updated_at",
     )
 
 
@@ -106,7 +133,7 @@ class OrderAdmin(admin.ModelAdmin):
         "shipping_amount",
         "total_amount",
     )
-    inlines = [OrderItemInline, ShipmentInline]
+    inlines = [OrderItemInline, ShipmentInline, ReturnRequestInline]
     actions = ["create_sandbox_shipments", "cancel_selected_orders"]
     ordering = ("-created_at",)
 
@@ -166,3 +193,97 @@ class ShipmentAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
         if old_status != obj.status:
             update_shipment_status(obj, obj.status)
+
+
+@admin.register(ReturnRequest)
+class ReturnRequestAdmin(admin.ModelAdmin):
+    list_display = (
+        "order",
+        "status",
+        "pickup_provider",
+        "tracking_number",
+        "requested_at",
+        "updated_at",
+    )
+    list_filter = ("status", "pickup_provider", "requested_at")
+    search_fields = ("order__email", "order__full_name", "tracking_number")
+    readonly_fields = (
+        "order",
+        "reason",
+        "status",
+        "pickup_provider",
+        "pickup_reference",
+        "tracking_number",
+        "requested_at",
+        "reviewed_at",
+        "received_at",
+        "completed_at",
+        "updated_at",
+    )
+    actions = (
+        "approve_selected_returns",
+        "reject_selected_returns",
+        "mark_selected_in_transit",
+        "mark_selected_received",
+        "refund_selected_returns",
+    )
+
+    def _run_transition(self, request, queryset, transition, success_message):
+        changed = 0
+        for return_request in queryset:
+            try:
+                transition(return_request)
+            except (ReturnTransitionError, RuntimeError, ValueError) as error:
+                self.message_user(
+                    request,
+                    f"Order #{return_request.order_id}: {error}",
+                    level="WARNING",
+                )
+            else:
+                changed += 1
+        self.message_user(request, success_message.format(count=changed))
+
+    @admin.action(description="Approve selected return requests")
+    def approve_selected_returns(self, request, queryset):
+        self._run_transition(
+            request,
+            queryset,
+            approve_return,
+            "Approved {count} return request(s).",
+        )
+
+    @admin.action(description="Reject selected return requests")
+    def reject_selected_returns(self, request, queryset):
+        self._run_transition(
+            request,
+            queryset,
+            reject_return,
+            "Rejected {count} return request(s).",
+        )
+
+    @admin.action(description="Mark selected returns in transit")
+    def mark_selected_in_transit(self, request, queryset):
+        self._run_transition(
+            request,
+            queryset,
+            mark_return_in_transit,
+            "Marked {count} return(s) in transit.",
+        )
+
+    @admin.action(description="Mark selected returns received")
+    def mark_selected_received(self, request, queryset):
+        self._run_transition(
+            request,
+            queryset,
+            mark_return_received,
+            "Marked {count} return(s) received.",
+        )
+
+    @admin.action(description="Refund and restock selected received returns")
+    def refund_selected_returns(self, request, queryset):
+        self._run_transition(
+            request,
+            queryset,
+            complete_return,
+            "Refunded and restocked {count} return(s).",
+        )
