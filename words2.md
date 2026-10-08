@@ -282,12 +282,17 @@ if ($env:STRIPE_SECRET_KEY) {
     Write-Host "Stripe key is missing"
 } 
 
+=== 
+ignor the above method, cuase we added the env file and stored keys there, so no more from terminal, only change the strip webhook temp key cause it somehtimes changes ,,also make sure keys are loaded nicely (open another ter) >> apply these comm
 
-It should print:
-stripe
-usd
-Then:
-.\.venv\Scripts\python.exe my_python_work\web_practice\03_mini_checkout_lab\manage.py runserver 8001
+Write-Host "Provider: $env:PAYMENT_PROVIDER"
+Write-Host "Secret loaded: $([bool]$env:STRIPE_SECRET_KEY)"
+Write-Host "Webhook loaded: $([bool]$env:STRIPE_WEBHOOK_SECRET)"
+
+if true run server, >> .\.venv\Scripts\python.exe my_python_work\web_practice\03_mini_checkout_lab\manage.py runserver 8001
+===
+
+
 Now create a new order:
 Add product
 → Cart
@@ -345,14 +350,17 @@ or leave it empty.
 Click:
 Create destination
 
-====
-les48>>
+you will get the key
+
+later >>
+
 In your Stripe Dashboard webhook endpoint, enable these three events:
 
 checkout.session.completed
 checkout.session.async_payment_succeeded
 checkout.session.async_payment_failed
-
+ 
+(les48)
 =====
 
 I found your notes and the current state. We already have shipping method selection and inventory deduction, but shop/shipping.py is still only pricing logic; there is no shipment record, courier adapter, tracking state, or webhook update yet. I’m going to add that missing layer in a provider-neutral way first, so later a Pathao/DHL/FedEx integration replaces one adapter instead of rewriting the order system.

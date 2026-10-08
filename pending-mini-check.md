@@ -61,6 +61,7 @@ Customer visits site
 After that, the checkout app would be ready for a controlled real-world launch.
 Then we move to:
 Chat Lab
+
 So the revised path is:
 59 Production launch
 60 Worker deployment
@@ -69,4 +70,5 @@ So the revised path is:
 63 Business readiness
 64 Full production simulation
 -> Chat Lab
+
 The important distinction is that Lessons 59–60 are needed for almost any launch, while Lessons 61–62 are provider-specific. The architecture is already ready for them; we just need to connect and verify each provider properly.
