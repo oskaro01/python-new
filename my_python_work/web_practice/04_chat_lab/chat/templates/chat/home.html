@@ -8,11 +8,19 @@
     <link rel="stylesheet" href="{% static 'chat/styles.css' %}">
 </head>
 <body>
+    <header class="fb-topbar">
+        <div class="topbar-inner">
+            <a class="brand" href="{% url 'chat:home' %}">Chat Lab</a>
+            <span class="topbar-icon">Messages</span>
+            <span class="topbar-search">Search people, conversations and messages</span>
+            <span class="topbar-user">{{ user.username }} | Home</span>
+        </div>
+    </header>
     <main class="chat-shell">
         <aside class="inbox-sidebar">
             <div class="sidebar-heading">
                 <div>
-                    <p class="eyebrow">Chat Lab</p>
+                    <p class="eyebrow">Inbox</p>
                     <h1>Messages</h1>
                 </div>
                 <span class="avatar">{{ user.username|first|upper }}</span>
@@ -45,7 +53,7 @@
             {% empty %}
                 <p class="intro">Your inbox is empty.</p>
             {% endfor %}
-            <form method="post" action="{% url 'logout' %}">
+            <form class="sidebar-footer" method="post" action="{% url 'logout' %}">
                 {% csrf_token %}
                 <button class="button button-muted" type="submit">Sign out</button>
             </form>
