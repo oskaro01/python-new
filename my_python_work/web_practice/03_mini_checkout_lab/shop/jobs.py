@@ -9,7 +9,7 @@ from .emails import send_order_receipt
 from .models import BackgroundJob, Order
 
 
-def enqueue_receipt_job(order):
+def enqueue_receipt_job(order, source_event=None, correlation_id=""):
     """Create one receipt job for an order, even if called repeatedly."""
 
     job, _ = BackgroundJob.objects.get_or_create(
@@ -17,6 +17,8 @@ def enqueue_receipt_job(order):
         defaults={
             "job_type": BackgroundJob.SEND_RECEIPT,
             "order": order,
+            "source_event": source_event,
+            "correlation_id": correlation_id,
             "payload": {"order_id": order.pk},
         },
     )

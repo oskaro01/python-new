@@ -3,7 +3,15 @@
 from django.contrib import admin
 from django.utils import timezone
 
-from .models import BackgroundJob, Order, OrderItem, Product, ReturnRequest, Shipment
+from .models import (
+    BackgroundJob,
+    Order,
+    OrderItem,
+    Product,
+    ReturnRequest,
+    Shipment,
+    WebhookEvent,
+)
 from .refunds import CancellationNotAllowed, cancel_order
 from .returns import (
     ReturnTransitionError,
@@ -296,6 +304,8 @@ class BackgroundJobAdmin(admin.ModelAdmin):
         "id",
         "job_type",
         "order",
+        "source_event",
+        "correlation_id",
         "status",
         "attempts",
         "available_at",
@@ -307,6 +317,8 @@ class BackgroundJobAdmin(admin.ModelAdmin):
     readonly_fields = (
         "job_type",
         "order",
+        "source_event",
+        "correlation_id",
         "idempotency_key",
         "payload",
         "status",
@@ -330,3 +342,39 @@ class BackgroundJobAdmin(admin.ModelAdmin):
             last_error="",
         )
         self.message_user(request, f"Queued {changed} failed job(s) for retry.")
+
+
+@admin.register(WebhookEvent)
+class WebhookEventAdmin(admin.ModelAdmin):
+    list_display = (
+        "provider",
+        "provider_event_id",
+        "event_type",
+        "order",
+        "status",
+        "attempt_count",
+        "correlation_id",
+        "received_at",
+        "processed_at",
+    )
+    list_filter = ("provider", "event_type", "status", "received_at")
+    search_fields = (
+        "provider_event_id",
+        "correlation_id",
+        "order__email",
+        "error_message",
+    )
+    readonly_fields = (
+        "provider",
+        "provider_event_id",
+        "event_type",
+        "order",
+        "correlation_id",
+        "status",
+        "payload_summary",
+        "attempt_count",
+        "error_message",
+        "received_at",
+        "processed_at",
+        "updated_at",
+    )

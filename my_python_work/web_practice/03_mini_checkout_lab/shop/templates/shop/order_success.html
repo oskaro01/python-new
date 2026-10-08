@@ -135,6 +135,19 @@
                 </dd>
             </div>
             {% endif %}
+            {% if latest_webhook_event %}
+            <div>
+                <dt>Webhook</dt>
+                <dd>
+                    {{ latest_webhook_event.event_type }}:
+                    {{ latest_webhook_event.get_status_display }}
+                    <br>Correlation: {{ latest_webhook_event.correlation_id }}
+                    {% if latest_webhook_event.error_message %}
+                    <br>{{ latest_webhook_event.error_message }}
+                    {% endif %}
+                </dd>
+            </div>
+            {% endif %}
         {% if order.shipping_address or order.shipping_city or order.shipping_country %}
         <div>
             <dt>Shipping address</dt>

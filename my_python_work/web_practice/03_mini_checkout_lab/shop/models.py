@@ -317,6 +317,14 @@ class BackgroundJob(models.Model):
         blank=True,
         related_name="background_jobs",
     )
+    source_event = models.ForeignKey(
+        "WebhookEvent",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="jobs",
+    )
+    correlation_id = models.CharField(max_length=80, blank=True)
     idempotency_key = models.CharField(max_length=160, unique=True)
     payload = models.JSONField(default=dict, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=QUEUED)
@@ -341,3 +349,56 @@ class BackgroundJob(models.Model):
 
     def __str__(self):
         return f"{self.get_job_type_display()} #{self.pk} ({self.get_status_display()})"
+
+
+class WebhookEvent(models.Model):
+    RECEIVED = "received"
+    PROCESSING = "processing"
+    SUCCEEDED = "succeeded"
+    FAILED = "failed"
+    IGNORED = "ignored"
+
+    STATUS_CHOICES = [
+        (RECEIVED, "Received"),
+        (PROCESSING, "Processing"),
+        (SUCCEEDED, "Succeeded"),
+        (FAILED, "Failed"),
+        (IGNORED, "Ignored"),
+    ]
+
+    provider = models.CharField(max_length=40)
+    provider_event_id = models.CharField(max_length=160)
+    event_type = models.CharField(max_length=120)
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="webhook_events",
+    )
+    correlation_id = models.CharField(max_length=80)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=RECEIVED)
+    payload_summary = models.JSONField(default=dict, blank=True)
+    attempt_count = models.PositiveIntegerField(default=0)
+    error_message = models.TextField(blank=True)
+    received_at = models.DateTimeField(auto_now_add=True)
+    processed_at = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-received_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["provider", "provider_event_id"],
+                name="webhook_provider_event_unique",
+            ),
+        ]
+        indexes = [
+            models.Index(
+                fields=["status", "received_at"],
+                name="webhook_status_received_idx",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.provider} {self.event_type} ({self.get_status_display()})"

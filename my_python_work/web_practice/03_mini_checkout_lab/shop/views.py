@@ -1,6 +1,7 @@
 """Public product catalog views."""
 
 from pathlib import Path
+from uuid import uuid4
 
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
@@ -28,7 +29,7 @@ from .forms import CheckoutForm, RegisterForm, ReturnRequestForm
 from .downloads import build_download_url, read_download_token
 from .inventory import deduct_paid_order_inventory
 from .jobs import enqueue_receipt_job
-from .models import Order, OrderItem, Product, ReturnRequest
+from .models import Order, OrderItem, Product, ReturnRequest, WebhookEvent
 from .payments import (
     PaymentConfigurationError,
     construct_stripe_event,
@@ -42,7 +43,7 @@ from .shipping import mark_order_ready_for_fulfillment, shipping_cost
 
 CHECKOUT_SESSION_KEY = "checkout_customer"
 LAST_ORDER_SESSION_KEY = "last_order_id"
-def confirm_stripe_payment(session):
+def confirm_stripe_payment(session, source_event=None):
     order_id = (session.get("metadata") or {}).get("order_id")
     if not order_id or session.get("payment_status") != "paid":
         return
@@ -73,7 +74,11 @@ def confirm_stripe_payment(session):
         )
         deduct_paid_order_inventory(order)
         mark_order_ready_for_fulfillment(order)
-        enqueue_receipt_job(order)
+        enqueue_receipt_job(
+            order,
+            source_event=source_event,
+            correlation_id=source_event.correlation_id if source_event else "",
+        )
 
 
 def fail_stripe_payment(session):
@@ -309,6 +314,7 @@ def order_success(request, order_id):
             ),
             "return_form": ReturnRequestForm(),
             "latest_background_job": order.background_jobs.order_by("-created_at").first(),
+            "latest_webhook_event": order.webhook_events.order_by("-received_at").first(),
         },
     )
 
@@ -448,15 +454,66 @@ def stripe_webhook(request):
     except (PaymentConfigurationError, ValueError, TypeError):
         return HttpResponse("Invalid webhook", status=400)
 
+    event_type = event.get("type", "unknown")
+    event_id = event.get("id", "")
     session = event["data"]["object"]
-    if event["type"] in {
-        "checkout.session.completed",
-        "checkout.session.async_payment_succeeded",
-    }:
-        confirm_stripe_payment(session)
-    elif event["type"] == "checkout.session.async_payment_failed":
-        fail_stripe_payment(session)
+    metadata = session.get("metadata") or {}
+    order = Order.objects.filter(pk=metadata.get("order_id")).first()
+    monitored_event = None
+    if event_id:
+        monitored_event, created = WebhookEvent.objects.get_or_create(
+            provider="stripe",
+            provider_event_id=event_id,
+            defaults={
+                "event_type": event_type,
+                "order": order,
+                "correlation_id": uuid4().hex,
+                "payload_summary": {
+                    "object_id": session.get("id", ""),
+                    "order_id": metadata.get("order_id", ""),
+                    "payment_status": session.get("payment_status", ""),
+                },
+            },
+        )
+        if not created and monitored_event.status == WebhookEvent.SUCCEEDED:
+            return JsonResponse({"received": True, "duplicate": True})
+        monitored_event.status = WebhookEvent.PROCESSING
+        monitored_event.attempt_count += 1
+        monitored_event.error_message = ""
+        monitored_event.save(
+            update_fields=["status", "attempt_count", "error_message", "updated_at"]
+        )
 
+    try:
+        if event_type in {
+            "checkout.session.completed",
+            "checkout.session.async_payment_succeeded",
+        }:
+            confirm_stripe_payment(session, source_event=monitored_event)
+        elif event_type == "checkout.session.async_payment_failed":
+            fail_stripe_payment(session)
+        elif monitored_event:
+            monitored_event.status = WebhookEvent.IGNORED
+    except Exception as error:
+        if monitored_event:
+            monitored_event.status = WebhookEvent.FAILED
+            monitored_event.error_message = str(error)
+            monitored_event.processed_at = timezone.now()
+            monitored_event.save(
+                update_fields=[
+                    "status",
+                    "error_message",
+                    "processed_at",
+                    "updated_at",
+                ]
+            )
+        return JsonResponse({"received": False}, status=500)
+
+    if monitored_event:
+        if monitored_event.status == WebhookEvent.PROCESSING:
+            monitored_event.status = WebhookEvent.SUCCEEDED
+        monitored_event.processed_at = timezone.now()
+        monitored_event.save(update_fields=["status", "processed_at", "updated_at"])
     return JsonResponse({"received": True})
 
 

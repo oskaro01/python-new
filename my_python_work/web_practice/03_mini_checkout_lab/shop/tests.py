@@ -12,7 +12,15 @@ from django.urls import reverse
 
 from .downloads import create_download_token
 from .jobs import process_jobs
-from .models import BackgroundJob, Order, OrderItem, Product, ReturnRequest, Shipment
+from .models import (
+    BackgroundJob,
+    Order,
+    OrderItem,
+    Product,
+    ReturnRequest,
+    Shipment,
+    WebhookEvent,
+)
 from .refunds import CancellationNotAllowed, cancel_order
 from .returns import (
     ReturnNotAllowed,
@@ -1068,3 +1076,75 @@ class BackgroundJobTests(TestCase):
         job.refresh_from_db()
         self.assertEqual(job.status, BackgroundJob.SUCCEEDED)
         self.assertEqual(job.attempts, 2)
+
+
+class WebhookMonitoringTests(TestCase):
+    def setUp(self):
+        self.order = Order.objects.create(
+            full_name="Ayzal Yohan",
+            email="ayzal@example.com",
+            total_amount=Decimal("4.00"),
+        )
+
+    def event(self, event_id="evt_monitor_123"):
+        return {
+            "id": event_id,
+            "type": "checkout.session.completed",
+            "data": {
+                "object": {
+                    "id": "cs_monitor_123",
+                    "payment_intent": "pi_monitor_123",
+                    "payment_status": "paid",
+                    "metadata": {"order_id": str(self.order.pk)},
+                }
+            },
+        }
+
+    def test_webhook_log_links_duplicate_delivery_to_one_job(self):
+        with patch(
+            "shop.views.construct_stripe_event",
+            return_value=self.event(),
+        ):
+            first = self.client.post(
+                reverse("shop:stripe_webhook"),
+                data=b"{}",
+                content_type="application/json",
+                HTTP_STRIPE_SIGNATURE="test-signature",
+            )
+            duplicate = self.client.post(
+                reverse("shop:stripe_webhook"),
+                data=b"{}",
+                content_type="application/json",
+                HTTP_STRIPE_SIGNATURE="test-signature",
+            )
+
+        self.assertEqual(first.status_code, 200)
+        self.assertEqual(duplicate.status_code, 200)
+        webhook = WebhookEvent.objects.get()
+        job = BackgroundJob.objects.get()
+        self.assertEqual(webhook.status, WebhookEvent.SUCCEEDED)
+        self.assertEqual(webhook.attempt_count, 1)
+        self.assertEqual(webhook.order_id, self.order.pk)
+        self.assertEqual(job.source_event_id, webhook.pk)
+        self.assertEqual(job.correlation_id, webhook.correlation_id)
+
+    def test_webhook_handler_failure_is_recorded(self):
+        with patch(
+            "shop.views.construct_stripe_event",
+            return_value=self.event("evt_monitor_failed"),
+        ), patch(
+            "shop.views.confirm_stripe_payment",
+            side_effect=RuntimeError("provider temporarily unavailable"),
+        ):
+            response = self.client.post(
+                reverse("shop:stripe_webhook"),
+                data=b"{}",
+                content_type="application/json",
+                HTTP_STRIPE_SIGNATURE="test-signature",
+            )
+
+        self.assertEqual(response.status_code, 500)
+        webhook = WebhookEvent.objects.get()
+        self.assertEqual(webhook.status, WebhookEvent.FAILED)
+        self.assertEqual(webhook.attempt_count, 1)
+        self.assertIn("provider temporarily unavailable", webhook.error_message)
