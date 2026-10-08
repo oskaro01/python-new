@@ -29,6 +29,7 @@ Personal Dictionary app.
 22. [Lesson 55: Returns and Reverse Logistics](55_returns_reverse_logistics/README.md)
 23. [Lesson 56: Background Jobs and Async Work](56_background_jobs_async/README.md)
 24. [Lesson 57: Webhook Monitoring and Operations](57_webhook_monitoring_operations/README.md)
+25. [Lesson 58: Final Checkout Hardening and Review](58_final_hardening_review/README.md)
 
 Each lesson has its own README so we can study, verify, and commit one
 checkpoint at a time.

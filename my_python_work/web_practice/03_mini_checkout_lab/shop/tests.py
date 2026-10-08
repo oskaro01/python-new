@@ -852,6 +852,19 @@ class AccountOrderHistoryTests(TestCase):
             f"/accounts/login/?next={reverse('shop:order_history')}",
         )
 
+    def test_customer_cannot_open_another_customer_order(self):
+        other_user = get_user_model().objects.create_user(
+            username="other-customer",
+            password="Strong-test-password-123",
+        )
+        self.client.force_login(other_user)
+
+        response = self.client.get(
+            reverse("shop:order_success", kwargs={"order_id": self.order.pk})
+        )
+
+        self.assertEqual(response.status_code, 404)
+
 
 class RefundAndCancellationTests(TestCase):
     def setUp(self):

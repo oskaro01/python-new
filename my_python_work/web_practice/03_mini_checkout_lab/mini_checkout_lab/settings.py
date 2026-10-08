@@ -3,6 +3,8 @@
 import os
 from pathlib import Path
 
+from django.core.exceptions import ImproperlyConfigured
+
 try:
     import dj_database_url
 except ImportError:
@@ -16,11 +18,13 @@ def env_bool(name, default=False):
     return os.environ.get(name, str(default)).lower() in {"1", "true", "yes", "on"}
 
 
-SECRET_KEY = os.environ.get(
-    "DJANGO_SECRET_KEY",
-    "django-insecure-mini-checkout-learning-key",
-)
 DEBUG = env_bool("DJANGO_DEBUG", True)
+configured_secret_key = os.environ.get("DJANGO_SECRET_KEY", "")
+if not DEBUG and not configured_secret_key:
+    raise ImproperlyConfigured(
+        "DJANGO_SECRET_KEY must be configured when DJANGO_DEBUG=false."
+    )
+SECRET_KEY = configured_secret_key or "django-insecure-mini-checkout-learning-key"
 render_hostname = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
 ALLOWED_HOSTS = [
     host.strip()
@@ -162,6 +166,7 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = env_bool("DJANGO_HSTS_INCLUDE_SUBDOMAINS", Fals
 SECURE_HSTS_PRELOAD = env_bool("DJANGO_HSTS_PRELOAD", False)
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_REFERRER_POLICY = "same-origin"
+SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin"
 X_FRAME_OPTIONS = "DENY"
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
