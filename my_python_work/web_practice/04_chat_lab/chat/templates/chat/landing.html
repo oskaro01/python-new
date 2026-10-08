@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Chat Lab</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'chat/styles.css' %}">
+</head>
+<body>
+    <main class="shell">
+        <section class="panel">
+            <p class="eyebrow">Chat Lab</p>
+            <h1>Private conversations, built properly.</h1>
+            <p class="intro">We are starting with identity and access before messages.</p>
+            <a class="button" href="{% url 'login' %}">Sign in</a>
+            <a class="button button-muted" href="{% url 'chat:home' %}">Open chat home</a>
+        </section>
+    </main>
+</body>
+</html>
+

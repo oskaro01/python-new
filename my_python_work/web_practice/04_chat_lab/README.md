@@ -3,7 +3,35 @@
 This is a planned, separate messaging project. It is not part of the
 Personal Dictionary app and it is not part of the customer checkout flow yet.
 
-Status: planned, not started.
+Status: Lesson 01 complete: project foundation and authentication boundary.
+
+## Lesson 01: Project Foundation
+
+The project now has:
+
+- a standalone Django project and `manage.py`
+- a `chat` application with public and authenticated routes
+- Django's built-in login and logout flow
+- a protected `/chat/` home page
+- a local SQLite database for development
+- a small responsive visual foundation
+
+Run it from this directory:
+
+```powershell
+..\..\..\.venv\Scripts\python.exe manage.py runserver 8002
+```
+
+Open `http://127.0.0.1:8002/`. The `/chat/` page requires a Django user. Create
+one with:
+
+```powershell
+..\..\..\.venv\Scripts\python.exe manage.py createsuperuser
+```
+
+This lesson intentionally does not create conversations or messages yet. A
+message must belong to an authenticated sender, so identity and access are
+the foundation for the data model.
 
 ## Learning Order
 
