@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 
+from .forms import MessageForm
 from .models import Conversation
 
 def landing(request):
@@ -23,5 +24,20 @@ def conversation_detail(request, conversation_id):
         pk=conversation_id,
         participants__user=request.user,
     )
-    return render(request, "chat/conversation_detail.html", {"conversation": conversation})
+    if request.method == "POST":
+        form = MessageForm(request.POST)
+        if form.is_valid():
+            message = form.save(commit=False)
+            message.conversation = conversation
+            message.sender = request.user
+            message.save()
+            return redirect("chat:conversation_detail", conversation_id=conversation.id)
+    else:
+        form = MessageForm()
+
+    return render(
+        request,
+        "chat/conversation_detail.html",
+        {"conversation": conversation, "form": form},
+    )
 

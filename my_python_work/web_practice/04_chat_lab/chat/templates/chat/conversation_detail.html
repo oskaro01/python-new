@@ -18,6 +18,11 @@
             {% empty %}
                 <p class="intro">No messages yet.</p>
             {% endfor %}
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button class="button" type="submit">Send message</button>
+            </form>
             <a class="button button-muted" href="{% url 'chat:home' %}">Back to inbox</a>
         </section>
     </main>

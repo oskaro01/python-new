@@ -85,6 +85,17 @@ This is the first piece of the Messenger-style layout. The next UI step will
 replace the simple rows with a two-column inbox and active-thread layout after
 message sending exists.
 
+## Lesson 05: Send Messages with a Django Form
+
+The conversation page now accepts normal `POST` requests through
+`MessageForm`. The view sets the conversation and sender on the server, rather
+than trusting hidden form fields from the browser. The participant query still
+protects the whole page before the form can be submitted.
+
+After a successful save, the view redirects back to the conversation. This
+post/redirect/get pattern prevents a browser refresh from submitting the same
+message again.
+
 ## Learning Order
 
 We will build it in small checkpoints:
