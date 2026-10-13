@@ -3,6 +3,7 @@ from django.db import models
 
 
 class Conversation(models.Model):
+    is_self = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -11,6 +12,14 @@ class Conversation(models.Model):
 
     def __str__(self):
         return f"Conversation {self.pk}"
+
+    def display_name_for(self, user):
+        other_users = [
+            participant.user.get_username()
+            for participant in self.participants.all()
+            if participant.user_id != user.id
+        ]
+        return ", ".join(other_users) if other_users else f"{user.get_username()} (You)"
 
 
 class ConversationParticipant(models.Model):

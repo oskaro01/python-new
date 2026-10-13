@@ -21,19 +21,15 @@
             <div class="messenger-brand">Inbox <span>(1)</span></div>
             <a class="back-link" href="{% url 'chat:home' %}">All messages</a>
             <div class="mini-conversation">
-                <span class="avatar avatar-small">{{ conversation.id }}</span>
-                <strong>Conversation {{ conversation.id }}</strong>
+                <span class="avatar avatar-small">{{ conversation.display_name|first|upper }}</span>
+                <strong>{{ conversation.display_name }}</strong>
             </div>
         </aside>
         <section class="thread-panel">
             <header class="thread-header">
                 <div>
-                    <h1>Conversation {{ conversation.id }}</h1>
-                    <p>
-                        {% for participant in conversation.participants.all %}
-                            {{ participant.user.username }}{% if not forloop.last %}, {% endif %}
-                        {% endfor %}
-                    </p>
+                    <h1>{{ conversation.display_name }}</h1>
+                    <p>Private conversation</p>
                 </div>
                 <span class="thread-status">Private</span>
             </header>

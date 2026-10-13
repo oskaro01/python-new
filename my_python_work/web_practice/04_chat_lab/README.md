@@ -195,7 +195,75 @@ other participants. Messages sent by the current user do not increase the
 badge. Opening the conversation uses the existing read-state update, so the
 badge disappears naturally after the thread is viewed.
 
-## Current Foundation
+## Lesson 11: Conversation Names and Self Chat
+
+Conversation rows now show the other participant's username instead of an
+internal conversation number. Each signed-in user also receives a dedicated
+self conversation labeled `<username> (You)`. It is a normal conversation, so
+the same message and future attachment workflow can be reused for personal
+notes.
+
+Planned lessons:
+
+- profile menu, display name, and profile picture
+- temporary image attachments with metadata in the database and file storage
+- attachment expiry cleanup and recipient downloads
+- PostgreSQL configuration and Render deployment
+
+## Lesson 10: Sentry Error Monitoring
+
+Sentry is a hosted error-monitoring service. When Django encounters an
+unhandled exception, its SDK sends an error event with a stack trace to your
+Sentry project. The dashboard groups related failures so you can see which
+code failed and investigate it after deployment. It does not fix bugs itself.
+
+The flow is: Django error -> Sentry SDK -> your Sentry project's Issues page.
+This happens independently of our message read/unread state and WebSockets.
+
+Install the Chat Lab dependencies from the workspace root:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r my_python_work/web_practice/04_chat_lab/requirements.txt
+```
+
+Create `.env` inside `04_chat_lab` using `.env.example` as a template. Click
+**Copy DSN** in the Sentry setup page and put that value in this file:
+
+```env
+SENTRY_DSN=your_project_dsn_here
+SENTRY_ENVIRONMENT=development
+```
+
+The DSN tells the SDK which Sentry project should receive events. It is not a
+Sentry account password or API authentication token. Keep this configuration
+in the ignored `.env`, and commit only the empty `.env.example` template.
+Django loads this lab's `.env` automatically without replacing variables
+already set in the terminal. Restart an existing server after editing it.
+
+To verify delivery, run this once from the workspace root after adding the DSN:
+
+```powershell
+.\.venv\Scripts\python.exe my_python_work/web_practice/04_chat_lab/manage.py shell -c "import sentry_sdk; from django.conf import settings; assert settings.SENTRY_DSN, 'Set SENTRY_DSN in the Chat Lab .env first'; event_id = sentry_sdk.capture_message('Chat Lab Sentry setup test', level='error'); sentry_sdk.flush(timeout=10); print('Event ID:', event_id)"
+```
+
+Look for **Chat Lab Sentry setup test** under Issues in your Sentry project.
+An event ID means the SDK created an event; seeing it in Sentry confirms
+delivery. This avoids leaving a deliberately crashing public URL in the app.
+Real unhandled Django exceptions are captured automatically.
+
+Our setup disables request-body collection, local-variable collection, and
+automatic personal-data collection. Exception messages and URLs can still
+contain sensitive content, so do not put messages or credentials in errors.
+Performance tracing is disabled for this lesson; the screenshot's `1.0`
+setting would sample every eligible transaction for tracing.
+
+For Render later, set `SENTRY_DSN` and `SENTRY_ENVIRONMENT=production` in the
+Chat Lab service's environment variables.
+
+References: [Django integration](https://docs.sentry.io/platforms/python/integrations/django/)
+and [SDK options](https://docs.sentry.io/platforms/python/configuration/options/).
+
+## Current Features
 
 The project now includes authentication, conversations, participants, message
 sending, read state, participant-only access, and a Messenger-inspired thread

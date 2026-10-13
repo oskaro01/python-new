@@ -44,11 +44,7 @@
             {% for conversation in conversations %}
                 <a class="conversation-row" href="{% url 'chat:conversation_detail' conversation.id %}">
                     <span class="avatar avatar-small">{{ conversation.id }}</span>
-                    <span class="conversation-copy"><strong>Conversation {{ conversation.id }}</strong><span>
-                        {% for participant in conversation.participants.all %}
-                            {{ participant.user.username }}{% if not forloop.last %}, {% endif %}
-                        {% endfor %}
-                    </span></span>
+                    <span class="conversation-copy"><strong>{{ conversation.display_name }}</strong><span>Open conversation</span></span>
                     {% if conversation.unread_count %}<b class="unread-badge">{{ conversation.unread_count }}</b>{% endif %}
                 </a>
             {% empty %}

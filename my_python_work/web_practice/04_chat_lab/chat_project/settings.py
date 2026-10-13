@@ -1,6 +1,25 @@
+import os
 from pathlib import Path
 
+import sentry_sdk
+from dotenv import load_dotenv
+from sentry_sdk.integrations.django import DjangoIntegration
+
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / ".env")
+
+# No DSN means local error reporting stays disabled.
+SENTRY_DSN = os.environ.get("SENTRY_DSN", "").strip()
+if SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[DjangoIntegration()],
+        environment=os.environ.get("SENTRY_ENVIRONMENT", "development"),
+        send_default_pii=False,
+        include_local_variables=False,
+        max_request_body_size="never",
+        traces_sample_rate=0.0,
+    )
 
 SECRET_KEY = "dev-only-chat-lab-key"
 DEBUG = True

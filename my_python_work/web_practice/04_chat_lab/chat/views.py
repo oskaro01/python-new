@@ -12,6 +12,14 @@ def landing(request):
 
 @login_required
 def chat_home(request):
+    self_conversation = Conversation.objects.filter(
+        is_self=True,
+        participants__user=request.user,
+    ).first()
+    if self_conversation is None:
+        self_conversation = Conversation.objects.create(is_self=True)
+        self_conversation.participants.create(user=request.user)
+
     conversations = (
         Conversation.objects.filter(participants__user=request.user)
         .prefetch_related("participants__user")
@@ -23,6 +31,8 @@ def chat_home(request):
         )
         .distinct()
     )
+    for conversation in conversations:
+        conversation.display_name = conversation.display_name_for(request.user)
     query = request.GET.get("q", "").strip()
     users = get_user_model().objects.none()
     if query:
@@ -68,6 +78,7 @@ def conversation_detail(request, conversation_id):
         participants__user=request.user,
     )
     conversation.messages.filter(is_read=False).exclude(sender=request.user).update(is_read=True)
+    conversation.display_name = conversation.display_name_for(request.user)
     if request.method == "POST":
         form = MessageForm(request.POST)
         if form.is_valid():
