@@ -195,6 +195,40 @@ other participants. Messages sent by the current user do not increase the
 badge. Opening the conversation uses the existing read-state update, so the
 badge disappears naturally after the thread is viewed.
 
+## Lesson 12: User Search and Friend Requests
+
+The people search now updates while typing. It returns registered users who are
+not the current user and shows an avatar slot, username, and request state.
+Clicking **Add** creates a pending `FriendRequest` for the selected account and
+changes the button to **Pending**. The request is stored in the database and
+can later be accepted or declined by the recipient.
+
+The current avatar slot uses the user's initial. The profile menu lesson will
+replace it with an uploaded profile picture. Existing friendships and pending
+requests are protected from duplicate Add actions.
+
+## Lesson 13: Live User Suggestions
+
+The search box now queries the user-search endpoint while typing instead of
+waiting for a full page reload. Each suggestion contains an avatar slot, the
+registered username, and an Add button. The button sends a CSRF-protected
+request to the server and changes to Pending after the `FriendRequest` is
+stored.
+
+Next planned account lesson: let the recipient view, accept, or decline the
+request. Profile names and uploaded pictures will then be connected to these
+same suggestion rows.
+
+## Lesson 14: Signup and Search Fallback
+
+New users can now register at `/accounts/signup/`. Django validates the
+username and passwords, saves the account, signs the user in, and creates the
+self-chat on the first visit to the inbox.
+
+The people search works in two ways: live suggestions while JavaScript is
+available, and server-rendered suggestions after pressing Enter. This keeps
+the workflow usable while the live request is loading or unavailable.
+
 ## Lesson 11: Conversation Names and Self Chat
 
 Conversation rows now show the other participant's username instead of an
@@ -262,6 +296,29 @@ Chat Lab service's environment variables.
 
 References: [Django integration](https://docs.sentry.io/platforms/python/integrations/django/)
 and [SDK options](https://docs.sentry.io/platforms/python/configuration/options/).
+
+## Current Features
+
+## Lesson 15: Respond to Requests and Find Existing Chats
+
+Friend requests now have different controls for each person: the sender sees
+Pending, and the recipient sees Accept and Decline. Incoming requests appear
+in the sidebar even without searching. Only the recipient can respond, using
+a CSRF-protected POST. Acceptance creates a friendship; decline creates none.
+Responses record a timestamp, and repeating a response leaves its result intact.
+
+The top-bar search finds registered accounts and shows their relationship
+state. Accepted friends have a Chat button. Its suggestions use the same
+states as the server-rendered results after submitting without JavaScript.
+
+The sidebar search filters existing conversations and accepted friends by
+username or name. Typing filters the displayed list immediately; pressing
+Enter or its search button searches on the server. Both controls are present
+on the inbox and open-thread screens. Search icons are local Lucide assets.
+
+To try it, send a request from one account, sign in as the recipient, and
+accept it under Friend requests. The person then appears under Friends; Chat
+opens their conversation. Search their name in Chats and friends to find them.
 
 ## Current Features
 

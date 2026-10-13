@@ -8,59 +8,15 @@
     <link rel="stylesheet" href="{% static 'chat/styles.css' %}">
 </head>
 <body>
-    <header class="fb-topbar">
-        <div class="topbar-inner">
-            <a class="brand" href="{% url 'chat:home' %}">Chat Lab</a>
-            <span class="topbar-icon">Messages</span>
-            <span class="topbar-search">Search people, conversations and messages</span>
-            <span class="topbar-user">{{ user.username }} | Home</span>
-        </div>
-    </header>
+    {% include "chat/_topbar.html" %}
     <main class="chat-shell">
-        <aside class="inbox-sidebar">
-            <div class="sidebar-heading">
-                <div>
-                    <p class="eyebrow">Inbox</p>
-                    <h1>Messages</h1>
-                </div>
-                <span class="avatar">{{ user.username|first|upper }}</span>
-            </div>
-            <form method="get">
-                <label class="search-label" for="conversation-search">Find a person</label>
-                <input id="conversation-search" name="q" type="search" value="{{ query }}" placeholder="Search users">
-            </form>
-            {% if query %}
-                <div class="user-results">
-                    {% for found_user in users %}
-                        <form method="post" action="{% url 'chat:start_conversation' found_user.id %}">
-                            {% csrf_token %}
-                            <button class="user-result" type="submit">Chat with <strong>{{ found_user.username }}</strong></button>
-                        </form>
-                    {% empty %}
-                        <p class="intro">No matching users.</p>
-                    {% endfor %}
-                </div>
-            {% endif %}
-            {% for conversation in conversations %}
-                <a class="conversation-row" href="{% url 'chat:conversation_detail' conversation.id %}">
-                    <span class="avatar avatar-small">{{ conversation.id }}</span>
-                    <span class="conversation-copy"><strong>{{ conversation.display_name }}</strong><span>Open conversation</span></span>
-                    {% if conversation.unread_count %}<b class="unread-badge">{{ conversation.unread_count }}</b>{% endif %}
-                </a>
-            {% empty %}
-                <p class="intro">Your inbox is empty.</p>
-            {% endfor %}
-            <form class="sidebar-footer" method="post" action="{% url 'logout' %}">
-                {% csrf_token %}
-                <button class="button button-muted" type="submit">Sign out</button>
-            </form>
-        </aside>
+        {% include "chat/_sidebar.html" %}
         <section class="chat-empty-state">
             <p class="eyebrow">Your inbox</p>
             <h2>Choose a conversation</h2>
-            <p class="intro">Select a conversation from the left to read and send messages.</p>
         </section>
     </main>
+    <script src="{% static 'chat/user_search.js' %}?v=2" defer></script>
 </body>
 </html>
 

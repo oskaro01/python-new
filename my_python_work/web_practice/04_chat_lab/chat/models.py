@@ -1,5 +1,47 @@
 from django.conf import settings
 from django.db import models
+from django.db.models import Q
+
+
+class Friendship(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="friendships")
+    friend = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="friendships_received")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["user", "friend"], name="unique_friendship"),
+            models.CheckConstraint(condition=~Q(user=models.F("friend")), name="friendship_users_differ"),
+        ]
+
+    def __str__(self):
+        return f"{self.user} and {self.friend}"
+
+
+class FriendRequest(models.Model):
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pending"
+        ACCEPTED = "accepted", "Accepted"
+        DECLINED = "declined", "Declined"
+
+    from_user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="sent_friend_requests")
+    to_user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="received_friend_requests")
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
+    created_at = models.DateTimeField(auto_now_add=True)
+    responded_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["from_user", "to_user"],
+                condition=Q(status="pending"),
+                name="unique_pending_friend_request",
+            ),
+            models.CheckConstraint(condition=~Q(from_user=models.F("to_user")), name="friend_request_users_differ"),
+        ]
+
+    def __str__(self):
+        return f"{self.from_user} -> {self.to_user} ({self.status})"
 
 
 class Conversation(models.Model):
@@ -15,7 +57,7 @@ class Conversation(models.Model):
 
     def display_name_for(self, user):
         other_users = [
-            participant.user.get_username()
+            participant.user.get_full_name() or participant.user.get_username()
             for participant in self.participants.all()
             if participant.user_id != user.id
         ]

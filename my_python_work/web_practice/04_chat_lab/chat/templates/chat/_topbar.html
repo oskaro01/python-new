@@ -1,0 +1,49 @@
+<header class="fb-topbar">
+    <div class="topbar-inner">
+        <a class="brand" href="{% url 'chat:home' %}">Chat Lab</a>
+        <span class="topbar-icon">Messages</span>
+        <div class="topbar-search-form">
+            <form class="topbar-search-submit-form" method="get" action="{% url 'chat:home' %}">
+                <input id="topbar-user-search" name="q" type="search" value="{{ query }}" placeholder="Search people" aria-label="Search people" autocomplete="off" aria-controls="user-suggestions">
+                <button type="submit" aria-label="Search people" title="Search people"><span class="search-icon" aria-hidden="true"></span></button>
+            </form>
+            <div id="user-suggestions" class="people-suggestions" {% if not query %}hidden{% endif %}
+                 data-search-url="{% url 'chat:search_users' %}"
+                 data-request-url-template="{% url 'chat:send_friend_request' 0 %}"
+                 data-response-url-template="{% url 'chat:respond_friend_request' 0 %}"
+                 data-start-url-template="{% url 'chat:start_conversation' 0 %}"
+                 data-csrf-token="{{ csrf_token }}">
+                {% for person in users %}
+                    <div class="user-result">
+                        <span class="avatar avatar-small">{{ person.initial }}</span>
+                        <strong class="user-result-name">{{ person.name }}</strong>
+                        <div class="friend-actions">
+                            {% if person.status == 'incoming' %}
+                                <form method="post" action="{% url 'chat:respond_friend_request' person.request_id %}">
+                                    {% csrf_token %}
+                                    <button class="add-button" name="action" value="accept">Accept</button>
+                                    <button class="add-button decline-button" name="action" value="decline">Decline</button>
+                                </form>
+                            {% elif person.status == 'pending' %}
+                                <button class="add-button" disabled>Pending</button>
+                            {% elif person.status == 'friends' %}
+                                <form method="post" action="{% url 'chat:start_conversation' person.id %}">
+                                    {% csrf_token %}
+                                    <button class="add-button">Chat</button>
+                                </form>
+                            {% else %}
+                                <form method="post" action="{% url 'chat:send_friend_request' person.id %}">
+                                    {% csrf_token %}
+                                    <button class="add-button">Add</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% empty %}
+                    {% if query %}<p class="search-feedback">No matching people.</p>{% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        <span class="topbar-user">{{ user.username }} | <a href="{% url 'chat:home' %}">Home</a></span>
+    </div>
+</header>

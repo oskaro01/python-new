@@ -8,23 +8,9 @@
     <link rel="stylesheet" href="{% static 'chat/styles.css' %}">
 </head>
 <body>
-    <header class="fb-topbar">
-        <div class="topbar-inner">
-            <a class="brand" href="{% url 'chat:home' %}">Chat Lab</a>
-            <span class="topbar-icon">Messages</span>
-            <span class="topbar-search">Search people, conversations and messages</span>
-            <span class="topbar-user">{{ user.username }} | Home</span>
-        </div>
-    </header>
+    {% include "chat/_topbar.html" %}
     <main class="messenger-shell">
-        <aside class="messenger-sidebar">
-            <div class="messenger-brand">Inbox <span>(1)</span></div>
-            <a class="back-link" href="{% url 'chat:home' %}">All messages</a>
-            <div class="mini-conversation">
-                <span class="avatar avatar-small">{{ conversation.display_name|first|upper }}</span>
-                <strong>{{ conversation.display_name }}</strong>
-            </div>
-        </aside>
+        {% include "chat/_sidebar.html" %}
         <section class="thread-panel">
             <header class="thread-header">
                 <div>
@@ -51,5 +37,6 @@
             </form>
         </section>
     </main>
+    <script src="{% static 'chat/user_search.js' %}?v=2" defer></script>
 </body>
 </html>

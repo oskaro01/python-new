@@ -1,0 +1,58 @@
+<aside class="inbox-sidebar">
+    <div class="sidebar-heading">
+        <div><p class="eyebrow">Inbox</p><h1>Messages</h1></div>
+        <span class="avatar">{{ user.username|first|upper }}</span>
+    </div>
+    {% if incoming_requests %}
+        <section class="friend-requests" aria-label="Friend requests">
+            <h2 class="sidebar-label">Friend requests</h2>
+            {% for incoming in incoming_requests %}
+                <div class="request-row">
+                    <strong>{{ incoming.from_user.get_full_name|default:incoming.from_user.username }}</strong>
+                    <form method="post" action="{% url 'chat:respond_friend_request' incoming.id %}">
+                        {% csrf_token %}
+                        <button class="add-button" name="action" value="accept">Accept</button>
+                        <button class="add-button decline-button" name="action" value="decline">Decline</button>
+                    </form>
+                </div>
+            {% endfor %}
+        </section>
+    {% endif %}
+    <form id="chat-search-form" class="chat-search-form" method="get">
+        <label class="search-label" for="conversation-search">Chats and friends</label>
+        <div class="chat-search-controls">
+            <input id="conversation-search" name="chat_q" type="search" value="{{ chat_query }}" placeholder="Search chats and friends" autocomplete="off">
+            <button type="submit" aria-label="Search chats" title="Search chats"><span class="search-icon" aria-hidden="true"></span></button>
+        </div>
+    </form>
+    <div id="conversation-list">
+        {% for thread in conversations %}
+            <a class="conversation-row {% if thread.id == conversation.id %}is-active{% endif %}" data-chat-search="{{ thread.search_names }}" href="{% url 'chat:conversation_detail' thread.id %}">
+                <span class="avatar avatar-small">{{ thread.display_name|first|upper }}</span>
+                <span class="conversation-copy"><strong>{{ thread.display_name }}</strong></span>
+                {% if thread.unread_count %}<b class="unread-badge">{{ thread.unread_count }}</b>{% endif %}
+            </a>
+        {% empty %}
+            <p class="search-feedback">{% if chat_query %}No matching chats.{% else %}Your inbox is empty.{% endif %}</p>
+        {% endfor %}
+    </div>
+    <section class="friends-list" aria-label="Friends">
+        <h2 class="sidebar-label">Friends</h2>
+        {% for friend in friends %}
+            <form class="friend-row" data-chat-search="{{ friend.username }} {{ friend.get_full_name }}" method="post" action="{% url 'chat:start_conversation' friend.id %}">
+                {% csrf_token %}
+                <span class="avatar avatar-small">{{ friend.username|first|upper }}</span>
+                <strong>{{ friend.get_full_name|default:friend.username }}</strong>
+                <button class="add-button">Chat</button>
+            </form>
+        {% empty %}
+            <p class="search-feedback">{% if chat_query %}No matching friends.{% else %}No friends yet.{% endif %}</p>
+        {% endfor %}
+    </section>
+    <p id="chat-search-empty" class="search-feedback" hidden>No matching chats or friends.</p>
+    {% if chat_query %}<a class="back-link" href="{% url 'chat:home' %}">All chats</a>{% endif %}
+    <form class="sidebar-footer" method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button class="button button-muted">Sign out</button>
+    </form>
+</aside>
