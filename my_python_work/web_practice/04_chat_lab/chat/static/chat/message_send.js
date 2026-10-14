@@ -1,0 +1,46 @@
+const composer = document.querySelector("#message-composer");
+const messageList = document.querySelector(".message-list");
+const feedback = document.querySelector("#composer-feedback");
+
+if (composer && messageList) {
+    composer.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const sendButton = composer.querySelector("button[type='submit']");
+        sendButton.disabled = true;
+        feedback.hidden = true;
+
+        try {
+            const response = await fetch(composer.action || window.location.href, {
+                method: "POST",
+                body: new FormData(composer),
+                headers: {
+                    "X-Chat-Async": "1",
+                    "X-Requested-With": "XMLHttpRequest",
+                },
+            });
+            const payload = await response.json();
+
+            if (!response.ok || !payload.ok) {
+                throw new Error(payload.error || "Message could not be sent.");
+            }
+
+            const emptyState = messageList.querySelector(".intro");
+            if (emptyState) emptyState.remove();
+            messageList.insertAdjacentHTML("beforeend", payload.html);
+            messageList.scrollTop = messageList.scrollHeight;
+            composer.reset();
+
+            // Register the same expiry behavior for the newly inserted bubble.
+            const newMessage = messageList.lastElementChild;
+            if (newMessage) {
+                const deadline = Number(newMessage.dataset.expiresAt) * 1000;
+                window.setTimeout(() => newMessage.remove(), Math.max(0, deadline - Date.now()));
+            }
+        } catch (error) {
+            feedback.textContent = error.message;
+            feedback.hidden = false;
+        } finally {
+            sendButton.disabled = false;
+        }
+    });
+}

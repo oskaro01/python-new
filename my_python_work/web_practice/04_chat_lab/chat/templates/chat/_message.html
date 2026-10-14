@@ -1,0 +1,17 @@
+<article data-expires-at="{{ message.expires_at|date:'U' }}" class="message {% if message.sender_id == user.id %}message-own{% else %}message-other{% endif %}">
+    <strong>{{ message.sender }}</strong>
+    {% if message.body %}<div>{{ message.body }}</div>{% endif %}
+    {% for attachment in message.attachments.all %}
+        {% if attachment.is_expired %}
+            <p class="attachment-expired">Image expired.</p>
+        {% else %}
+            <div class="message-attachment">
+                <a href="{% url 'chat:attachment_file' attachment.id %}" target="_blank" rel="noopener">
+                    <img src="{% url 'chat:attachment_file' attachment.id %}" alt="{{ attachment.original_name }}" loading="lazy">
+                </a>
+                <a class="attachment-download" href="{% url 'chat:attachment_file' attachment.id %}?download=1">Download {{ attachment.original_name }}</a>
+            </div>
+        {% endif %}
+    {% endfor %}
+    <small>{{ message.created_at|date:"M j, g:i A" }}</small>
+</article>

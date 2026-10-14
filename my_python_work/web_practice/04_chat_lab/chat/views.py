@@ -5,12 +5,13 @@ from django.db import transaction
 from django.db.models import Count, Q
 from django.http import FileResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import render_to_string
 from django.utils.http import content_disposition_header
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
 
 from .forms import MessageForm, ProfileForm, SignUpForm
-from .models import Conversation, FriendRequest, Friendship, MessageAttachment, Profile
+from .models import Conversation, FriendRequest, Friendship, Message, MessageAttachment, Profile
 
 def landing(request):
     return render(request, "chat/landing.html")
@@ -235,8 +236,18 @@ def conversation_detail(request, conversation_id):
     visible_messages.filter(is_read=False).exclude(sender=request.user).update(is_read=True)
     conversation.display_name = conversation.display_name_for(request.user)
     if request.method == "POST":
+        async_request = request.headers.get("X-Chat-Async") == "1"
         form = MessageForm(request.POST, request.FILES)
-        if form.is_valid():
+        if not form.is_valid():
+            if async_request:
+                errors = form.errors.get_json_data()
+                message = " ".join(
+                    error["message"]
+                    for field_errors in errors.values()
+                    for error in field_errors
+                )
+                return JsonResponse({"ok": False, "error": message}, status=400)
+        else:
             upload = form.cleaned_data.get("attachment")
             saved_attachment = None
             try:
@@ -259,6 +270,18 @@ def conversation_detail(request, conversation_id):
                 if saved_attachment and saved_attachment.file:
                     saved_attachment.file.delete(save=False)
                 raise
+            if async_request:
+                message = Message.objects.select_related("sender").prefetch_related(
+                    "attachments"
+                ).get(pk=message.pk)
+                return JsonResponse({
+                    "ok": True,
+                    "html": render_to_string(
+                        "chat/_message.html",
+                        {"message": message, "user": request.user},
+                        request=request,
+                    ),
+                })
             return redirect("chat:conversation_detail", conversation_id=conversation.id)
     else:
         form = MessageForm()

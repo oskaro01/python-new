@@ -38,3 +38,13 @@ For the next lessons, you only need to start the server when you want to view th
 cd C:\Users\ASUS\Desktop\python-new\my_python_work\web_practice\04_chat_lab
 ..\..\..\.venv\Scripts\python.exe manage.py runserver 8003
 ====
+$env:CHAT_MESSAGE_TTL_SECONDS = "60"
+echo $env:CHAT_MESSAGE_TTL_SECONDS
+Remove-Item Env:CHAT_MESSAGE_TTL_SECONDS 
+or
+Remove-Item Env:CHAT_MESSAGE_TTL_SECONDS -ErrorAction SilentlyContinue
+===
+.\.venv\Scripts\python.exe my_python_work\web_practice\04_chat_lab\manage.py runserver 8003    [if you in path >> PS C:\Users\ASUS\Desktop\python-new>]
+
+.\.venv\Scripts\python.exe my_python_work\web_practice\04_chat_lab\manage.py migrate
+===

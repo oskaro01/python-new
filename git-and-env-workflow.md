@@ -96,6 +96,9 @@ If the old version was already pushed, the remote branch still points to the old
 git push --force-with-lease origin main
 ```
 
+For the full worked example with uncommitted lesson files and an interactive
+rebase note, see [git-commit-message-repair.md](C:/Users/ASUS/Desktop/python-new/git-commit-message-repair.md).
+
 `--force-with-lease` is safer than plain `--force`: it refuses to overwrite newer work that appeared on GitHub after your last fetch.
 
 After pushing, verify synchronization:

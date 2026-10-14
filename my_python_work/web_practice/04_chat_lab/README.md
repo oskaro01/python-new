@@ -3,9 +3,10 @@
 This is a planned, separate messaging project. It is not part of the
 Personal Dictionary app and it is not part of the customer checkout flow yet.
 
-Status: Lesson 19 implemented: messages expire after 24 hours and a separate
-cleanup process deletes them with their attachment files. Use a 60-second
-setting for local demonstrations. The next checkpoint adds pagination and search.
+Status: Lesson 19 implemented: messages expire after 24 hours, the composer
+sends asynchronously without a full page reload, and a separate cleanup
+process deletes expired rows and files. Use a 60-second setting for local
+demonstrations. The next checkpoint adds pagination and search.
 
 ## Lesson 17: Temporary Image Attachments
 

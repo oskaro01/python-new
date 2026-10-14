@@ -769,6 +769,13 @@ input,
     margin: 0;
 }
 
+.composer-feedback {
+    flex: 1 0 100%;
+    margin: 0;
+    color: #b42318;
+    font-size: 0.7rem;
+}
+
 @media (max-width: 700px) {
     .fb-topbar {
         height: auto;
