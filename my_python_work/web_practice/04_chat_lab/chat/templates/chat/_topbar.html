@@ -15,7 +15,11 @@
                  data-csrf-token="{{ csrf_token }}">
                 {% for person in users %}
                     <div class="user-result">
-                        <span class="avatar avatar-small">{{ person.initial }}</span>
+                        {% if person.avatar_url %}
+                            <img class="avatar avatar-image avatar-small" src="{{ person.avatar_url }}" alt="">
+                        {% else %}
+                            <span class="avatar avatar-small">{{ person.initial }}</span>
+                        {% endif %}
                         <strong class="user-result-name">{{ person.name }}</strong>
                         <div class="friend-actions">
                             {% if person.status == 'incoming' %}
@@ -44,6 +48,24 @@
                 {% endfor %}
             </div>
         </div>
-        <span class="topbar-user">{{ user.username }} | <a href="{% url 'chat:home' %}">Home</a></span>
+        <details class="profile-menu">
+            <summary class="profile-trigger">
+                {% if profile.avatar_url %}
+                    <img class="avatar avatar-image avatar-topbar" src="{{ profile.avatar_url }}" alt="">
+                {% else %}
+                    <span class="avatar avatar-topbar">{{ user.get_full_name|default:user.username|first|upper }}</span>
+                {% endif %}
+                <span>{{ user.get_full_name|default:user.username }}</span>
+                <span aria-hidden="true">&#9662;</span>
+            </summary>
+            <div class="profile-dropdown">
+                <a href="{% url 'chat:profile' %}">Profile settings</a>
+                <a href="{% url 'chat:home' %}">Home</a>
+                <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button class="profile-menu-button" type="submit">Sign out</button>
+                </form>
+            </div>
+        </details>
     </div>
 </header>

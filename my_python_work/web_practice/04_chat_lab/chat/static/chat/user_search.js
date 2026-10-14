@@ -63,9 +63,15 @@
         users.forEach((user) => {
             const row = document.createElement("div");
             row.className = "user-result";
-            const avatar = document.createElement("span");
+            const avatar = document.createElement(user.avatar_url ? "img" : "span");
             avatar.className = "avatar avatar-small";
-            avatar.textContent = user.initial;
+            if (user.avatar_url) {
+                avatar.classList.add("avatar-image");
+                avatar.src = user.avatar_url;
+                avatar.alt = "";
+            } else {
+                avatar.textContent = user.initial;
+            }
             const name = document.createElement("strong");
             name.className = "user-result-name";
             name.textContent = user.name;

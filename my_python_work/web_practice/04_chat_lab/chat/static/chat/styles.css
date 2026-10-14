@@ -226,11 +226,74 @@ h1 {
     font-weight: 700;
 }
 
+.avatar-image {
+    object-fit: cover;
+}
+
 .avatar-small {
     flex: 0 0 36px;
     width: 36px;
     height: 36px;
     font-size: 0.8rem;
+}
+
+.avatar-topbar {
+    width: 26px;
+    height: 26px;
+    font-size: 0.7rem;
+}
+
+.profile-menu {
+    position: relative;
+    margin-left: auto;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.profile-trigger {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #ffffff;
+    cursor: pointer;
+    list-style: none;
+}
+
+.profile-trigger::-webkit-details-marker {
+    display: none;
+}
+
+.profile-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    z-index: 25;
+    min-width: 150px;
+    padding: 5px 0;
+    color: #1c2b4a;
+    background: #ffffff;
+    border: 1px solid #c6c9ce;
+    box-shadow: 0 3px 8px rgb(0 0 0 / 15%);
+}
+
+.profile-dropdown a,
+.profile-menu-button {
+    display: block;
+    width: 100%;
+    padding: 7px 10px;
+    border: 0;
+    color: #1c2b4a;
+    background: #ffffff;
+    font: inherit;
+    font-size: 0.75rem;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.profile-dropdown a:hover,
+.profile-menu-button:hover {
+    background: #dce6f5;
 }
 
 .search-label {
@@ -462,6 +525,68 @@ input,
     place-content: center;
     padding: 40px;
     text-align: center;
+}
+
+.profile-page {
+    min-height: calc(100vh - 46px);
+    padding: 32px 16px;
+    background: #e9ebee;
+}
+
+.profile-panel {
+    width: min(100%, 520px);
+    margin: 0 auto;
+    padding: 24px;
+    background: #ffffff;
+    border: 1px solid #c6c9ce;
+}
+
+.profile-panel h1 {
+    margin-top: 20px;
+}
+
+.profile-preview {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0;
+    padding: 12px;
+    background: #f5f6f7;
+    border: 1px solid #e1e4e8;
+}
+
+.avatar-large {
+    width: 64px;
+    height: 64px;
+    font-size: 1.25rem;
+}
+
+.profile-form {
+    display: grid;
+    gap: 7px;
+}
+
+.profile-form label {
+    margin-top: 8px;
+    color: #4b5c78;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.profile-form input[type="file"] {
+    padding: 6px;
+}
+
+.profile-form small,
+.profile-form .errorlist {
+    color: #68778f;
+    font-size: 0.72rem;
+}
+
+.profile-form .errorlist {
+    margin: 0;
+    padding-left: 18px;
+    color: #a33a3a;
 }
 
 .chat-empty-state h2 {

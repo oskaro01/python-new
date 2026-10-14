@@ -44,6 +44,18 @@ class FriendRequest(models.Model):
         return f"{self.from_user} -> {self.to_user} ({self.status})"
 
 
+class Profile(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile")
+    profile_picture = models.FileField(upload_to="uploads/profile_pictures/", blank=True, null=True)
+
+    def __str__(self):
+        return f"Profile for {self.user}"
+
+    @property
+    def avatar_url(self):
+        return self.profile_picture.url if self.profile_picture else ""
+
+
 class Conversation(models.Model):
     is_self = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -56,11 +68,11 @@ class Conversation(models.Model):
         return f"Conversation {self.pk}"
 
     def display_name_for(self, user):
-        other_users = [
-            participant.user.get_full_name() or participant.user.get_username()
-            for participant in self.participants.all()
-            if participant.user_id != user.id
-        ]
+        other_users = []
+        for participant in self.participants.all():
+            if participant.user_id == user.id:
+                continue
+            other_users.append(participant.user.get_full_name() or participant.user.get_username())
         return ", ".join(other_users) if other_users else f"{user.get_username()} (You)"
 
 

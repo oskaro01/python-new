@@ -1,8 +1,9 @@
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from .models import Conversation, FriendRequest, Friendship
+from .models import Conversation, FriendRequest, Friendship, Profile
 
 
 class FriendRequestTests(TestCase):
@@ -108,3 +109,29 @@ class FriendRequestTests(TestCase):
         self.assertRedirects(response, reverse("chat:home"))
         response = self.client.get(reverse("chat:home"), {"q": "Alice"})
         self.assertContains(response, reverse("chat:start_conversation", args=[self.sender.pk]))
+
+    def test_profile_menu_and_settings_update_picture(self):
+        self.client.force_login(self.sender)
+        response = self.client.get(reverse("chat:profile"))
+        self.assertContains(response, "Profile settings")
+        picture = SimpleUploadedFile("alice.png", b"fake image bytes", content_type="image/png")
+        response = self.client.post(
+            reverse("chat:profile"),
+            {"profile_picture": picture},
+        )
+        self.assertRedirects(response, reverse("chat:home"))
+        profile = Profile.objects.get(user=self.sender)
+        self.assertTrue(profile.profile_picture.name.endswith("alice.png"))
+        response = self.client.get(reverse("chat:home"))
+        self.assertContains(response, "sender")
+        profile.profile_picture.delete(save=False)
+
+    def test_profile_rejects_non_image_uploads(self):
+        self.client.force_login(self.sender)
+        picture = SimpleUploadedFile("notes.txt", b"not an image", content_type="text/plain")
+        response = self.client.post(
+            reverse("chat:profile"),
+            {"profile_picture": picture},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Choose an image file.")

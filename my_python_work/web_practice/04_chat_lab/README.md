@@ -239,7 +239,6 @@ notes.
 
 Planned lessons:
 
-- profile menu, display name, and profile picture
 - temporary image attachments with metadata in the database and file storage
 - attachment expiry cleanup and recipient downloads
 - PostgreSQL configuration and Render deployment
@@ -319,6 +318,21 @@ on the inbox and open-thread screens. Search icons are local Lucide assets.
 To try it, send a request from one account, sign in as the recipient, and
 accept it under Friend requests. The person then appears under Friends; Chat
 opens their conversation. Search their name in Chats and friends to find them.
+
+## Lesson 16: Profile Menu and Account Details
+
+The signed-in user's top-right menu now links to Profile settings. A profile
+stores an optional picture separately from Django's built-in user table. Search
+and conversation identity continues to use the account's real username or
+registered first and last name, so there is only one searchable identity.
+
+Profile pictures are validated as image uploads up to 5 MB and are stored under
+the local media directory. The database stores only the file reference. Local
+media serving is enabled while `DEBUG` is true; production storage and private
+attachment downloads will be separate lessons.
+
+Open the menu, choose **Profile settings**, and save a picture. Search still
+uses the account username or registered name.
 
 ## Current Features
 

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Profile | Chat Lab</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'chat/styles.css' %}">
+</head>
+<body>
+    {% include "chat/_topbar.html" %}
+    <main class="profile-page">
+        <section class="profile-panel">
+            <a class="back-link" href="{% url 'chat:home' %}">&larr; Back to messages</a>
+            <h1>Profile settings</h1>
+            <p class="intro">Choose the profile picture other people see in Chat Lab.</p>
+            <div class="profile-preview">
+                {% if profile.avatar_url %}
+                    <img class="avatar avatar-image avatar-large" src="{{ profile.avatar_url }}" alt="Current profile picture">
+                {% else %}
+                    <span class="avatar avatar-large">{{ user.get_full_name|default:user.username|first|upper }}</span>
+                {% endif %}
+                <strong>{{ user.get_full_name|default:user.username }}</strong>
+            </div>
+            <form class="profile-form" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form.non_field_errors }}
+                <label for="{{ form.profile_picture.id_for_label }}">Profile picture</label>
+                {{ form.profile_picture }}
+                <small>Image files up to 5 MB.</small>
+                {{ form.profile_picture.errors }}
+                <button class="button" type="submit">Save profile</button>
+            </form>
+        </section>
+    </main>
+</body>
+</html>

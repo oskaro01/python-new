@@ -8,8 +8,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
 
-from .forms import MessageForm, SignUpForm
-from .models import Conversation, FriendRequest, Friendship
+from .forms import MessageForm, ProfileForm, SignUpForm
+from .models import Conversation, FriendRequest, Friendship, Profile
 
 def landing(request):
     return render(request, "chat/landing.html")
@@ -24,6 +24,19 @@ def signup(request):
         login(request, user)
         return redirect("chat:home")
     return render(request, "registration/signup.html", {"form": form})
+
+
+def _profile_for(user):
+    return Profile.objects.get_or_create(user=user)[0]
+
+
+def _user_display_name(user):
+    return user.get_full_name() or user.get_username()
+
+
+def _user_avatar_url(user):
+    profile = getattr(user, "profile", None)
+    return profile.avatar_url if profile else ""
 
 
 def _friend_ids(user):
@@ -43,19 +56,20 @@ def _search_people(user, query):
     outgoing = set(FriendRequest.objects.filter(
         from_user=user, status=FriendRequest.Status.PENDING,
     ).values_list("to_user_id", flat=True))
-    candidates = get_user_model().objects.filter(
+    candidates = get_user_model().objects.select_related("profile").filter(
         Q(username__icontains=query) | Q(first_name__icontains=query)
         | Q(last_name__icontains=query) | Q(email__icontains=query)
     ).filter(is_active=True).exclude(pk=user.pk).order_by("username")[:10]
     results = []
     for candidate in candidates:
-        name = candidate.get_full_name() or candidate.get_username()
+        name = _user_display_name(candidate)
         status = "friends" if candidate.pk in friends else (
             "incoming" if candidate.pk in incoming else "pending" if candidate.pk in outgoing else "add"
         )
         results.append({
             "id": candidate.pk, "name": name, "initial": name[:1].upper(),
             "status": status, "request_id": incoming.get(candidate.pk),
+            "avatar_url": _user_avatar_url(candidate),
         })
     return results
 
@@ -77,19 +91,26 @@ def _sidebar_context(request):
     chat_query = request.GET.get("chat_q", "").strip()
     if chat_query:
         conversations = [c for c in conversations if chat_query.casefold() in c.search_names.casefold()]
-    friends = get_user_model().objects.filter(pk__in=_friend_ids(request.user), is_active=True).order_by("username")
+    friends = get_user_model().objects.select_related("profile").filter(
+        pk__in=_friend_ids(request.user), is_active=True,
+    ).order_by("username")
     if chat_query:
         friends = friends.filter(
             Q(username__icontains=chat_query) | Q(first_name__icontains=chat_query)
             | Q(last_name__icontains=chat_query)
         )
+    friends = list(friends)
+    for friend in friends:
+        friend.chat_name = _user_display_name(friend)
+        friend.chat_avatar_url = _user_avatar_url(friend)
     query = request.GET.get("q", "").strip()
     return {
-        "conversations": conversations, "friends": friends, "chat_query": chat_query,
+        "conversations": conversations, "friends": friends, "profile": _profile_for(request.user),
+        "chat_query": chat_query,
         "query": query, "users": _search_people(request.user, query),
         "incoming_requests": FriendRequest.objects.filter(
             to_user=request.user, status=FriendRequest.Status.PENDING,
-        ).select_related("from_user").order_by("created_at"),
+        ).select_related("from_user", "from_user__profile").order_by("created_at"),
     }
 
 @login_required
@@ -103,6 +124,16 @@ def chat_home(request):
         self_conversation.participants.create(user=request.user)
 
     return render(request, "chat/home.html", _sidebar_context(request))
+
+
+@login_required
+def profile_settings(request):
+    profile = _profile_for(request.user)
+    form = ProfileForm(request.POST or None, request.FILES or None, instance=profile)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        return redirect("chat:home")
+    return render(request, "chat/profile.html", {"form": form, "profile": profile})
 
 
 @login_required
