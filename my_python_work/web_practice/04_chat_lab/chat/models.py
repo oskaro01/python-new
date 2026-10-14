@@ -2,6 +2,23 @@ from django.conf import settings
 from django.db import models
 from django.db.models import Q
 
+from .storage import PrivateAttachmentStorage
+
+
+private_attachment_storage = PrivateAttachmentStorage()
+
+
+def chat_attachment_upload_to(instance, filename):
+    """Generate a non-guessable private path while retaining the file type."""
+
+    from pathlib import Path
+    from uuid import uuid4
+
+    suffix = Path(filename).suffix.lower()
+    if suffix not in {".jpg", ".jpeg", ".png", ".webp"}:
+        suffix = ".img"
+    return f"chat_attachments/{uuid4().hex}{suffix}"
+
 
 class Friendship(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="friendships")
@@ -90,7 +107,7 @@ class ConversationParticipant(models.Model):
 class Message(models.Model):
     conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name="messages")
     sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="sent_messages")
-    body = models.TextField()
+    body = models.TextField(blank=True)
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -99,4 +116,28 @@ class Message(models.Model):
 
     def __str__(self):
         return f"Message {self.pk} from {self.sender}"
+
+
+class MessageAttachment(models.Model):
+    """A small image stored outside the database and owned by one message."""
+
+    message = models.ForeignKey(
+        Message,
+        on_delete=models.CASCADE,
+        related_name="attachments",
+    )
+    file = models.FileField(
+        storage=private_attachment_storage,
+        upload_to=chat_attachment_upload_to,
+    )
+    original_name = models.CharField(max_length=255)
+    content_type = models.CharField(max_length=100)
+    size_bytes = models.PositiveIntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("created_at", "pk")
+
+    def __str__(self):
+        return f"Attachment {self.pk} for message {self.message_id}"
 

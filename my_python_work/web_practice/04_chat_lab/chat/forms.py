@@ -1,4 +1,6 @@
 from django import forms
+from pathlib import Path
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
 
@@ -6,6 +8,14 @@ from .models import Message, Profile
 
 
 class MessageForm(forms.ModelForm):
+    attachment = forms.FileField(
+        required=False,
+        widget=forms.ClearableFileInput(
+            attrs={"accept": "image/jpeg,image/png,image/webp"}
+        ),
+        help_text="JPEG, PNG, or WebP up to 3 MB.",
+    )
+
     class Meta:
         model = Message
         fields = ["body"]
@@ -17,9 +27,46 @@ class MessageForm(forms.ModelForm):
 
     def clean_body(self):
         body = self.cleaned_data["body"].strip()
-        if not body:
-            raise forms.ValidationError("Message cannot be empty.")
         return body
+
+    def clean_attachment(self):
+        attachment = self.cleaned_data.get("attachment")
+        if not attachment:
+            return None
+        if attachment.size > 3 * 1024 * 1024:
+            raise forms.ValidationError("Images must be 3 MB or smaller.")
+
+        allowed_types = {
+            ".jpg": "image/jpeg",
+            ".jpeg": "image/jpeg",
+            ".png": "image/png",
+            ".webp": "image/webp",
+        }
+        suffix = Path(attachment.name).suffix.lower()
+        expected_type = allowed_types.get(suffix)
+        if expected_type is None or attachment.content_type != expected_type:
+            raise forms.ValidationError("Choose a JPEG, PNG, or WebP image.")
+
+        header = attachment.read(12)
+        attachment.seek(0)
+        signatures = {
+            ".jpg": header.startswith(b"\xff\xd8\xff"),
+            ".jpeg": header.startswith(b"\xff\xd8\xff"),
+            ".png": header.startswith(b"\x89PNG\r\n\x1a\n"),
+            ".webp": header.startswith(b"RIFF") and header[8:12] == b"WEBP",
+        }
+        if not signatures[suffix]:
+            raise forms.ValidationError("The uploaded file is not a valid image.")
+        return attachment
+
+    def clean(self):
+        cleaned_data = super().clean()
+        body = (cleaned_data.get("body") or "").strip()
+        attachment = cleaned_data.get("attachment")
+        if not body and not attachment:
+            raise forms.ValidationError("Write a message or attach an image.")
+        cleaned_data["body"] = body
+        return cleaned_data
 
 
 class SignUpForm(UserCreationForm):

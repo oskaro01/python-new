@@ -3,7 +3,31 @@
 This is a planned, separate messaging project. It is not part of the
 Personal Dictionary app and it is not part of the customer checkout flow yet.
 
-Status: Lesson 01 complete: project foundation and authentication boundary.
+Status: Lesson 17 complete: profile pictures and temporary, participant-only
+image attachments are working. The next checkpoint adds attachment expiry.
+
+## Lesson 17: Temporary Image Attachments
+
+The conversation composer now accepts small JPEG, PNG, and WebP images. Image
+metadata is stored in `MessageAttachment`, while file bytes are written to a
+private storage root. Previews and downloads use a participant-filtered view,
+so an outsider cannot guess a file URL and read it.
+
+See [17_temporary_image_attachments/README.md](17_temporary_image_attachments/README.md)
+for the architecture and checkpoint.
+
+## Continuation from Lesson 17
+
+The previous checkpoints through Lesson 16 covered identity, friendships,
+conversation access, messaging, the Messenger shell, and profile pictures.
+
+17. Temporary image attachments
+18. Attachment expiry
+19. Background jobs
+20. Pagination and message search
+21. Security and moderation
+22. PostgreSQL and Render deployment
+23. Real-time chat with Django Channels and WebSockets
 
 ## Lesson 01: Project Foundation
 

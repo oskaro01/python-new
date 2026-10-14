@@ -23,16 +23,31 @@
                 {% for message in conversation.messages.all %}
                     <article class="message {% if message.sender_id == user.id %}message-own{% else %}message-other{% endif %}">
                         <strong>{{ message.sender }}</strong>
-                        <div>{{ message.body }}</div>
+                        {% if message.body %}<div>{{ message.body }}</div>{% endif %}
+                        {% for attachment in message.attachments.all %}
+                            <div class="message-attachment">
+                                <a href="{% url 'chat:attachment_file' attachment.id %}" target="_blank" rel="noopener">
+                                    <img src="{% url 'chat:attachment_file' attachment.id %}" alt="{{ attachment.original_name }}" loading="lazy">
+                                </a>
+                                <a class="attachment-download" href="{% url 'chat:attachment_file' attachment.id %}?download=1">Download {{ attachment.original_name }}</a>
+                            </div>
+                        {% endfor %}
                         <small>{{ message.created_at|date:"M j, g:i A" }}</small>
                     </article>
                 {% empty %}
                     <p class="intro">No messages yet.</p>
                 {% endfor %}
             </div>
-            <form class="composer" method="post">
+            <form class="composer" method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 {{ form.body }}
+                <div class="attachment-field">
+                    <label for="{{ form.attachment.id_for_label }}">Attach image</label>
+                    {{ form.attachment }}
+                    <small>{{ form.attachment.help_text }}</small>
+                    {{ form.attachment.errors }}
+                </div>
+                {{ form.non_field_errors }}
                 <button class="button" type="submit">Send</button>
             </form>
         </section>

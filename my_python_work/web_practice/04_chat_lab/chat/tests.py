@@ -1,9 +1,13 @@
+import base64
+import shutil
+import tempfile
+
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import Client, TestCase
+from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
-from .models import Conversation, FriendRequest, Friendship, Profile
+from .models import Conversation, FriendRequest, Friendship, Message, MessageAttachment, Profile
 
 
 class FriendRequestTests(TestCase):
@@ -135,3 +139,122 @@ class FriendRequestTests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Choose an image file.")
+
+
+class MessageAttachmentTests(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.private_media_root = tempfile.mkdtemp(prefix="chat-private-media-")
+        cls.media_override = override_settings(PRIVATE_MEDIA_ROOT=cls.private_media_root)
+        cls.media_override.enable()
+        super().setUpClass()
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        cls.media_override.disable()
+        shutil.rmtree(cls.private_media_root, ignore_errors=True)
+
+    @staticmethod
+    def image_upload(name="photo.png"):
+        image_bytes = base64.b64decode(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
+        )
+        return SimpleUploadedFile(name, image_bytes, content_type="image/png")
+
+    def setUp(self):
+        self.sender = get_user_model().objects.create_user(username="sender")
+        self.recipient = get_user_model().objects.create_user(username="recipient")
+        self.outsider = get_user_model().objects.create_user(username="outsider")
+        self.conversation = Conversation.objects.create()
+        self.conversation.participants.create(user=self.sender)
+        self.conversation.participants.create(user=self.recipient)
+        self.url = reverse("chat:conversation_detail", args=[self.conversation.pk])
+        self.client.force_login(self.sender)
+
+    def test_small_image_is_saved_outside_database_and_rendered_through_protected_url(self):
+        response = self.client.post(
+            self.url,
+            {"body": "Look at this", "attachment": self.image_upload()},
+        )
+
+        self.assertRedirects(response, self.url)
+        message = Message.objects.get(conversation=self.conversation)
+        attachment = MessageAttachment.objects.get(message=message)
+        self.assertEqual(attachment.original_name, "photo.png")
+        self.assertEqual(attachment.content_type, "image/png")
+        self.assertGreater(attachment.size_bytes, 0)
+        self.assertTrue(attachment.file.name.startswith("chat_attachments/"))
+        self.assertTrue(attachment.file.storage.exists(attachment.file.name))
+        with self.assertRaises(ValueError):
+            attachment.file.url
+
+        page = self.client.get(self.url)
+        self.assertContains(page, reverse("chat:attachment_file", args=[attachment.pk]))
+        self.assertNotContains(page, "/media/")
+
+    def test_image_only_message_is_allowed(self):
+        response = self.client.post(self.url, {"attachment": self.image_upload()})
+
+        self.assertRedirects(response, self.url)
+        self.assertEqual(Message.objects.filter(conversation=self.conversation).count(), 1)
+        self.assertEqual(MessageAttachment.objects.count(), 1)
+
+    def test_text_only_message_still_works(self):
+        response = self.client.post(self.url, {"body": "Just text"})
+
+        self.assertRedirects(response, self.url)
+        self.assertEqual(Message.objects.get().body, "Just text")
+        self.assertFalse(MessageAttachment.objects.exists())
+
+    def test_empty_message_without_image_is_rejected(self):
+        response = self.client.post(self.url, {"body": "   "})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Write a message or attach an image.")
+        self.assertFalse(Message.objects.exists())
+        self.assertFalse(MessageAttachment.objects.exists())
+
+    def test_text_file_disguised_as_image_is_rejected(self):
+        upload = SimpleUploadedFile("not-image.png", b"plain text", content_type="image/png")
+
+        response = self.client.post(self.url, {"attachment": upload})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "The uploaded file is not a valid image.")
+        self.assertFalse(Message.objects.exists())
+
+    def test_oversized_image_is_rejected(self):
+        upload = SimpleUploadedFile(
+            "large.png",
+            b"\x89PNG\r\n\x1a\n" + b"x" * (3 * 1024 * 1024),
+            content_type="image/png",
+        )
+
+        response = self.client.post(self.url, {"attachment": upload})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Images must be 3 MB or smaller.")
+        self.assertFalse(Message.objects.exists())
+
+    def test_participants_can_preview_and_download_but_outsiders_cannot(self):
+        self.client.post(self.url, {"attachment": self.image_upload()})
+        attachment = MessageAttachment.objects.get()
+        attachment_url = reverse("chat:attachment_file", args=[attachment.pk])
+
+        preview = self.client.get(attachment_url)
+        self.assertEqual(preview.status_code, 200)
+        self.assertEqual(preview["Content-Type"], "image/png")
+        self.assertIn("inline", preview["Content-Disposition"])
+        self.assertEqual(preview["X-Content-Type-Options"], "nosniff")
+
+        self.client.force_login(self.recipient)
+        download = self.client.get(f"{attachment_url}?download=1")
+        self.assertEqual(download.status_code, 200)
+        self.assertIn("attachment", download["Content-Disposition"])
+
+        self.client.force_login(self.outsider)
+        self.assertEqual(self.client.get(attachment_url).status_code, 404)
+
+        anonymous = Client()
+        self.assertEqual(anonymous.get(attachment_url).status_code, 302)

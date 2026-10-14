@@ -699,6 +699,30 @@ input,
     font-size: 0.65rem;
 }
 
+.message-attachment {
+    margin-top: 8px;
+}
+
+.message-attachment img {
+    display: block;
+    max-height: 220px;
+    max-width: min(320px, 100%);
+    border: 1px solid #cbd3df;
+    border-radius: 2px;
+}
+
+.attachment-download {
+    display: inline-block;
+    margin-top: 5px;
+    color: #3b5998;
+    font-size: 0.68rem;
+    text-decoration: none;
+}
+
+.attachment-download:hover {
+    text-decoration: underline;
+}
+
 .composer {
     display: flex;
     gap: 7px;
@@ -713,6 +737,25 @@ input,
     min-height: 34px;
     resize: vertical;
     margin: 0;
+}
+
+.attachment-field {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 145px;
+    color: #667085;
+    font-size: 0.68rem;
+}
+
+.attachment-field input[type="file"] {
+    max-width: 180px;
+    font-size: 0.68rem;
+}
+
+.attachment-field small {
+    color: #8a94a3;
+    font-size: 0.62rem;
 }
 
 .composer .button {

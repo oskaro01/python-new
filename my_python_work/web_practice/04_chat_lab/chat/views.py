@@ -3,13 +3,14 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth import login
 from django.db import transaction
 from django.db.models import Count, Q
-from django.http import JsonResponse
+from django.http import FileResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.http import content_disposition_header
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
 
 from .forms import MessageForm, ProfileForm, SignUpForm
-from .models import Conversation, FriendRequest, Friendship, Profile
+from .models import Conversation, FriendRequest, Friendship, MessageAttachment, Profile
 
 def landing(request):
     return render(request, "chat/landing.html")
@@ -226,19 +227,37 @@ def respond_friend_request(request, request_id):
 @login_required
 def conversation_detail(request, conversation_id):
     conversation = get_object_or_404(
-        Conversation,
+        Conversation.objects.prefetch_related("messages__attachments"),
         pk=conversation_id,
         participants__user=request.user,
     )
     conversation.messages.filter(is_read=False).exclude(sender=request.user).update(is_read=True)
     conversation.display_name = conversation.display_name_for(request.user)
     if request.method == "POST":
-        form = MessageForm(request.POST)
+        form = MessageForm(request.POST, request.FILES)
         if form.is_valid():
-            message = form.save(commit=False)
-            message.conversation = conversation
-            message.sender = request.user
-            message.save()
+            upload = form.cleaned_data.get("attachment")
+            saved_attachment = None
+            try:
+                with transaction.atomic():
+                    message = form.save(commit=False)
+                    message.conversation = conversation
+                    message.sender = request.user
+                    message.save()
+                    if upload:
+                        saved_attachment = MessageAttachment.objects.create(
+                            message=message,
+                            file=upload,
+                            original_name=upload.name.rsplit("\\", 1)[-1].rsplit("/", 1)[-1][:255],
+                            content_type=upload.content_type,
+                            size_bytes=upload.size,
+                        )
+                    conversation.updated_at = timezone.now()
+                    conversation.save(update_fields=["updated_at"])
+            except Exception:
+                if saved_attachment and saved_attachment.file:
+                    saved_attachment.file.delete(save=False)
+                raise
             return redirect("chat:conversation_detail", conversation_id=conversation.id)
     else:
         form = MessageForm()
@@ -248,4 +267,30 @@ def conversation_detail(request, conversation_id):
         "chat/conversation_detail.html",
         {**_sidebar_context(request), "conversation": conversation, "form": form},
     )
+
+
+@login_required
+@require_GET
+def attachment_file(request, attachment_id):
+    """Stream an attachment only to a participant in its conversation."""
+
+    attachment = get_object_or_404(
+        MessageAttachment.objects.select_related("message", "message__conversation").filter(
+            message__conversation__participants__user=request.user,
+        ),
+        pk=attachment_id,
+    )
+    try:
+        file_handle = attachment.file.open("rb")
+    except (FileNotFoundError, OSError, ValueError):
+        raise Http404 from None
+
+    response = FileResponse(file_handle, content_type=attachment.content_type)
+    as_attachment = request.GET.get("download") == "1"
+    response["Content-Disposition"] = content_disposition_header(
+        as_attachment,
+        attachment.original_name,
+    )
+    response["X-Content-Type-Options"] = "nosniff"
+    return response
 
