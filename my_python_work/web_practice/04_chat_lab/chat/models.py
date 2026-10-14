@@ -29,6 +29,14 @@ def default_attachment_expiry():
     return timezone.now() + timedelta(days=settings.CHAT_ATTACHMENT_TTL_DAYS)
 
 
+def default_message_expiry():
+    """Store the deadline once; reading a message never extends its lifetime."""
+
+    from datetime import timedelta
+
+    return timezone.now() + timedelta(seconds=settings.CHAT_MESSAGE_TTL_SECONDS)
+
+
 class Friendship(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="friendships")
     friend = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="friendships_received")
@@ -119,6 +127,7 @@ class Message(models.Model):
     body = models.TextField(blank=True)
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField(default=default_message_expiry, db_index=True)
 
     class Meta:
         ordering = ["created_at"]
@@ -143,7 +152,7 @@ class MessageAttachment(models.Model):
     content_type = models.CharField(max_length=100)
     size_bytes = models.PositiveIntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
-    expires_at = models.DateTimeField(default=default_attachment_expiry)
+    expires_at = models.DateTimeField(default=default_attachment_expiry, db_index=True)
 
     class Meta:
         ordering = ("created_at", "pk")

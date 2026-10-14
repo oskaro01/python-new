@@ -20,8 +20,8 @@
                 <span class="thread-status">Private</span>
             </header>
             <div class="message-list">
-                {% for message in conversation.messages.all %}
-                    <article class="message {% if message.sender_id == user.id %}message-own{% else %}message-other{% endif %}">
+                {% for message in messages %}
+                    <article data-expires-at="{{ message.expires_at|date:'U' }}" class="message {% if message.sender_id == user.id %}message-own{% else %}message-other{% endif %}">
                         <strong>{{ message.sender }}</strong>
                         {% if message.body %}<div>{{ message.body }}</div>{% endif %}
                         {% for attachment in message.attachments.all %}
@@ -57,5 +57,6 @@
         </section>
     </main>
     <script src="{% static 'chat/user_search.js' %}?v=2" defer></script>
+    <script src="{% static 'chat/message_expiry.js' %}" defer></script>
 </body>
 </html>

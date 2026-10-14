@@ -80,7 +80,7 @@ def _sidebar_context(request):
         Conversation.objects.filter(participants__user=request.user)
         .prefetch_related("participants__user")
         .annotate(unread_count=Count(
-            "messages", filter=Q(messages__is_read=False) & ~Q(messages__sender=request.user),
+            "messages", filter=Q(messages__is_read=False, messages__expires_at__gt=timezone.now()) & ~Q(messages__sender=request.user),
         )).distinct()
     )
     for conversation in conversations:
@@ -227,11 +227,12 @@ def respond_friend_request(request, request_id):
 @login_required
 def conversation_detail(request, conversation_id):
     conversation = get_object_or_404(
-        Conversation.objects.prefetch_related("messages__attachments"),
+        Conversation,
         pk=conversation_id,
         participants__user=request.user,
     )
-    conversation.messages.filter(is_read=False).exclude(sender=request.user).update(is_read=True)
+    visible_messages = conversation.messages.filter(expires_at__gt=timezone.now())
+    visible_messages.filter(is_read=False).exclude(sender=request.user).update(is_read=True)
     conversation.display_name = conversation.display_name_for(request.user)
     if request.method == "POST":
         form = MessageForm(request.POST, request.FILES)
@@ -265,7 +266,10 @@ def conversation_detail(request, conversation_id):
     return render(
         request,
         "chat/conversation_detail.html",
-        {**_sidebar_context(request), "conversation": conversation, "form": form},
+        {
+            **_sidebar_context(request), "conversation": conversation, "form": form,
+            "messages": visible_messages.select_related("sender").prefetch_related("attachments"),
+        },
     )
 
 
@@ -278,6 +282,7 @@ def attachment_file(request, attachment_id):
         MessageAttachment.objects.select_related("message", "message__conversation").filter(
             message__conversation__participants__user=request.user,
             expires_at__gt=timezone.now(),
+            message__expires_at__gt=timezone.now(),
         ),
         pk=attachment_id,
     )
@@ -293,5 +298,6 @@ def attachment_file(request, attachment_id):
         attachment.original_name,
     )
     response["X-Content-Type-Options"] = "nosniff"
+    response["Cache-Control"] = "private, no-store"
     return response
 

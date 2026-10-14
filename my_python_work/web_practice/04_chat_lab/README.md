@@ -3,8 +3,9 @@
 This is a planned, separate messaging project. It is not part of the
 Personal Dictionary app and it is not part of the customer checkout flow yet.
 
-Status: Lesson 18 complete: participant-only image attachments now expire and
-can be purged safely. The next checkpoint introduces background jobs.
+Status: Lesson 19 implemented: messages expire after 24 hours and a separate
+cleanup process deletes them with their attachment files. Use a 60-second
+setting for local demonstrations. The next checkpoint adds pagination and search.
 
 ## Lesson 17: Temporary Image Attachments
 
@@ -22,6 +23,15 @@ Attachments now receive a configurable seven-day lifetime. Expired files are
 hidden from previews and downloads, and
 `purge_expired_attachments` removes their storage objects and metadata. See
 [18_attachment_expiry/README.md](18_attachment_expiry/README.md).
+
+## Lesson 19: Background Cleanup And Disappearing Messages
+
+`CHAT_MESSAGE_TTL_SECONDS=86400` gives messages a 24-hour lifetime. Set it to
+`60` before starting Django to demonstrate expiry on newly sent messages.
+`run_chat_cleanup` periodically removes expired messages and their image files;
+run it in a separate terminal. No Redis dependency is needed for this process.
+See [19_background_jobs/README.md](19_background_jobs/README.md) for the two-terminal
+demonstration, migration instructions, and cleanup lifecycle.
 
 ## Continuation from Lesson 17
 
