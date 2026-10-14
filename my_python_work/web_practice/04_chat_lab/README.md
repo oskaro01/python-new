@@ -3,8 +3,8 @@
 This is a planned, separate messaging project. It is not part of the
 Personal Dictionary app and it is not part of the customer checkout flow yet.
 
-Status: Lesson 17 complete: profile pictures and temporary, participant-only
-image attachments are working. The next checkpoint adds attachment expiry.
+Status: Lesson 18 complete: participant-only image attachments now expire and
+can be purged safely. The next checkpoint introduces background jobs.
 
 ## Lesson 17: Temporary Image Attachments
 
@@ -15,6 +15,13 @@ so an outsider cannot guess a file URL and read it.
 
 See [17_temporary_image_attachments/README.md](17_temporary_image_attachments/README.md)
 for the architecture and checkpoint.
+
+## Lesson 18: Attachment Expiry
+
+Attachments now receive a configurable seven-day lifetime. Expired files are
+hidden from previews and downloads, and
+`purge_expired_attachments` removes their storage objects and metadata. See
+[18_attachment_expiry/README.md](18_attachment_expiry/README.md).
 
 ## Continuation from Lesson 17
 

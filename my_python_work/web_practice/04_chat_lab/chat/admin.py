@@ -8,5 +8,9 @@ admin.site.register(Message)
 admin.site.register(Friendship)
 admin.site.register(FriendRequest)
 admin.site.register(Profile)
-admin.site.register(MessageAttachment)
+@admin.register(MessageAttachment)
+class MessageAttachmentAdmin(admin.ModelAdmin):
+    list_display = ("id", "message", "original_name", "created_at", "expires_at")
+    list_filter = ("content_type",)
+    search_fields = ("original_name",)
 

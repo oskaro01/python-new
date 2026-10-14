@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import models
 from django.db.models import Q
+from django.utils import timezone
 
 from .storage import PrivateAttachmentStorage
 
@@ -18,6 +19,14 @@ def chat_attachment_upload_to(instance, filename):
     if suffix not in {".jpg", ".jpeg", ".png", ".webp"}:
         suffix = ".img"
     return f"chat_attachments/{uuid4().hex}{suffix}"
+
+
+def default_attachment_expiry():
+    """Give each attachment a short, configurable lifetime."""
+
+    from datetime import timedelta
+
+    return timezone.now() + timedelta(days=settings.CHAT_ATTACHMENT_TTL_DAYS)
 
 
 class Friendship(models.Model):
@@ -134,10 +143,15 @@ class MessageAttachment(models.Model):
     content_type = models.CharField(max_length=100)
     size_bytes = models.PositiveIntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField(default=default_attachment_expiry)
 
     class Meta:
         ordering = ("created_at", "pk")
 
     def __str__(self):
         return f"Attachment {self.pk} for message {self.message_id}"
+
+    @property
+    def is_expired(self):
+        return self.expires_at <= timezone.now()
 

@@ -277,6 +277,7 @@ def attachment_file(request, attachment_id):
     attachment = get_object_or_404(
         MessageAttachment.objects.select_related("message", "message__conversation").filter(
             message__conversation__participants__user=request.user,
+            expires_at__gt=timezone.now(),
         ),
         pk=attachment_id,
     )

@@ -723,6 +723,13 @@ input,
     text-decoration: underline;
 }
 
+.attachment-expired {
+    margin: 8px 0 0;
+    color: #8a94a3;
+    font-size: 0.68rem;
+    font-style: italic;
+}
+
 .composer {
     display: flex;
     gap: 7px;

@@ -80,6 +80,7 @@ STATIC_URL = "static/"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 PRIVATE_MEDIA_ROOT = BASE_DIR / "private_media"
+CHAT_ATTACHMENT_TTL_DAYS = int(os.environ.get("CHAT_ATTACHMENT_TTL_DAYS", "7"))
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 LOGIN_URL = "/accounts/login/"
