@@ -3,10 +3,9 @@
 This is a planned, separate messaging project. It is not part of the
 Personal Dictionary app and it is not part of the customer checkout flow yet.
 
-Status: Lesson 19 implemented: messages expire after 24 hours, the composer
-sends asynchronously without a full page reload, and a separate cleanup
-process deletes expired rows and files. Use a 60-second setting for local
-demonstrations. The next checkpoint adds pagination and search.
+Status: Lesson 20 implemented: conversation history loads 20 messages per page
+and supports conversation-scoped text search. Async sending and message expiry
+remain in place. The next checkpoint adds security and moderation.
 
 ## Lesson 17: Temporary Image Attachments
 
@@ -35,6 +34,8 @@ See [19_background_jobs/README.md](19_background_jobs/README.md) for the two-ter
 demonstration, migration instructions, and cleanup lifecycle.
 
 ## Continuation from Lesson 17
+
+Lesson 20 guide: [Pagination And Message Search](20_pagination_message_search/README.md).
 
 The previous checkpoints through Lesson 16 covered identity, friendships,
 conversation access, messaging, the Messenger shell, and profile pictures.

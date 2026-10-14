@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 from django.contrib.auth import login
+from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Count, Q
 from django.http import FileResponse, Http404, JsonResponse
@@ -233,7 +234,6 @@ def conversation_detail(request, conversation_id):
         participants__user=request.user,
     )
     visible_messages = conversation.messages.filter(expires_at__gt=timezone.now())
-    visible_messages.filter(is_read=False).exclude(sender=request.user).update(is_read=True)
     conversation.display_name = conversation.display_name_for(request.user)
     if request.method == "POST":
         async_request = request.headers.get("X-Chat-Async") == "1"
@@ -281,17 +281,44 @@ def conversation_detail(request, conversation_id):
                         {"message": message, "user": request.user},
                         request=request,
                     ),
+                    "pagination_html": render_to_string(
+                        "chat/_message_pagination.html",
+                        {
+                            "conversation": conversation,
+                            "page_obj": Paginator(
+                                conversation.messages.filter(expires_at__gt=timezone.now())
+                                .order_by("-created_at", "-pk"), 20,
+                            ).get_page(1),
+                            "message_query": "",
+                        },
+                        request=request,
+                    ),
                 })
             return redirect("chat:conversation_detail", conversation_id=conversation.id)
     else:
         form = MessageForm()
+
+    message_query = request.GET.get("message_q", "").strip()[:200]
+    if message_query:
+        visible_messages = visible_messages.filter(body__icontains=message_query)
+    # Slice in SQL before loading senders and attachments. Page 1 is the newest.
+    page_obj = Paginator(
+        visible_messages.order_by("-created_at", "-pk")
+        .select_related("sender").prefetch_related("attachments"), 20,
+    ).get_page(request.GET.get("page", 1))
+    messages = list(page_obj.object_list)
+    # Only the received messages actually displayed on this page become read.
+    conversation.messages.filter(
+        pk__in=[message.pk for message in messages], is_read=False,
+    ).exclude(sender=request.user).update(is_read=True)
 
     return render(
         request,
         "chat/conversation_detail.html",
         {
             **_sidebar_context(request), "conversation": conversation, "form": form,
-            "messages": visible_messages.select_related("sender").prefetch_related("attachments"),
+            "messages": list(reversed(messages)),
+            "page_obj": page_obj, "message_query": message_query,
         },
     )
 

@@ -1,0 +1,10 @@
+<nav class="message-pagination" aria-label="Message history pages">
+    {% if page_obj.has_previous %}
+        <a href="{% url 'chat:conversation_detail' conversation.id %}?page={{ page_obj.previous_page_number }}&amp;message_q={{ message_query|urlencode }}">Newer</a>
+    {% endif %}
+    <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }} · {{ page_obj.paginator.count }} {% if message_query %}matches{% else %}messages{% endif %}</span>
+    {% if page_obj.has_next %}
+        <a href="{% url 'chat:conversation_detail' conversation.id %}?page={{ page_obj.next_page_number }}&amp;message_q={{ message_query|urlencode }}">Older</a>
+    {% endif %}
+    <a href="{% url 'chat:conversation_detail' conversation.id %}">Latest messages</a>
+</nav>

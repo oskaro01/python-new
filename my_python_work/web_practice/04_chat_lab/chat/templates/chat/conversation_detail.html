@@ -19,13 +19,20 @@
                 </div>
                 <span class="thread-status">Private</span>
             </header>
-            <div class="message-list">
+            <form class="message-search" method="get" action="{% url 'chat:conversation_detail' conversation.id %}">
+                <label for="message-query">Search this conversation</label>
+                <input id="message-query" type="search" name="message_q" value="{{ message_query }}" maxlength="200" placeholder="Search message text">
+                <button class="add-button" type="submit">Search</button>
+                {% if message_query %}<a href="{% url 'chat:conversation_detail' conversation.id %}">Clear</a>{% endif %}
+            </form>
+            <div class="message-list" data-can-append="{% if page_obj.number == 1 and not message_query %}true{% else %}false{% endif %}">
                 {% for message in messages %}
                     {% include "chat/_message.html" with message=message %}
                 {% empty %}
-                    <p class="intro">No messages yet.</p>
+                    <p class="intro">{% if message_query %}No matching messages.{% else %}No messages yet.{% endif %}</p>
                 {% endfor %}
             </div>
+            <div id="message-pagination">{% include "chat/_message_pagination.html" %}</div>
             <form id="message-composer" class="composer" method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 {{ form.body }}

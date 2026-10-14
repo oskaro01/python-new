@@ -24,11 +24,26 @@ if (composer && messageList) {
                 throw new Error(payload.error || "Message could not be sent.");
             }
 
+            composer.reset();
+
+            // Search and older pages must keep their own message selection.
+            if (messageList.dataset.canAppend !== "true") {
+                feedback.textContent = "Sent. Open Latest messages to see your message.";
+                feedback.style.color = "#3b5998";
+                feedback.hidden = false;
+                return;
+            }
+
             const emptyState = messageList.querySelector(".intro");
             if (emptyState) emptyState.remove();
             messageList.insertAdjacentHTML("beforeend", payload.html);
+            // Keep the newest page bounded even after many asynchronous sends.
+            while (messageList.querySelectorAll(".message").length > 20) {
+                messageList.querySelector(".message").remove();
+            }
+            const pagination = document.querySelector("#message-pagination");
+            if (pagination && payload.pagination_html) pagination.innerHTML = payload.pagination_html;
             messageList.scrollTop = messageList.scrollHeight;
-            composer.reset();
 
             // Register the same expiry behavior for the newly inserted bubble.
             const newMessage = messageList.lastElementChild;
@@ -38,6 +53,7 @@ if (composer && messageList) {
             }
         } catch (error) {
             feedback.textContent = error.message;
+            feedback.style.color = "";
             feedback.hidden = false;
         } finally {
             sendButton.disabled = false;
