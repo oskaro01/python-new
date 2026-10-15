@@ -26,7 +26,7 @@ def default_attachment_expiry():
 
     from datetime import timedelta
 
-    return timezone.now() + timedelta(days=settings.CHAT_ATTACHMENT_TTL_DAYS)
+    return timezone.now() + timedelta(seconds=settings.CHAT_ATTACHMENT_TTL_SECONDS)
 
 
 def default_message_expiry():

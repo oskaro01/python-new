@@ -4,10 +4,10 @@ Lesson 17 made attachments private. Lesson 18 gives them a lifetime so old
 files do not remain available forever.
 
 Each `MessageAttachment` receives an `expires_at` timestamp when it is created.
-The default lifetime is seven days and can be changed with:
+The current default lifetime is five minutes and can be changed with:
 
 ```text
-CHAT_ATTACHMENT_TTL_DAYS=7
+CHAT_ATTACHMENT_TTL_SECONDS=300
 ```
 
 The protected preview/download view filters with `expires_at > now`. An expired

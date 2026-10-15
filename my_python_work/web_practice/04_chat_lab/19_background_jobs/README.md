@@ -1,6 +1,6 @@
 # Chat Lab Lesson 19: Background Cleanup And Disappearing Messages
 
-Messages now live for 24 hours by default, including messages sent to yourself.
+Messages now live for five minutes by default, including messages sent to yourself.
 The timestamp is saved when the message is created; reading it does not reset
 the clock. Accounts, friendships, and conversations remain available.
 
@@ -156,9 +156,14 @@ Run these from the repository root. Apply the migration first:
 .\.venv\Scripts\python.exe my_python_work\web_practice\04_chat_lab\manage.py migrate
 ```
 
-Existing messages receive 24 hours from their original creation time, so older
-ones will become expired after this migration. The 60-second override below
-applies to newly sent messages only; it does not rewrite existing deadlines.
+Before migration, existing messages keep the deadlines already saved in the
+database. After migration `0010`, existing rows are shortened as described
+below. The five-minute default applies to newly sent messages and attachments;
+the 60-second override below applies to newly sent messages only.
+
+Migration `0010_shorten_chat_expiry` changes older rows to five minutes from
+their original creation time, while preserving any deadline that was already
+shorter. Apply migrations before testing the new policy.
 
 In terminal 1, set the short lifetime and start Django:
 
@@ -192,11 +197,11 @@ The cleanup process is not a permanent system service in this local exercise.
 Stop it after the demonstration. Leaving it running is harmless during local
 development, but it is unnecessary when you are not testing expiry.
 
-Restart Django for new messages to use the default 86400 seconds (24 hours).
+Restart Django for new messages to use the default 300 seconds (five minutes).
 You can also configure `CHAT_MESSAGE_TTL_SECONDS` in the project's `.env`.
 Environment variables in the terminal override that file. Changing the setting
-affects new messages only. An attachment's seven-day timer from Lesson 18 is
-an upper limit: its parent message's earlier expiry always wins.
+affects new messages only. An attachment's five-minute timer is an upper limit:
+its parent message's earlier expiry always wins.
 
 ## Normal cleanup and one-off jobs
 

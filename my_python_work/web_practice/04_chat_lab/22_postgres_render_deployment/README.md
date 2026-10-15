@@ -76,12 +76,43 @@ Set these environment variables in Render:
 ```text
 DJANGO_DEBUG=False
 DJANGO_SECRET_KEY=<generated secret>
+
+        In Render:
+        1. Open your Chat Lab Web Service.
+        2. Go to Environment.
+        3. Click Add Environment Variable.
+        4. Set:
+        Key: DJANGO_SECRET_KEY
+        5. In the value field, click Generate.
+        6. Save with Save, rebuild, and deploy.
+        Render will create a private random value. Do not commit it to Git, put it in .env.example, or paste it into chat.
+        Django reads this exact variable:
+        DJANGO_SECRET_KEY
+        When DJANGO_DEBUG=False, Chat Lab requires it.
+        If Render does not show a Generate button, create one locally:
+        .\.venv\Scripts\python.exe -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+        Copy the output into Render’s DJANGO_SECRET_KEY value field.
+
+
 DJANGO_ALLOWED_HOSTS=<your-chat-hostname>
 DJANGO_CSRF_TRUSTED_ORIGINS=https://<your-chat-hostname>
+
+        Yes, that is your Render hostname:
+        chat-lab-5yn6.onrender.com
+        Set the variables exactly like this:
+        DJANGO_ALLOWED_HOSTS=chat-lab-5yn6.onrender.com
+        DJANGO_CSRF_TRUSTED_ORIGINS=https://chat-lab-5yn6.onrender.com
+        The difference matters:
+        - DJANGO_ALLOWED_HOSTS uses only the hostname.
+        - DJANGO_CSRF_TRUSTED_ORIGINS includes https://.
+        Then choose Save, rebuild, and deploy. Your health check should be:
+        https://chat-lab-5yn6.onrender.com/healt
+
+
 DATABASE_URL=<PostgreSQL external URL>
 DATABASE_CONN_MAX_AGE=0
-CHAT_MESSAGE_TTL_SECONDS=86400
-CHAT_ATTACHMENT_TTL_DAYS=7
+CHAT_MESSAGE_TTL_SECONDS=300
+CHAT_ATTACHMENT_TTL_SECONDS=300
 ```
 
 Render automatically supplies `RENDER_EXTERNAL_HOSTNAME`; the settings add it
@@ -106,7 +137,7 @@ durable storage and a backup policy are in place.
 push code
     -> Render installs requirements
     -> collectstatic builds staticfiles/
-    -> migrate applies 0001 through 0009
+    -> migrate applies 0001 through 0010
     -> Gunicorn starts chat_project.wsgi
     -> Render checks /health/
 ```
@@ -185,8 +216,8 @@ DJANGO_DEBUG=False
 DJANGO_SECRET_KEY=<use Render's Generate option>
 DATABASE_URL=<paste the PostgreSQL Internal Database URL>
 DATABASE_CONN_MAX_AGE=0
-CHAT_MESSAGE_TTL_SECONDS=86400
-CHAT_ATTACHMENT_TTL_DAYS=7
+CHAT_MESSAGE_TTL_SECONDS=300
+CHAT_ATTACHMENT_TTL_SECONDS=300
 ```
 
 After Render shows the service hostname, add the matching values:

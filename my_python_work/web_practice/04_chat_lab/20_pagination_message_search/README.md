@@ -2,7 +2,7 @@
 
 We previously loaded every unexpired message in a conversation. Expiry limits
 how long history lasts, but a busy conversation can still collect many messages
-within 24 hours. This lesson limits each page to 20 and adds text search.
+within five minutes by default. This lesson limits each page to 20 and adds text search.
 
 ## Follow a request
 
@@ -115,8 +115,9 @@ still active, stop Django, remove it, and restart before building test history:
 Remove-Item Env:CHAT_MESSAGE_TTL_SECONDS -ErrorAction SilentlyContinue
 ```
 
-Also check whether you put `CHAT_MESSAGE_TTL_SECONDS=60` in the Chat Lab `.env`;
-use `86400` there to return to the 24-hour lifetime.
+Also check whether you put `CHAT_MESSAGE_TTL_SECONDS=60` or
+`CHAT_ATTACHMENT_TTL_SECONDS=60` in the Chat Lab `.env`; use `300` to return to
+the five-minute lifetime.
 
 1. Send more than 20 messages in one conversation.
 2. Confirm page 1 shows the most recent 20 and **Older** opens earlier messages.

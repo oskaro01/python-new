@@ -20,15 +20,16 @@ for the architecture and checkpoint.
 
 ## Lesson 18: Attachment Expiry
 
-Attachments now receive a configurable seven-day lifetime. Expired files are
+Attachments now receive a configurable five-minute lifetime. Expired files are
 hidden from previews and downloads, and
 `purge_expired_attachments` removes their storage objects and metadata. See
 [18_attachment_expiry/README.md](18_attachment_expiry/README.md).
 
 ## Lesson 19: Background Cleanup And Disappearing Messages
 
-`CHAT_MESSAGE_TTL_SECONDS=86400` gives messages a 24-hour lifetime. Set it to
-`60` before starting Django to demonstrate expiry on newly sent messages.
+`CHAT_MESSAGE_TTL_SECONDS=300` gives messages and attachments a five-minute
+lifetime. Set both TTL settings to `60` before starting Django to demonstrate
+expiry faster.
 `run_chat_cleanup` periodically removes expired messages and their image files;
 run it in a separate terminal. No Redis dependency is needed for this process.
 See [19_background_jobs/README.md](19_background_jobs/README.md) for the two-terminal
