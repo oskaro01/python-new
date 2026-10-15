@@ -555,6 +555,12 @@ input,
     border: 1px solid #e1e4e8;
 }
 
+.storage-note {
+    margin: 8px 0 0;
+    color: #68778f;
+    font-size: 0.75rem;
+}
+
 .avatar-large {
     width: 64px;
     height: 64px;
@@ -587,6 +593,33 @@ input,
     margin: 0;
     padding-left: 18px;
     color: #a33a3a;
+}
+
+.danger-zone {
+    margin-top: 32px;
+    padding-top: 20px;
+    border-top: 1px solid #e1e4e8;
+}
+
+.danger-zone h2 {
+    margin: 0 0 6px;
+    color: #8b2e2e;
+    font-size: 1rem;
+}
+
+.danger-zone p {
+    color: #68778f;
+    font-size: 0.78rem;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+}
+
+.button-danger {
+    background: #a33a3a;
 }
 
 .chat-empty-state h2 {

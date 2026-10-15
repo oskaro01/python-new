@@ -88,9 +88,31 @@ class ProfileForm(forms.ModelForm):
         picture = self.cleaned_data.get("profile_picture")
         if picture and picture.size > 5 * 1024 * 1024:
             raise forms.ValidationError("Profile pictures must be 5 MB or smaller.")
-        if picture and not picture.content_type.startswith("image/"):
+        content_type = getattr(picture, "content_type", "") or ""
+        if picture and not content_type.startswith("image/"):
             raise forms.ValidationError("Choose an image file.")
         return picture
+
+
+class AccountDeletionForm(forms.Form):
+    password = forms.CharField(
+        label="Current password",
+        strip=False,
+        widget=forms.PasswordInput,
+    )
+    confirm = forms.BooleanField(
+        label="I understand that this permanently deletes my account.",
+    )
+
+    def __init__(self, *args, user, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = user
+
+    def clean_password(self):
+        password = self.cleaned_data["password"]
+        if not self.user.check_password(password):
+            raise forms.ValidationError("The password is incorrect.")
+        return password
 
 
 class MessageReportForm(forms.ModelForm):

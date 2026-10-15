@@ -1,8 +1,9 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from django.core.paginator import Paginator
 from django.db import transaction
+from django.core.exceptions import SuspiciousFileOperation
 from django.db.models import Count, Q
 from django.http import FileResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -11,7 +12,7 @@ from django.utils.http import content_disposition_header
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
 
-from .forms import MessageForm, MessageReportForm, ProfileForm, SignUpForm
+from .forms import AccountDeletionForm, MessageForm, MessageReportForm, ProfileForm, SignUpForm
 from .models import (
     Conversation,
     FriendRequest,
@@ -52,7 +53,7 @@ def _user_display_name(user):
 
 
 def _user_avatar_url(user):
-    profile = getattr(user, "profile", None)
+    profile = Profile.objects.filter(user=user).first()
     return profile.avatar_url if profile else ""
 
 
@@ -172,9 +173,57 @@ def profile_settings(request):
     profile = _profile_for(request.user)
     form = ProfileForm(request.POST or None, request.FILES or None, instance=profile)
     if request.method == "POST" and form.is_valid():
-        form.save()
-        return redirect("chat:home")
-    return render(request, "chat/profile.html", {"form": form, "profile": profile})
+        try:
+            form.save()
+        except (OSError, SuspiciousFileOperation):
+            form.add_error(
+                "profile_picture",
+                "Profile picture storage is unavailable right now. Try again later.",
+            )
+        else:
+            return redirect("chat:home")
+    return render(
+        request,
+        "chat/profile.html",
+        {
+            "form": form,
+            "profile": profile,
+            "deletion_form": AccountDeletionForm(user=request.user),
+        },
+    )
+
+
+@login_required
+@require_POST
+def delete_account(request):
+    deletion_form = AccountDeletionForm(request.POST, user=request.user)
+    if not deletion_form.is_valid():
+        profile = _profile_for(request.user)
+        form = ProfileForm(instance=profile)
+        return render(
+            request,
+            "chat/profile.html",
+            {"form": form, "profile": profile, "deletion_form": deletion_form},
+            status=400,
+        )
+
+    user = request.user
+    profile = getattr(user, "profile", None)
+    profile_file = profile.profile_picture if profile and profile.profile_picture else None
+    attachments = list(
+        MessageAttachment.objects.filter(message__sender=user).only("file")
+    )
+    with transaction.atomic():
+        user.delete()
+
+    for uploaded_file in [profile_file, *(attachment.file for attachment in attachments)]:
+        if uploaded_file:
+            try:
+                uploaded_file.delete(save=False)
+            except OSError:
+                pass
+    logout(request)
+    return redirect("chat:landing")
 
 
 @login_required

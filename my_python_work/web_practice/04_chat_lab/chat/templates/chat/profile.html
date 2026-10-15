@@ -14,6 +14,7 @@
             <a class="back-link" href="{% url 'chat:home' %}">&larr; Back to messages</a>
             <h1>Profile settings</h1>
             <p class="intro">Choose the profile picture other people see in Chat Lab.</p>
+            <p class="storage-note">Hosted demo uploads use temporary storage and may disappear after a service restart.</p>
             <div class="profile-preview">
                 {% if profile.avatar_url %}
                     <img class="avatar avatar-image avatar-large" src="{{ profile.avatar_url }}" alt="Current profile picture">
@@ -31,6 +32,22 @@
                 {{ form.profile_picture.errors }}
                 <button class="button" type="submit">Save profile</button>
             </form>
+            <section class="danger-zone">
+                <h2>Delete account</h2>
+                <p>This permanently removes your account, messages, profile, and uploaded files.</p>
+                <form class="profile-form" method="post" action="{% url 'chat:delete_account' %}">
+                    {% csrf_token %}
+                    {{ deletion_form.non_field_errors }}
+                    <label for="{{ deletion_form.password.id_for_label }}">{{ deletion_form.password.label }}</label>
+                    {{ deletion_form.password }}
+                    {{ deletion_form.password.errors }}
+                    <label class="checkbox-label">
+                        {{ deletion_form.confirm }} {{ deletion_form.confirm.label }}
+                    </label>
+                    {{ deletion_form.confirm.errors }}
+                    <button class="button button-danger" type="submit">Delete my account</button>
+                </form>
+            </section>
         </section>
     </main>
 </body>

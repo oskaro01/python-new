@@ -1,6 +1,7 @@
 import base64
 import shutil
 import tempfile
+from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -139,6 +140,31 @@ class FriendRequestTests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Choose an image file.")
+
+    def test_profile_storage_error_is_shown_as_form_error(self):
+        self.client.force_login(self.sender)
+        picture = SimpleUploadedFile("alice.png", b"fake image bytes", content_type="image/png")
+        with patch("django.core.files.storage.FileSystemStorage._save", side_effect=OSError):
+            response = self.client.post(reverse("chat:profile"), {"profile_picture": picture})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Profile picture storage is unavailable right now.")
+
+    def test_delete_account_requires_password_and_confirmation(self):
+        user = get_user_model().objects.create_user(username="deletable", password="correct-password")
+        self.client.force_login(user)
+        url = reverse("chat:delete_account")
+
+        response = self.client.post(url, {"password": "wrong-password", "confirm": "on"})
+        self.assertEqual(response.status_code, 400)
+        self.assertTrue(get_user_model().objects.filter(pk=user.pk).exists())
+
+        response = self.client.post(url, {"password": "correct-password"})
+        self.assertEqual(response.status_code, 400)
+        self.assertTrue(get_user_model().objects.filter(pk=user.pk).exists())
+
+        response = self.client.post(url, {"password": "correct-password", "confirm": "on"})
+        self.assertRedirects(response, reverse("chat:landing"))
+        self.assertFalse(get_user_model().objects.filter(pk=user.pk).exists())
 
 
 class MessageAttachmentTests(TestCase):

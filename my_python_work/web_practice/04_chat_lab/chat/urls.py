@@ -8,6 +8,7 @@ urlpatterns = [
     path("health/", views.health_check, name="health"),
     path("chat/", views.chat_home, name="home"),
     path("chat/profile/", views.profile_settings, name="profile"),
+    path("chat/account/delete/", views.delete_account, name="delete_account"),
     path("chat/users/<int:user_id>/start/", views.start_conversation, name="start_conversation"),
     path("chat/users/search/", views.search_users, name="search_users"),
     path("chat/users/<int:user_id>/request/", views.send_friend_request, name="send_friend_request"),
