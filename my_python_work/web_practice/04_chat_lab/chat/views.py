@@ -11,8 +11,17 @@ from django.utils.http import content_disposition_header
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
 
-from .forms import MessageForm, ProfileForm, SignUpForm
-from .models import Conversation, FriendRequest, Friendship, Message, MessageAttachment, Profile
+from .forms import MessageForm, MessageReportForm, ProfileForm, SignUpForm
+from .models import (
+    Conversation,
+    FriendRequest,
+    Friendship,
+    Message,
+    MessageAttachment,
+    MessageReport,
+    Profile,
+    UserBlock,
+)
 
 def landing(request):
     return render(request, "chat/landing.html")
@@ -49,6 +58,19 @@ def _friend_ids(user):
     )
 
 
+def _blocked_user_ids(user):
+    outgoing = UserBlock.objects.filter(blocker=user).values_list("blocked_id", flat=True)
+    incoming = UserBlock.objects.filter(blocked=user).values_list("blocker_id", flat=True)
+    return set(outgoing) | set(incoming)
+
+
+def _users_are_blocked(first_user, second_user):
+    return UserBlock.objects.filter(
+        Q(blocker=first_user, blocked=second_user)
+        | Q(blocker=second_user, blocked=first_user)
+    ).exists()
+
+
 def _search_people(user, query):
     if not query:
         return []
@@ -62,7 +84,9 @@ def _search_people(user, query):
     candidates = get_user_model().objects.select_related("profile").filter(
         Q(username__icontains=query) | Q(first_name__icontains=query)
         | Q(last_name__icontains=query) | Q(email__icontains=query)
-    ).filter(is_active=True).exclude(pk=user.pk).order_by("username")[:10]
+    ).filter(is_active=True).exclude(pk=user.pk).exclude(
+        pk__in=_blocked_user_ids(user)
+    ).order_by("username")[:10]
     results = []
     for candidate in candidates:
         name = _user_display_name(candidate)
@@ -78,6 +102,7 @@ def _search_people(user, query):
 
 
 def _sidebar_context(request):
+    blocked_ids = _blocked_user_ids(request.user)
     conversations = list(
         Conversation.objects.filter(participants__user=request.user)
         .prefetch_related("participants__user")
@@ -85,6 +110,14 @@ def _sidebar_context(request):
             "messages", filter=Q(messages__is_read=False, messages__expires_at__gt=timezone.now()) & ~Q(messages__sender=request.user),
         )).distinct()
     )
+    conversations = [
+        conversation
+        for conversation in conversations
+        if not any(
+            participant.user_id in blocked_ids
+            for participant in conversation.participants.all()
+        )
+    ]
     for conversation in conversations:
         conversation.display_name = conversation.display_name_for(request.user)
         conversation.search_names = " ".join(
@@ -143,7 +176,7 @@ def profile_settings(request):
 @require_POST
 def start_conversation(request, user_id):
     other_user = get_object_or_404(get_user_model(), pk=user_id)
-    if other_user == request.user:
+    if other_user == request.user or _users_are_blocked(request.user, other_user):
         return redirect("chat:home")
 
     conversation = (
@@ -180,6 +213,8 @@ def send_friend_request(request, user_id):
     other_user = get_object_or_404(get_user_model(), pk=user_id)
     if other_user == request.user:
         return JsonResponse({"error": "You cannot add yourself."}, status=400)
+    if _users_are_blocked(request.user, other_user):
+        return _friend_action_response(request, {"status": "blocked"})
     if (
         Friendship.objects.filter(user=request.user, friend=other_user).exists()
         or Friendship.objects.filter(user=other_user, friend=request.user).exists()
@@ -233,6 +268,13 @@ def conversation_detail(request, conversation_id):
         pk=conversation_id,
         participants__user=request.user,
     )
+    other_ids = conversation.participants.exclude(user=request.user).values_list("user_id", flat=True)
+    if UserBlock.objects.filter(
+        Q(blocker=request.user, blocked_id__in=other_ids)
+        | Q(blocked=request.user, blocker_id__in=other_ids)
+    ).exists():
+        raise Http404
+    other_user = conversation.participants.exclude(user=request.user).select_related("user").first()
     visible_messages = conversation.messages.filter(expires_at__gt=timezone.now())
     conversation.display_name = conversation.display_name_for(request.user)
     if request.method == "POST":
@@ -278,7 +320,11 @@ def conversation_detail(request, conversation_id):
                     "ok": True,
                     "html": render_to_string(
                         "chat/_message.html",
-                        {"message": message, "user": request.user},
+                        {
+                            "message": message,
+                            "user": request.user,
+                            "report_reasons": MessageReport.Reason.choices,
+                        },
                         request=request,
                     ),
                     "pagination_html": render_to_string(
@@ -319,8 +365,45 @@ def conversation_detail(request, conversation_id):
             **_sidebar_context(request), "conversation": conversation, "form": form,
             "messages": list(reversed(messages)),
             "page_obj": page_obj, "message_query": message_query,
+            "other_user": other_user.user if other_user else None,
+            "report_reasons": MessageReport.Reason.choices,
         },
     )
+
+
+@login_required
+@require_POST
+def block_user(request, user_id):
+    other_user = get_object_or_404(get_user_model(), pk=user_id)
+    if other_user != request.user:
+        UserBlock.objects.get_or_create(blocker=request.user, blocked=other_user)
+        FriendRequest.objects.filter(
+            Q(from_user=request.user, to_user=other_user)
+            | Q(from_user=other_user, to_user=request.user),
+            status=FriendRequest.Status.PENDING,
+        ).update(status=FriendRequest.Status.DECLINED, responded_at=timezone.now())
+    return redirect("chat:home")
+
+
+@login_required
+@require_POST
+def report_message(request, message_id):
+    message = get_object_or_404(
+        Message.objects.filter(
+            conversation__participants__user=request.user,
+            expires_at__gt=timezone.now(),
+        ),
+        pk=message_id,
+    )
+    form = MessageReportForm(request.POST)
+    if form.is_valid():
+        MessageReport.objects.get_or_create(
+            message=message,
+            reporter=request.user,
+            defaults={"reason": form.cleaned_data["reason"]},
+        )
+        return redirect("chat:conversation_detail", conversation_id=message.conversation_id)
+    return redirect("chat:conversation_detail", conversation_id=message.conversation_id)
 
 
 @login_required

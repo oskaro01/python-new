@@ -17,7 +17,15 @@
                     <h1>{{ conversation.display_name }}</h1>
                     <p>Private conversation</p>
                 </div>
-                <span class="thread-status">Private</span>
+                <div class="thread-actions">
+                    <span class="thread-status">Private</span>
+                    {% if other_user %}
+                        <form method="post" action="{% url 'chat:block_user' other_user.id %}">
+                            {% csrf_token %}
+                            <button class="moderation-button" type="submit">Block</button>
+                        </form>
+                    {% endif %}
+                </div>
             </header>
             <form class="message-search" method="get" action="{% url 'chat:conversation_detail' conversation.id %}">
                 <label for="message-query">Search this conversation</label>

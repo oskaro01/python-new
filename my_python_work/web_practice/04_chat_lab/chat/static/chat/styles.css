@@ -657,6 +657,63 @@ input,
     font-size: 0.7rem;
 }
 
+.thread-actions,
+.message-footer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.moderation-button,
+.moderation-menu button {
+    border: 1px solid #c6c9ce;
+    border-radius: 2px;
+    background: #fff;
+    color: #667085;
+    cursor: pointer;
+    font-size: 0.68rem;
+    padding: 4px 7px;
+}
+
+.moderation-button:hover,
+.moderation-menu button:hover {
+    border-color: #3b5998;
+    color: #3b5998;
+}
+
+.moderation-menu {
+    position: relative;
+}
+
+.moderation-menu summary {
+    color: #8a94a3;
+    cursor: pointer;
+    font-size: 0.64rem;
+    list-style: none;
+}
+
+.moderation-menu summary::-webkit-details-marker {
+    display: none;
+}
+
+.moderation-menu form {
+    position: absolute;
+    right: 0;
+    bottom: 22px;
+    z-index: 2;
+    display: flex;
+    gap: 4px;
+    padding: 6px;
+    border: 1px solid #c6c9ce;
+    background: #fff;
+    box-shadow: 0 2px 5px rgb(0 0 0 / 12%);
+}
+
+.moderation-menu select {
+    max-width: 120px;
+    font-size: 0.64rem;
+}
+
 .message-list {
     overflow-y: auto;
     padding: 16px;

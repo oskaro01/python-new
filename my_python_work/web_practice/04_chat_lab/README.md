@@ -3,9 +3,10 @@
 This is a planned, separate messaging project. It is not part of the
 Personal Dictionary app and it is not part of the customer checkout flow yet.
 
-Status: Lesson 20 implemented: conversation history loads 20 messages per page
-and supports conversation-scoped text search. Async sending and message expiry
-remain in place. The next checkpoint adds security and moderation.
+Status: Lesson 21 implemented: users can block chat relationships and report
+messages with participant-only server checks. Pagination, search, async sending,
+and message expiry remain in place. The next checkpoint adds PostgreSQL and
+Render deployment.
 
 ## Lesson 17: Temporary Image Attachments
 
@@ -36,6 +37,7 @@ demonstration, migration instructions, and cleanup lifecycle.
 ## Continuation from Lesson 17
 
 Lesson 20 guide: [Pagination And Message Search](20_pagination_message_search/README.md).
+Lesson 21 guide: [Security And Moderation](21_security_moderation/README.md).
 
 The previous checkpoints through Lesson 16 covered identity, friendships,
 conversation access, messaging, the Messenger shell, and profile pictures.

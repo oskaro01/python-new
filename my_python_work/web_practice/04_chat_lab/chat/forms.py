@@ -4,7 +4,7 @@ from pathlib import Path
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
 
-from .models import Message, Profile
+from .models import Message, MessageReport, Profile
 
 
 class MessageForm(forms.ModelForm):
@@ -91,3 +91,9 @@ class ProfileForm(forms.ModelForm):
         if picture and not picture.content_type.startswith("image/"):
             raise forms.ValidationError("Choose an image file.")
         return picture
+
+
+class MessageReportForm(forms.ModelForm):
+    class Meta:
+        model = MessageReport
+        fields = ["reason"]

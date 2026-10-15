@@ -52,6 +52,37 @@ class Friendship(models.Model):
         return f"{self.user} and {self.friend}"
 
 
+class UserBlock(models.Model):
+    """A directional block: blocker no longer interacts with blocked user."""
+
+    blocker = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="blocks_created",
+    )
+    blocked = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="blocks_received",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["blocker", "blocked"],
+                name="unique_user_block",
+            ),
+            models.CheckConstraint(
+                condition=~Q(blocker=models.F("blocked")),
+                name="user_blocks_different_users",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.blocker} blocked {self.blocked}"
+
+
 class FriendRequest(models.Model):
     class Status(models.TextChoices):
         PENDING = "pending", "Pending"
@@ -163,4 +194,43 @@ class MessageAttachment(models.Model):
     @property
     def is_expired(self):
         return self.expires_at <= timezone.now()
+
+
+class MessageReport(models.Model):
+    class Reason(models.TextChoices):
+        SPAM = "spam", "Spam"
+        HARASSMENT = "harassment", "Harassment"
+        THREAT = "threat", "Threat"
+        OTHER = "other", "Other"
+
+    class Status(models.TextChoices):
+        OPEN = "open", "Open"
+        REVIEWED = "reviewed", "Reviewed"
+        DISMISSED = "dismissed", "Dismissed"
+
+    message = models.ForeignKey(
+        Message,
+        on_delete=models.CASCADE,
+        related_name="reports",
+    )
+    reporter = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="message_reports",
+    )
+    reason = models.CharField(max_length=20, choices=Reason.choices)
+    status = models.CharField(max_length=12, choices=Status.choices, default=Status.OPEN)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["message", "reporter"],
+                name="unique_message_reporter",
+            ),
+        ]
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Report {self.pk} for message {self.message_id}"
 
