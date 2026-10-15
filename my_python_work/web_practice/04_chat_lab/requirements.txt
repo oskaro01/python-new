@@ -9,4 +9,4 @@ channels>=4.2,<5
 channels-redis>=4.2,<5
 redis>=5,<7
 daphne>=4.1,<5
-uvicorn>=0.30,<1
+uvicorn[standard]>=0.30,<1

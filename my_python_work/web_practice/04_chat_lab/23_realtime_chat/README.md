@@ -81,6 +81,23 @@ Install the new dependencies in the shared virtual environment:
 .\.venv\Scripts\python.exe -m pip install -r my_python_work\web_practice\04_chat_lab\requirements.txt
 ```
 
+The requirement uses `uvicorn[standard]`, rather than plain `uvicorn`. The
+standard extra installs a WebSocket implementation such as `websockets`. Without
+it, Uvicorn can serve normal HTTP but reports `No supported WebSocket library
+detected`; the browser request then appears as a normal `/ws/...` HTTP request
+and Django returns `404`.
+
+    The problem is this warning:
+    No supported WebSocket library detected
+    Your deployment had plain uvicorn, but WebSockets require an additional protocol library. I updated [requirements.txt](C:/Users/ASUS/Desktop/python-new/my_python_work/web_practice/04_chat_lab/requirements.txt) to:
+    uvicorn[standard]>=0.30,<1
+    That installs the required WebSocket support. The 404 happened because Uvicorn treated the WebSocket request as normal HTTP.
+    Now run locally:
+    cd "C:\Users\ASUS\Desktop\python-new\my_python_work\web_practice\04_chat_lab"
+
+    python -m pip install -r requirements.txt
+    python manage.py check
+
 Apply the current migrations and start the ASGI development server:
 
 ```powershell
@@ -97,13 +114,33 @@ string before starting Django. Do not put real Redis credentials in Git.
 
 ## Render connection
 
-The web service now starts with an ASGI worker:
+The web service now starts with an ASGI worker. In the Render web service,
+change the previous start command to:
 
 ```text
 gunicorn chat_project.asgi:application -k uvicorn.workers.UvicornWorker
 ```
 
 Add a Redis-compatible Render Key Value service and set its connection URL as:
+
+        im in chat-lab > new > key value >
+
+        Create it with:
+        - Name: chat-lab
+        - Region: the same region as your chat-lab web service
+        - Plan: choose the available starter/free option if shown
+        - Leave the other settings at their defaults.
+        After creation:
+        1. Open the new Key Value service.
+        2. Click Connect.
+        3. Copy the Internal URL, such as:
+        redis://red-xxxxxxxx:6379
+        4. Return to your chat-lab web service.
+        5. Open Environment.
+        6. Add:
+        REDIS_URL=redis://red-xxxxxxxx:6379
+        7. Save and redeploy.
+        Use the Internal URL, not the external URL. Then Render will use Redis for the deployed WebSocket channel layer.
 
 ```text
 REDIS_URL=<private Redis/Key Value connection URL>
