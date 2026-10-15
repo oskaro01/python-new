@@ -5,6 +5,7 @@ app_name = "chat"
 
 urlpatterns = [
     path("", views.landing, name="landing"),
+    path("health/", views.health_check, name="health"),
     path("chat/", views.chat_home, name="home"),
     path("chat/profile/", views.profile_settings, name="profile"),
     path("chat/users/<int:user_id>/start/", views.start_conversation, name="start_conversation"),

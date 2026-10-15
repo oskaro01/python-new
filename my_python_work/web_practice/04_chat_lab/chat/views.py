@@ -27,6 +27,11 @@ def landing(request):
     return render(request, "chat/landing.html")
 
 
+@require_GET
+def health_check(request):
+    return JsonResponse({"status": "ok", "service": "chat-lab"})
+
+
 def signup(request):
     if request.user.is_authenticated:
         return redirect("chat:home")
