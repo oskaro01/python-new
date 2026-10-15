@@ -251,20 +251,40 @@ https://chat-lab.onrender.com/
 https://chat-lab.onrender.com/chat/
 ```
 
-Open Render Shell and create the first hosted admin:
+If your Render plan includes Shell, create the first hosted admin there:
 
 ```powershell
 python manage.py createsuperuser
 ```
+
+        If Shell is unavailable, run the same Django command from your local project
+        while temporarily pointing `DATABASE_URL` at the Render PostgreSQL **external
+        connection URL**. This writes the user into the hosted database rather than
+        your local SQLite database:
+
+        ```powershell
+        cd C:\Users\ASUS\Desktop\python-new\my_python_work\web_practice\04_chat_lab
+        $env:DATABASE_URL = "<Render PostgreSQL external URL>"
+        python manage.py createsuperuser
+        Remove-Item Env:DATABASE_URL
+        ```
+            user name here >> ayzal0
+
+Use the interactive prompts for the username, email, and password. Do not put
+the external URL in Git, and do not run local migrations against the hosted
+database unless we explicitly intend to change its schema. Afterward, open
+`https://<your-chat-host>/admin/`.
 
 Do not use `run_chat_cleanup` as the web service's start command. Gunicorn must
 remain the web process. Cleanup belongs in a separate worker or scheduled job.
 
 ### Private image storage warning
 
-PostgreSQL stores the Chat Lab records, but uploaded images currently use the
-local `private_media/` directory. Render web services have ephemeral filesystems
-by default, so image files can disappear after a restart or redeploy. This is
-acceptable for a deployment exercise, but real image persistence needs an
-object-storage adapter or an appropriately configured persistent disk before a
-production launch.
+PostgreSQL stores Chat Lab records and the file reference, while the image bytes
+live in a filesystem or object-storage service. We intentionally keep uploaded
+files outside the database: storing every image as a database blob makes the
+database larger and makes media delivery and backups more expensive. Render web
+services have ephemeral filesystems by default, so local image files can
+disappear after a restart or redeploy. This is acceptable for a deployment
+exercise, but real image persistence needs an object-storage adapter or an
+appropriately configured persistent disk before a production launch.
