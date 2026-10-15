@@ -106,3 +106,116 @@ database connection is performed automatically.
 Commit message: `prepare Chat Lab for PostgreSQL and Render`
 
 Next: Lesson 23, real-time chat with Django Channels and WebSockets.
+
+## Dashboard walkthrough: connecting Chat Lab like Mini Checkout
+
+Push the Chat Lab files before creating the service. Render deploys the branch
+selected in the dashboard, so local uncommitted files are not included:
+
+```powershell
+git status
+git add my_python_work/web_practice/04_chat_lab
+git diff --cached --check
+git commit -m "prepare Chat Lab for PostgreSQL and Render"
+git push origin main
+```
+
+### Create the PostgreSQL database
+
+In Render:
+
+```text
+New -> PostgreSQL
+Name: chat-lab-db
+Region: same region as the web service
+```
+
+After the database is created, keep its **Internal Database URL** available for
+the web service environment variables. Do not paste that URL into Git, chat, or
+screenshots.
+
+### Create the web service
+
+On **New Web Service**, select the Git provider repository:
+
+```text
+oskaro01/python-new
+```
+
+Use these values:
+
+```text
+Name: chat-lab
+Branch: main
+Language: Python 3
+Root Directory: my_python_work/web_practice/04_chat_lab
+Build Command: ./build.sh
+Start Command: gunicorn chat_project.wsgi:application
+Health Check Path: /health/
+```
+
+The root directory matters because this repository contains multiple independent
+projects. Render runs the build and start commands relative to the selected
+root directory.
+
+### Add environment variables
+
+Under **Advanced -> Environment Variables**, add:
+
+```text
+DJANGO_DEBUG=False
+DJANGO_SECRET_KEY=<use Render's Generate option>
+DATABASE_URL=<paste the PostgreSQL Internal Database URL>
+DATABASE_CONN_MAX_AGE=0
+CHAT_MESSAGE_TTL_SECONDS=86400
+CHAT_ATTACHMENT_TTL_DAYS=7
+```
+
+After Render shows the service hostname, add the matching values:
+
+```text
+DJANGO_ALLOWED_HOSTS=chat-lab.onrender.com
+DJANGO_CSRF_TRUSTED_ORIGINS=https://chat-lab.onrender.com
+```
+
+Replace that hostname if Render assigns a different one. Keep `DATABASE_URL`
+private. Saving environment variables and choosing **Save, rebuild, and deploy**
+starts a deployment with the new configuration.
+
+### Follow the first deploy
+
+The deployment sequence is:
+
+```text
+pip install -r requirements.txt
+    -> collectstatic
+    -> migrate
+    -> Gunicorn starts chat_project.wsgi
+    -> Render checks /health/
+```
+
+After it succeeds, check:
+
+```text
+https://chat-lab.onrender.com/health/
+https://chat-lab.onrender.com/
+https://chat-lab.onrender.com/chat/
+```
+
+Open Render Shell and create the first hosted admin:
+
+```powershell
+python manage.py createsuperuser
+```
+
+Do not use `run_chat_cleanup` as the web service's start command. Gunicorn must
+remain the web process. Cleanup belongs in a separate worker or scheduled job.
+
+### Private image storage warning
+
+PostgreSQL stores the Chat Lab records, but uploaded images currently use the
+local `private_media/` directory. Render web services have ephemeral filesystems
+by default, so image files can disappear after a restart or redeploy. This is
+acceptable for a deployment exercise, but real image persistence needs an
+object-storage adapter or an appropriately configured persistent disk before a
+production launch.
