@@ -149,6 +149,14 @@ class FriendRequestTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Profile picture storage is unavailable right now.")
 
+    def test_unexpected_profile_save_error_is_shown_as_form_error(self):
+        self.client.force_login(self.sender)
+        picture = SimpleUploadedFile("alice.png", b"fake image bytes", content_type="image/png")
+        with patch("django.core.files.storage.FileSystemStorage._save", side_effect=RuntimeError):
+            response = self.client.post(reverse("chat:profile"), {"profile_picture": picture})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "We could not save this profile picture right now.")
+
     def test_delete_account_requires_password_and_confirmation(self):
         user = get_user_model().objects.create_user(username="deletable", password="correct-password")
         self.client.force_login(user)

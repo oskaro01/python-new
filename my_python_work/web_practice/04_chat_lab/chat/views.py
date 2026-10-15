@@ -1,5 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
+import logging
+
 from django.contrib.auth import login, logout
 from django.core.paginator import Paginator
 from django.db import transaction
@@ -23,6 +25,9 @@ from .models import (
     Profile,
     UserBlock,
 )
+
+
+logger = logging.getLogger(__name__)
 
 def landing(request):
     return render(request, "chat/landing.html")
@@ -176,9 +181,16 @@ def profile_settings(request):
         try:
             form.save()
         except (OSError, SuspiciousFileOperation):
+            logger.exception("Profile picture storage failed for user_id=%s", request.user.pk)
             form.add_error(
                 "profile_picture",
                 "Profile picture storage is unavailable right now. Try again later.",
+            )
+        except Exception:
+            logger.exception("Unexpected profile picture upload failure for user_id=%s", request.user.pk)
+            form.add_error(
+                "profile_picture",
+                "We could not save this profile picture right now. Try again later.",
             )
         else:
             return redirect("chat:home")
