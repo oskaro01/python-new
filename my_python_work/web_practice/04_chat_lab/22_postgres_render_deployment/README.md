@@ -53,6 +53,24 @@ Start command: gunicorn chat_project.wsgi:application
 Health check: /health/
 ```
 
+`build.sh` runs these three steps from the Chat Lab root:
+
+```text
+pip install -r requirements.txt
+python manage.py collectstatic --noinput
+python manage.py migrate
+```
+
+You can also enter the expanded build command directly instead of `./build.sh`:
+
+```text
+pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate
+```
+
+The start command must use `chat_project.wsgi`, because that is this project's
+Django package. The Checkout Lab correctly uses `mini_checkout_lab.wsgi`; that
+module name must not be reused here.
+
 Set these environment variables in Render:
 
 ```text
