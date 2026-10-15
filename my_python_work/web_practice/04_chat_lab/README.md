@@ -3,10 +3,9 @@
 This is a planned, separate messaging project. It is not part of the
 Personal Dictionary app and it is not part of the customer checkout flow yet.
 
-Status: Lesson 22 implemented: Chat Lab can select PostgreSQL from `DATABASE_URL`,
-serve collected static files in production mode, and run on Render with a
-health check. Private upload storage still needs a durable object-storage
-adapter before a real launch. The next checkpoint adds WebSockets.
+Status: Lesson 23 implemented: Chat Lab supports authenticated WebSocket text
+delivery through Channels, with Redis for shared production channel events and
+an in-memory local fallback. The next work hardens reconnects and presence.
 
 ## Lesson 17: Temporary Image Attachments
 
@@ -40,6 +39,7 @@ demonstration, migration instructions, and cleanup lifecycle.
 Lesson 20 guide: [Pagination And Message Search](20_pagination_message_search/README.md).
 Lesson 21 guide: [Security And Moderation](21_security_moderation/README.md).
 Lesson 22 guide: [PostgreSQL And Render Deployment](22_postgres_render_deployment/README.md).
+Lesson 23 guide: [Real-Time Chat](23_realtime_chat/README.md).
 
 The previous checkpoints through Lesson 16 covered identity, friendships,
 conversation access, messaging, the Messenger shell, and profile pictures.

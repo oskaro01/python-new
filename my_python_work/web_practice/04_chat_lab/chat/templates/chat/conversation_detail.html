@@ -33,7 +33,7 @@
                 <button class="add-button" type="submit">Search</button>
                 {% if message_query %}<a href="{% url 'chat:conversation_detail' conversation.id %}">Clear</a>{% endif %}
             </form>
-            <div class="message-list" data-can-append="{% if page_obj.number == 1 and not message_query %}true{% else %}false{% endif %}">
+            <div class="message-list" data-conversation-id="{{ conversation.id }}" data-user-id="{{ user.id }}" data-can-append="{% if page_obj.number == 1 and not message_query %}true{% else %}false{% endif %}">
                 {% for message in messages %}
                     {% include "chat/_message.html" with message=message %}
                 {% empty %}
@@ -58,6 +58,7 @@
     </main>
     <script src="{% static 'chat/user_search.js' %}?v=2" defer></script>
     <script src="{% static 'chat/message_expiry.js' %}" defer></script>
+    <script src="{% static 'chat/message_realtime.js' %}" defer></script>
     <script src="{% static 'chat/message_send.js' %}" defer></script>
 </body>
 </html>

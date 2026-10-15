@@ -10,6 +10,18 @@ if (composer && messageList) {
         feedback.hidden = true;
 
         try {
+            const bodyField = composer.querySelector("[name='body']");
+            const attachmentField = composer.querySelector("input[type='file']");
+            const hasAttachment = attachmentField && attachmentField.files.length > 0;
+            if (
+                !hasAttachment
+                && window.chatRealtimeSend
+                && window.chatRealtimeSend(bodyField.value)
+            ) {
+                composer.reset();
+                return;
+            }
+
             const response = await fetch(composer.action || window.location.href, {
                 method: "POST",
                 body: new FormData(composer),

@@ -49,7 +49,7 @@ Use:
 
 ```text
 Build command: ./build.sh
-Start command: gunicorn chat_project.wsgi:application
+Start command: gunicorn chat_project.asgi:application -k uvicorn.workers.UvicornWorker
 Health check: /health/
 ```
 
@@ -67,9 +67,9 @@ You can also enter the expanded build command directly instead of `./build.sh`:
 pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate
 ```
 
-The start command must use `chat_project.wsgi`, because that is this project's
-Django package. The Checkout Lab correctly uses `mini_checkout_lab.wsgi`; that
-module name must not be reused here.
+The start command must use `chat_project.asgi` with the Uvicorn worker because
+Lesson 23 needs WebSocket support. The Checkout Lab correctly uses its own
+`mini_checkout_lab.wsgi`; that module name must not be reused here.
 
 Set these environment variables in Render:
 
@@ -138,7 +138,7 @@ push code
     -> Render installs requirements
     -> collectstatic builds staticfiles/
     -> migrate applies 0001 through 0010
-    -> Gunicorn starts chat_project.wsgi
+    -> Gunicorn starts chat_project.asgi with Uvicorn
     -> Render checks /health/
 ```
 
@@ -199,7 +199,7 @@ Branch: main
 Language: Python 3
 Root Directory: my_python_work/web_practice/04_chat_lab
 Build Command: ./build.sh
-Start Command: gunicorn chat_project.wsgi:application
+Start Command: gunicorn chat_project.asgi:application -k uvicorn.workers.UvicornWorker
 Health Check Path: /health/
 ```
 
@@ -239,7 +239,7 @@ The deployment sequence is:
 pip install -r requirements.txt
     -> collectstatic
     -> migrate
-    -> Gunicorn starts chat_project.wsgi
+    -> Gunicorn starts chat_project.asgi with Uvicorn
     -> Render checks /health/
 ```
 

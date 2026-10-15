@@ -53,6 +53,7 @@ if render_hostname:
     CSRF_TRUSTED_ORIGINS.append(f"https://{render_hostname}")
 
 INSTALLED_APPS = [
+    "daphne",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -90,6 +91,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "chat_project.wsgi.application"
+ASGI_APPLICATION = "chat_project.asgi.application"
 
 database_url = os.environ.get("DATABASE_URL", "").strip()
 if database_url:
@@ -109,6 +111,19 @@ else:
             "ENGINE": "django.db.backends.sqlite3",
             "NAME": BASE_DIR / "db.sqlite3",
         }
+    }
+
+redis_url = os.environ.get("REDIS_URL", "").strip()
+if redis_url:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {"hosts": [redis_url]},
+        }
+    }
+else:
+    CHANNEL_LAYERS = {
+        "default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}
     }
 
 AUTH_PASSWORD_VALIDATORS = []
