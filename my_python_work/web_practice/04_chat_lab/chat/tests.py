@@ -13,6 +13,19 @@ from .models import Conversation, FriendRequest, Friendship, Message, MessageAtt
 
 class FriendRequestTests(TestCase):
     @classmethod
+    def setUpClass(cls):
+        cls.media_root = tempfile.mkdtemp(prefix="chat-profile-media-")
+        cls.media_override = override_settings(MEDIA_ROOT=cls.media_root)
+        cls.media_override.enable()
+        super().setUpClass()
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        cls.media_override.disable()
+        shutil.rmtree(cls.media_root, ignore_errors=True)
+
+    @classmethod
     def setUpTestData(cls):
         User = get_user_model()
         cls.sender = User.objects.create_user(username="sender", first_name="Alice")
@@ -126,7 +139,8 @@ class FriendRequestTests(TestCase):
         )
         self.assertRedirects(response, reverse("chat:home"))
         profile = Profile.objects.get(user=self.sender)
-        self.assertTrue(profile.profile_picture.name.endswith("alice.png"))
+        self.assertTrue(profile.profile_picture.name.startswith("uploads/profile_pictures/"))
+        self.assertTrue(profile.profile_picture.name.endswith(".png"))
         response = self.client.get(reverse("chat:home"))
         self.assertContains(response, "sender")
         profile.profile_picture.delete(save=False)
@@ -150,6 +164,24 @@ class FriendRequestTests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Choose an image file.")
+
+    def test_profile_picture_can_be_cleared(self):
+        self.client.force_login(self.sender)
+        picture = SimpleUploadedFile("alice.png", b"fake image bytes", content_type="image/png")
+        self.client.post(reverse("chat:profile"), {"profile_picture": picture})
+        profile = Profile.objects.get(user=self.sender)
+        old_name = profile.profile_picture.name
+        self.assertTrue(profile.profile_picture.storage.exists(old_name))
+
+        response = self.client.post(
+            reverse("chat:profile"),
+            {"profile_picture-clear": "on"},
+        )
+
+        self.assertRedirects(response, reverse("chat:home"))
+        profile.refresh_from_db()
+        self.assertFalse(profile.profile_picture)
+        self.assertFalse(profile.profile_picture.storage.exists(old_name))
 
     def test_profile_storage_error_is_shown_as_form_error(self):
         self.client.force_login(self.sender)

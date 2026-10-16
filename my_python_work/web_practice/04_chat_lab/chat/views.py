@@ -198,6 +198,8 @@ def chat_home(request):
 @login_required
 def profile_settings(request):
     profile = _profile_for(request.user)
+    old_file_name = profile.profile_picture.name if profile.profile_picture else ""
+    old_file_storage = profile.profile_picture.storage if profile.profile_picture else None
     form = ProfileForm(request.POST or None, request.FILES or None, instance=profile)
     if request.method == "POST" and form.is_valid():
         try:
@@ -215,6 +217,12 @@ def profile_settings(request):
                 "We could not save this profile picture right now. Try again later.",
             )
         else:
+            new_file_name = profile.profile_picture.name if profile.profile_picture else ""
+            if old_file_name and old_file_storage and old_file_name != new_file_name:
+                try:
+                    old_file_storage.delete(old_file_name)
+                except OSError:
+                    logger.exception("Old profile picture cleanup failed for user_id=%s", request.user.pk)
             return redirect("chat:home")
     return render(
         request,

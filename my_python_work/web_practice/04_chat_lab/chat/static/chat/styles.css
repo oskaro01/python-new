@@ -173,6 +173,7 @@ h1 {
 .chat-shell,
 .messenger-shell {
     width: min(100% - 28px, 980px);
+    height: calc(100vh - 46px);
     min-height: calc(100vh - 46px);
     display: grid;
     grid-template-columns: 215px 1fr;
@@ -683,7 +684,9 @@ input,
     display: grid;
     grid-template-rows: auto auto 1fr auto auto;
     min-width: 0;
+    height: calc(100vh - 46px);
     min-height: calc(100vh - 46px);
+    overflow: hidden;
     background: #ffffff;
 }
 
@@ -770,6 +773,7 @@ input,
 }
 
 .message-list {
+    min-height: 0;
     overflow-y: auto;
     padding: 16px;
     background: #ffffff;
@@ -953,7 +957,10 @@ input,
     }
 
     .thread-panel {
+        height: auto;
+        max-height: none;
         min-height: calc(100vh - 220px);
+        overflow: visible;
     }
 }
 
