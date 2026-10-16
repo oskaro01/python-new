@@ -389,6 +389,8 @@ def send_friend_request(request, user_id):
                 "request_id": friend_request.pk,
                 "from_user_id": request.user.pk,
                 "from_name": _user_display_name(request.user),
+                "from_initial": _user_display_name(request.user)[:1].upper(),
+                "from_avatar_url": _user_avatar_url(request.user),
             },
         )
     return _friend_action_response(request, {"status": "pending"})

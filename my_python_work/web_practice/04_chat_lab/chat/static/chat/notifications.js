@@ -1,6 +1,9 @@
 (function () {
     const countElement = document.querySelector("#topbar-chat-count");
     const friendsCountElement = document.querySelector("#topbar-friends-count");
+    const friendRequestsSection = document.querySelector("#friend-requests-section");
+    const friendRequestsList = document.querySelector("#friend-requests-list");
+    const userSuggestions = document.querySelector("#user-suggestions");
     const currentConversation = document.querySelector(".message-list")?.dataset.conversationId;
     const scheme = window.location.protocol === "https:" ? "wss" : "ws";
     let socket;
@@ -21,6 +24,45 @@
         const next = current + 1;
         friendsCountElement.dataset.count = String(next);
         friendsCountElement.textContent = `(${next})`;
+    }
+
+    function addFriendRequest(payload) {
+        if (!friendRequestsSection || !friendRequestsList) return;
+        if (friendRequestsList.querySelector(`[data-friend-request-id="${payload.request_id}"]`)) return;
+
+        const row = document.createElement("div");
+        row.className = "request-row";
+        row.dataset.friendRequestId = payload.request_id;
+
+        const name = document.createElement("strong");
+        name.textContent = payload.from_name;
+
+        const form = document.createElement("form");
+        form.method = "post";
+        form.action = userSuggestions.dataset.responseUrlTemplate.replace(
+            "/0/",
+            `/${payload.request_id}/`,
+        );
+
+        const csrf = document.createElement("input");
+        csrf.type = "hidden";
+        csrf.name = "csrfmiddlewaretoken";
+        csrf.value = userSuggestions.dataset.csrfToken;
+        form.appendChild(csrf);
+
+        [["Accept", "accept", "add-button"], ["Decline", "decline", "add-button decline-button"]]
+            .forEach(([label, value, className]) => {
+                const button = document.createElement("button");
+                button.className = className;
+                button.name = "action";
+                button.value = value;
+                button.textContent = label;
+                form.appendChild(button);
+            });
+
+        row.append(name, form);
+        friendRequestsList.prepend(row);
+        friendRequestsSection.hidden = false;
     }
 
     function updateConversationBadge(payload) {
@@ -48,6 +90,7 @@
             const payload = JSON.parse(event.data);
             if (payload.type === "friend_request") {
                 updateFriendsCount();
+                addFriendRequest(payload);
                 return;
             }
             if (payload.type !== "notification") return;

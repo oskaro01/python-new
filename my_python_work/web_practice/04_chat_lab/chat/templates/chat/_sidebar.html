@@ -7,11 +7,11 @@
             <span class="avatar">{{ user.get_full_name|default:user.username|first|upper }}</span>
         {% endif %}
     </div>
-    {% if incoming_requests %}
-        <section class="friend-requests" aria-label="Friend requests">
-            <h2 class="sidebar-label">Friend requests</h2>
+    <section id="friend-requests-section" class="friend-requests" aria-label="Friend requests" {% if not incoming_requests %}hidden{% endif %}>
+        <h2 class="sidebar-label">Friend requests</h2>
+        <div id="friend-requests-list">
             {% for incoming in incoming_requests %}
-                <div class="request-row">
+                <div class="request-row" data-friend-request-id="{{ incoming.id }}">
                     <strong>{{ incoming.from_user.get_full_name|default:incoming.from_user.username }}</strong>
                     <form method="post" action="{% url 'chat:respond_friend_request' incoming.id %}">
                         {% csrf_token %}
@@ -20,8 +20,8 @@
                     </form>
                 </div>
             {% endfor %}
-        </section>
-    {% endif %}
+        </div>
+    </section>
     <form id="chat-search-form" class="chat-search-form" method="get">
         <label class="search-label" for="conversation-search">Chats and friends</label>
         <div class="chat-search-controls">
