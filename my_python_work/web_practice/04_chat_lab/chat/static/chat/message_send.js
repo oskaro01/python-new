@@ -6,6 +6,7 @@ if (composer && messageList) {
     composer.addEventListener("submit", async (event) => {
         event.preventDefault();
         const sendButton = composer.querySelector("button[type='submit']");
+        const attachmentName = composer.querySelector(".attachment-name");
         sendButton.disabled = true;
         feedback.hidden = true;
 
@@ -19,6 +20,7 @@ if (composer && messageList) {
                 && window.chatRealtimeSend(bodyField.value)
             ) {
                 composer.reset();
+                if (attachmentName) attachmentName.textContent = "No image selected";
                 return;
             }
 
@@ -37,6 +39,7 @@ if (composer && messageList) {
             }
 
             composer.reset();
+            if (attachmentName) attachmentName.textContent = "No image selected";
 
             // Search and older pages must keep their own message selection.
             if (messageList.dataset.canAppend !== "true") {
@@ -80,4 +83,14 @@ if (composer && messageList) {
             sendButton.disabled = false;
         }
     });
+
+    const attachmentField = composer.querySelector("input[type='file']");
+    const attachmentName = composer.querySelector(".attachment-name");
+    if (attachmentField && attachmentName) {
+        attachmentField.addEventListener("change", () => {
+            attachmentName.textContent = attachmentField.files.length
+                ? attachmentField.files[0].name
+                : "No image selected";
+        });
+    }
 }

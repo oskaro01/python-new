@@ -1,4 +1,4 @@
-<aside class="inbox-sidebar">
+<aside id="friends-sidebar" class="inbox-sidebar">
     <div class="sidebar-heading">
         <div><p class="eyebrow">Inbox</p><h1>Messages</h1></div>
         {% if profile.avatar_url %}
@@ -42,6 +42,16 @@
     </div>
     <section class="friends-list" aria-label="Friends">
         <h2 class="sidebar-label">Friends</h2>
+        <form class="friend-row self-friend-row" data-chat-search="{{ user.username }} {{ user.get_full_name }}" method="post" action="{% url 'chat:start_conversation' user.id %}">
+            {% csrf_token %}
+            {% if profile.avatar_url %}
+                <img class="avatar avatar-image avatar-small" src="{{ profile.avatar_url }}" alt="">
+            {% else %}
+                <span class="avatar avatar-small">{{ user.get_full_name|default:user.username|first|upper }}</span>
+            {% endif %}
+            <strong>{{ user.get_full_name|default:user.username }} (You)</strong>
+            <button class="add-button">Chat</button>
+        </form>
         {% for friend in friends %}
             <form class="friend-row" data-chat-search="{{ friend.username }} {{ friend.get_full_name }}" method="post" action="{% url 'chat:start_conversation' friend.id %}">
                 {% csrf_token %}
@@ -64,3 +74,4 @@
         <button class="button button-muted">Sign out</button>
     </form>
 </aside>
+<div id="friends-drawer-backdrop" class="friends-drawer-backdrop" aria-hidden="true"></div>

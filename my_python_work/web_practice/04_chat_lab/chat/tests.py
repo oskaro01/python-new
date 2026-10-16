@@ -62,6 +62,16 @@ class FriendRequestTests(TestCase):
         self.assertEqual(first.url, second.url)
         self.assertEqual(Conversation.objects.count(), 1)
 
+    def test_self_friend_chat_button_opens_reusable_self_conversation(self):
+        self.client.force_login(self.sender)
+        url = reverse("chat:start_conversation", args=[self.sender.pk])
+
+        first = self.client.post(url)
+        second = self.client.post(url)
+
+        self.assertEqual(first.url, second.url)
+        self.assertEqual(Conversation.objects.filter(is_self=True).count(), 1)
+
     def test_decline_does_not_create_friendship(self):
         self.client.force_login(self.recipient)
         self.assertEqual(self.respond("decline").status_code, 200)

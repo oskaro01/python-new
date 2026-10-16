@@ -137,7 +137,7 @@ def _search_people(user, query):
 def _sidebar_context(request):
     blocked_ids = _blocked_user_ids(request.user)
     conversations = list(
-        Conversation.objects.filter(participants__user=request.user)
+        Conversation.objects.filter(participants__user=request.user, is_self=False)
         .prefetch_related("participants__user")
         .annotate(unread_count=Count(
             "messages", filter=Q(messages__is_read=False, messages__expires_at__gt=timezone.now()) & ~Q(messages__sender=request.user),
@@ -184,14 +184,6 @@ def _sidebar_context(request):
 
 @login_required
 def chat_home(request):
-    self_conversation = Conversation.objects.filter(
-        is_self=True,
-        participants__user=request.user,
-    ).first()
-    if self_conversation is None:
-        self_conversation = Conversation.objects.create(is_self=True)
-        self_conversation.participants.create(user=request.user)
-
     return render(request, "chat/home.html", _sidebar_context(request))
 
 
@@ -298,7 +290,16 @@ def delete_account(request):
 @require_POST
 def start_conversation(request, user_id):
     other_user = get_object_or_404(get_user_model(), pk=user_id)
-    if other_user == request.user or _users_are_blocked(request.user, other_user):
+    if other_user == request.user:
+        conversation = Conversation.objects.filter(
+            is_self=True,
+            participants__user=request.user,
+        ).first()
+        if conversation is None:
+            conversation = Conversation.objects.create(is_self=True)
+            conversation.participants.create(user=request.user)
+        return redirect("chat:conversation_detail", conversation_id=conversation.id)
+    if _users_are_blocked(request.user, other_user):
         return redirect("chat:home")
 
     conversation = (

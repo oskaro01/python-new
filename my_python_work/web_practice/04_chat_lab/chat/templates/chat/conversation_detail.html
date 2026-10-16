@@ -45,8 +45,9 @@
                 {% csrf_token %}
                 {{ form.body }}
                 <div class="attachment-field">
-                    <label for="{{ form.attachment.id_for_label }}">Attach image</label>
+                    <label class="attachment-clip" for="{{ form.attachment.id_for_label }}" aria-label="Attach image" title="Attach image"><span class="attachment-plus" aria-hidden="true">+</span><span>Files and photos</span></label>
                     {{ form.attachment }}
+                    <span class="attachment-name" aria-live="polite">No image selected</span>
                     <small>{{ form.attachment.help_text }}</small>
                     {{ form.attachment.errors }}
                 </div>
@@ -57,6 +58,7 @@
         </section>
     </main>
     <script src="{% static 'chat/user_search.js' %}?v=2" defer></script>
+    <script src="{% static 'chat/mobile_friends.js' %}" defer></script>
     <script src="{% static 'chat/message_expiry.js' %}" defer></script>
     <script src="{% static 'chat/message_realtime.js' %}" defer></script>
     <script src="{% static 'chat/message_send.js' %}" defer></script>
