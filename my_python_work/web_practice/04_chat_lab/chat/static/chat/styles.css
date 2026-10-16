@@ -83,7 +83,19 @@ h1 {
 .topbar-icon,
 .topbar-user {
     font-size: 0.78rem;
-    font-weight: 700;
+    font-weight: 400;
+}
+
+.topbar-links {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.topbar-icon {
+    color: #ffffff;
+    text-decoration: none;
 }
 
 .topbar-search-form {
@@ -171,7 +183,17 @@ h1 {
 }
 
 .mobile-friends-toggle {
-    display: none;
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 8px;
+    border: 1px solid #29487d;
+    border-radius: 2px;
+    color: #ffffff;
+    background: #29487d;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.78rem;
+    font-weight: 400;
 }
 
 
@@ -255,7 +277,7 @@ h1 {
 
 .profile-menu {
     position: relative;
-    margin-left: auto;
+    margin-left: 0;
     font-size: 0.78rem;
     font-weight: 700;
 }
@@ -956,21 +978,10 @@ input,
         gap: 8px;
     }
 
-    .topbar-icon {
-        display: none;
-    }
-
-    .mobile-friends-toggle {
-        display: inline-flex;
+    .topbar-links {
         order: 3;
         margin-left: auto;
-        padding: 5px 8px;
-        border: 1px solid #29487d;
-        border-radius: 2px;
-        color: #ffffff;
-        background: #29487d;
-        cursor: pointer;
-        font-size: 0.7rem;
+        gap: 6px;
     }
 
     .profile-menu {

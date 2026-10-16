@@ -161,6 +161,7 @@ def _sidebar_context(request):
             for participant in conversation.participants.all()
         )
     ]
+    total_unread_count = sum(conversation.unread_count for conversation in conversations)
     for conversation in conversations:
         conversation.display_name = conversation.display_name_for(request.user)
         conversation.search_names = " ".join(
@@ -183,13 +184,16 @@ def _sidebar_context(request):
         friend.chat_name = _user_display_name(friend)
         friend.chat_avatar_url = _user_avatar_url(friend)
     query = request.GET.get("q", "").strip()
+    incoming_requests = FriendRequest.objects.filter(
+        to_user=request.user, status=FriendRequest.Status.PENDING,
+    ).select_related("from_user", "from_user__profile").order_by("created_at")
     return {
         "conversations": conversations, "friends": friends, "profile": _profile_for(request.user),
+        "total_unread_count": total_unread_count,
         "chat_query": chat_query,
         "query": query, "users": _search_people(request.user, query),
-        "incoming_requests": FriendRequest.objects.filter(
-            to_user=request.user, status=FriendRequest.Status.PENDING,
-        ).select_related("from_user", "from_user__profile").order_by("created_at"),
+        "incoming_requests": incoming_requests,
+        "incoming_request_count": incoming_requests.count(),
     }
 
 @login_required

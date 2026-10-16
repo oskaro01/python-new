@@ -1,7 +1,6 @@
 <header class="fb-topbar">
     <div class="topbar-inner">
         <a class="brand" href="{% url 'chat:home' %}">Chat Lab</a>
-        <span class="topbar-icon">Messages</span>
         <div class="topbar-search-form">
             <form class="topbar-search-submit-form" method="get" action="{% url 'chat:home' %}">
                 <input id="topbar-user-search" name="q" type="search" value="{{ query }}" placeholder="Search people" aria-label="Search people" autocomplete="off" aria-controls="user-suggestions">
@@ -48,9 +47,14 @@
                 {% endfor %}
             </div>
         </div>
-        <button id="mobile-friends-toggle" class="mobile-friends-toggle" type="button" aria-controls="friends-sidebar" aria-expanded="false">
-            Friends
-        </button>
+        <div class="topbar-links" aria-label="Chat navigation">
+            <button id="mobile-friends-toggle" class="mobile-friends-toggle" type="button" aria-controls="friends-sidebar" aria-expanded="false">
+                Friends{% if incoming_request_count %}({{ incoming_request_count }}){% endif %}
+            </button>
+            <a class="topbar-icon" href="{% url 'chat:home' %}">
+                Chats{% if total_unread_count %}({{ total_unread_count }}){% endif %}
+            </a>
+        </div>
         <details class="profile-menu">
             <summary class="profile-trigger">
                 {% if profile.avatar_url %}
