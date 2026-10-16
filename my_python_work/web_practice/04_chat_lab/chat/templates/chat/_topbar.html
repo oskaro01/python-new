@@ -49,10 +49,10 @@
         </div>
         <div class="topbar-links" aria-label="Chat navigation">
             <button id="mobile-friends-toggle" class="mobile-friends-toggle" type="button" data-mobile-drawer-toggle data-home-url="{% url 'chat:home' %}" aria-controls="friends-sidebar" aria-expanded="false">
-                Friends{% if incoming_request_count %}({{ incoming_request_count }}){% endif %}
+                Friends<span id="topbar-friends-count" data-count="{{ incoming_request_count }}">{% if incoming_request_count %}({{ incoming_request_count }}){% endif %}</span>
             </button>
             <button id="mobile-chats-toggle" class="topbar-icon topbar-chat-toggle" type="button" data-mobile-drawer-toggle data-home-url="{% url 'chat:home' %}" aria-controls="friends-sidebar" aria-expanded="false">
-                Chats{% if total_unread_count %}({{ total_unread_count }}){% endif %}
+                Chats<span id="topbar-chat-count" data-count="{{ total_unread_count }}">{% if total_unread_count %}({{ total_unread_count }}){% endif %}</span>
             </button>
         </div>
         <details class="profile-menu">

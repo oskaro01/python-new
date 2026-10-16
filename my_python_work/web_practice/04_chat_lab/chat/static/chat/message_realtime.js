@@ -70,23 +70,6 @@ if (realtimeMessageList && realtimeMessageList.dataset.conversationId) {
         window.setTimeout(() => article.remove(), Math.max(0, payload.expires_at * 1000 - Date.now()));
     }
 
-    function updateUnreadNotification(payload) {
-        if (String(payload.conversation_id) === realtimeMessageList.dataset.conversationId) return;
-
-        const row = document.querySelector(`[data-conversation-id="${payload.conversation_id}"]`);
-        if (row) {
-            let badge = row.querySelector(".unread-badge");
-            if (!badge) {
-                badge = document.createElement("b");
-                badge.id = `unread-${payload.conversation_id}`;
-                badge.className = "unread-badge";
-                row.appendChild(badge);
-            }
-            badge.textContent = String(Number(badge.textContent || 0) + 1);
-        }
-
-    }
-
     function connect() {
         socket = new WebSocket(socketUrl);
         window.chatRealtimeSocket = socket;
@@ -98,7 +81,6 @@ if (realtimeMessageList && realtimeMessageList.dataset.conversationId) {
         socket.addEventListener("message", (event) => {
             const payload = JSON.parse(event.data);
             if (payload.type === "message") appendRealtimeMessage(payload);
-            if (payload.type === "notification") updateUnreadNotification(payload);
             if (payload.type === "error" && realtimeFeedback) {
                 realtimeFeedback.textContent = payload.error;
                 realtimeFeedback.style.color = "";

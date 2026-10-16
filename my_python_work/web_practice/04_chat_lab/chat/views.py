@@ -57,6 +57,18 @@ def _broadcast_message(message):
     except Exception:
         logger.exception("Live message broadcast failed for message_id=%s", message.pk)
 
+
+def _broadcast_user_notification(user_id, payload):
+    """Send a small live event to one authenticated user's notification socket."""
+
+    try:
+        async_to_sync(get_channel_layer().group_send)(
+            f"user_notifications_{user_id}",
+            {"type": "chat.notification", "payload": payload},
+        )
+    except Exception:
+        logger.exception("Live user notification failed for user_id=%s", user_id)
+
 def landing(request):
     return render(request, "chat/landing.html")
 
@@ -364,11 +376,21 @@ def send_friend_request(request, user_id):
     if incoming:
         return _friend_action_response(request, {"status": "incoming", "request_id": incoming.pk})
 
-    FriendRequest.objects.get_or_create(
+    friend_request, created = FriendRequest.objects.get_or_create(
         from_user=request.user,
         to_user=other_user,
         status=FriendRequest.Status.PENDING,
     )
+    if created:
+        _broadcast_user_notification(
+            other_user.pk,
+            {
+                "type": "friend_request",
+                "request_id": friend_request.pk,
+                "from_user_id": request.user.pk,
+                "from_name": _user_display_name(request.user),
+            },
+        )
     return _friend_action_response(request, {"status": "pending"})
 
 

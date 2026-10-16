@@ -109,3 +109,25 @@ class ConversationConsumer(AsyncJsonWebsocketConsumer):
             conversation.participants.exclude(user=user).values_list("user_id", flat=True)
         )
         return message_payload(message), recipient_ids
+
+
+class NotificationConsumer(AsyncJsonWebsocketConsumer):
+    """Deliver a user's incoming chat notifications on every authenticated page."""
+
+    async def connect(self):
+        user = self.scope.get("user")
+        if not user or not user.is_authenticated:
+            await self.close(code=4401)
+            return
+
+        self.user_group_name = f"user_notifications_{user.pk}"
+        await self.channel_layer.group_add(self.user_group_name, self.channel_name)
+        await self.accept()
+        await self.send_json({"type": "ready"})
+
+    async def disconnect(self, close_code):
+        if hasattr(self, "user_group_name"):
+            await self.channel_layer.group_discard(self.user_group_name, self.channel_name)
+
+    async def chat_notification(self, event):
+        await self.send_json(event["payload"])
