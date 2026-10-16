@@ -40,10 +40,20 @@ def _broadcast_message(message):
     """Notify connected participants without making delivery block the save."""
 
     try:
-        async_to_sync(get_channel_layer().group_send)(
+        channel_layer = get_channel_layer()
+        payload = message_payload(message)
+        async_to_sync(channel_layer.group_send)(
             f"chat_conversation_{message.conversation_id}",
-            {"type": "chat.message", "payload": message_payload(message)},
+            {"type": "chat.message", "payload": payload},
         )
+        recipient_ids = message.conversation.participants.exclude(
+            user_id=message.sender_id
+        ).values_list("user_id", flat=True)
+        for recipient_id in recipient_ids:
+            async_to_sync(channel_layer.group_send)(
+                f"user_notifications_{recipient_id}",
+                {"type": "chat.notification", "payload": {**payload, "type": "notification"}},
+            )
     except Exception:
         logger.exception("Live message broadcast failed for message_id=%s", message.pk)
 
@@ -151,6 +161,7 @@ def _sidebar_context(request):
             for participant in conversation.participants.all()
         )
     ]
+    total_unread_count = sum(conversation.unread_count for conversation in conversations)
     for conversation in conversations:
         conversation.display_name = conversation.display_name_for(request.user)
         conversation.search_names = " ".join(
@@ -175,6 +186,7 @@ def _sidebar_context(request):
     query = request.GET.get("q", "").strip()
     return {
         "conversations": conversations, "friends": friends, "profile": _profile_for(request.user),
+        "total_unread_count": total_unread_count,
         "chat_query": chat_query,
         "query": query, "users": _search_people(request.user, query),
         "incoming_requests": FriendRequest.objects.filter(

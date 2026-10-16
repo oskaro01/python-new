@@ -31,10 +31,10 @@
     </form>
     <div id="conversation-list">
         {% for thread in conversations %}
-            <a class="conversation-row {% if thread.id == conversation.id %}is-active{% endif %}" data-chat-search="{{ thread.search_names }}" href="{% url 'chat:conversation_detail' thread.id %}">
+            <a class="conversation-row {% if thread.id == conversation.id %}is-active{% endif %}" data-conversation-id="{{ thread.id }}" data-chat-search="{{ thread.search_names }}" href="{% url 'chat:conversation_detail' thread.id %}">
                 <span class="avatar avatar-small">{{ thread.display_name|first|upper }}</span>
                 <span class="conversation-copy"><strong>{{ thread.display_name }}</strong></span>
-                {% if thread.unread_count %}<b class="unread-badge">{{ thread.unread_count }}</b>{% endif %}
+                {% if thread.unread_count %}<b id="unread-{{ thread.id }}" class="unread-badge">{{ thread.unread_count }}</b>{% endif %}
             </a>
         {% empty %}
             <p class="search-feedback">{% if chat_query %}No matching chats.{% else %}Your inbox is empty.{% endif %}</p>

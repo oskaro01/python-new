@@ -20,6 +20,7 @@ def message_payload(message):
     return {
         "type": "message",
         "message_id": message.pk,
+        "conversation_id": message.conversation_id,
         "sender_id": message.sender_id,
         "sender_name": message.sender.get_username(),
         "body": message.body,

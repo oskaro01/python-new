@@ -51,6 +51,7 @@
         <button id="mobile-friends-toggle" class="mobile-friends-toggle" type="button" aria-controls="friends-sidebar" aria-expanded="false">
             Friends
         </button>
+        <span id="unread-total-badge" class="unread-total-badge" {% if not total_unread_count %}hidden{% endif %}>{{ total_unread_count|default:0 }}</span>
         <details class="profile-menu">
             <summary class="profile-trigger">
                 {% if profile.avatar_url %}

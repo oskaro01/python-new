@@ -19,12 +19,16 @@ class ConversationConsumer(AsyncJsonWebsocketConsumer):
             return
 
         await self.channel_layer.group_add(self.group_name, self.channel_name)
+        self.user_group_name = f"user_notifications_{self.scope['user'].pk}"
+        await self.channel_layer.group_add(self.user_group_name, self.channel_name)
         await self.accept()
         await self.send_json({"type": "ready"})
 
     async def disconnect(self, close_code):
         if hasattr(self, "group_name"):
             await self.channel_layer.group_discard(self.group_name, self.channel_name)
+        if hasattr(self, "user_group_name"):
+            await self.channel_layer.group_discard(self.user_group_name, self.channel_name)
 
     async def receive_json(self, content, **kwargs):
         body = str(content.get("body", "")).strip()
@@ -35,17 +39,29 @@ class ConversationConsumer(AsyncJsonWebsocketConsumer):
             await self.send_json({"type": "error", "error": "Message is too long."})
             return
 
-        payload = await self.create_message(body)
-        if payload is None:
+        result = await self.create_message(body)
+        if result is None:
             await self.close(code=4403)
             return
+        payload, recipient_ids = result
 
         await self.channel_layer.group_send(
             self.group_name,
             {"type": "chat.message", "payload": payload},
         )
+        for recipient_id in recipient_ids:
+            await self.channel_layer.group_send(
+                f"user_notifications_{recipient_id}",
+                {
+                    "type": "chat.notification",
+                    "payload": {**payload, "type": "notification"},
+                },
+            )
 
     async def chat_message(self, event):
+        await self.send_json(event["payload"])
+
+    async def chat_notification(self, event):
         await self.send_json(event["payload"])
 
     @database_sync_to_async
@@ -89,4 +105,7 @@ class ConversationConsumer(AsyncJsonWebsocketConsumer):
         )
         conversation.updated_at = timezone.now()
         conversation.save(update_fields=["updated_at"])
-        return message_payload(message)
+        recipient_ids = list(
+            conversation.participants.exclude(user=user).values_list("user_id", flat=True)
+        )
+        return message_payload(message), recipient_ids
