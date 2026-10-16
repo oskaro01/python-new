@@ -105,6 +105,8 @@ h1 {
     color: #ffffff;
     background: transparent;
     font: inherit;
+    font-size: 0.78rem;
+    font-weight: 400;
     cursor: pointer;
 }
 
