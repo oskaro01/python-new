@@ -1,4 +1,4 @@
-<article data-expires-at="{{ message.expires_at|date:'U' }}" class="message {% if message.sender_id == user.id %}message-own{% else %}message-other{% endif %}">
+<article data-message-id="{{ message.id }}" data-expires-at="{{ message.expires_at|date:'U' }}" class="message {% if message.sender_id == user.id %}message-own{% else %}message-other{% endif %}">
     <strong>{{ message.sender }}</strong>
     {% if message.body %}<div>{{ message.body }}</div>{% endif %}
     {% for attachment in message.attachments.all %}

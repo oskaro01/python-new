@@ -27,9 +27,35 @@ if (realtimeMessageList && realtimeMessageList.dataset.conversationId) {
         sender.textContent = payload.sender_name;
         article.appendChild(sender);
 
-        const body = document.createElement("div");
-        body.textContent = payload.body;
-        article.appendChild(body);
+        if (payload.body) {
+            const body = document.createElement("div");
+            body.textContent = payload.body;
+            article.appendChild(body);
+        }
+
+        for (const attachment of payload.attachments || []) {
+            const attachmentBox = document.createElement("div");
+            attachmentBox.className = "message-attachment";
+
+            const previewLink = document.createElement("a");
+            previewLink.href = attachment.url;
+            previewLink.target = "_blank";
+            previewLink.rel = "noopener";
+
+            const image = document.createElement("img");
+            image.src = attachment.url;
+            image.alt = attachment.original_name;
+            image.loading = "lazy";
+            previewLink.appendChild(image);
+            attachmentBox.appendChild(previewLink);
+
+            const downloadLink = document.createElement("a");
+            downloadLink.className = "attachment-download";
+            downloadLink.href = attachment.download_url;
+            downloadLink.textContent = `Download ${attachment.original_name}`;
+            attachmentBox.appendChild(downloadLink);
+            article.appendChild(attachmentBox);
+        }
 
         const footer = document.createElement("small");
         footer.textContent = new Date(payload.created_at).toLocaleString();

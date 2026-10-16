@@ -4,6 +4,8 @@ import logging
 import mimetypes
 from pathlib import Path
 
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 from django.contrib.auth import login, logout
 from django.core.paginator import Paginator
 from django.db import transaction
@@ -28,9 +30,22 @@ from .models import (
     Profile,
     UserBlock,
 )
+from .realtime import message_payload
 
 
 logger = logging.getLogger(__name__)
+
+
+def _broadcast_message(message):
+    """Notify connected participants without making delivery block the save."""
+
+    try:
+        async_to_sync(get_channel_layer().group_send)(
+            f"chat_conversation_{message.conversation_id}",
+            {"type": "chat.message", "payload": message_payload(message)},
+        )
+    except Exception:
+        logger.exception("Live message broadcast failed for message_id=%s", message.pk)
 
 def landing(request):
     return render(request, "chat/landing.html")
@@ -401,10 +416,11 @@ def conversation_detail(request, conversation_id):
                 if saved_attachment and saved_attachment.file:
                     saved_attachment.file.delete(save=False)
                 raise
+            message = Message.objects.select_related("sender").prefetch_related(
+                "attachments"
+            ).get(pk=message.pk)
+            _broadcast_message(message)
             if async_request:
-                message = Message.objects.select_related("sender").prefetch_related(
-                    "attachments"
-                ).get(pk=message.pk)
                 return JsonResponse({
                     "ok": True,
                     "html": render_to_string(

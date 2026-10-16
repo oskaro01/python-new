@@ -244,6 +244,22 @@ class MessageAttachmentTests(TestCase):
         self.assertEqual(Message.objects.filter(conversation=self.conversation).count(), 1)
         self.assertEqual(MessageAttachment.objects.count(), 1)
 
+    def test_attachment_upload_broadcasts_saved_message_metadata(self):
+        with patch("chat.views._broadcast_message") as broadcast:
+            response = self.client.post(
+                self.url,
+                {"body": "Look live", "attachment": self.image_upload()},
+                HTTP_X_CHAT_ASYNC="1",
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["ok"])
+        self.assertTrue(broadcast.called)
+        broadcasted_message = broadcast.call_args.args[0]
+        self.assertEqual(broadcasted_message.conversation_id, self.conversation.pk)
+        self.assertEqual(broadcasted_message.attachments.count(), 1)
+        self.assertIn('data-message-id="', response.json()["html"])
+
     def test_text_only_message_still_works(self):
         response = self.client.post(self.url, {"body": "Just text"})
 

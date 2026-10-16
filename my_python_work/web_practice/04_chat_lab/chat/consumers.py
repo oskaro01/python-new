@@ -4,6 +4,7 @@ from django.db.models import Q
 from django.utils import timezone
 
 from .models import Conversation, Message, UserBlock
+from .realtime import message_payload
 
 
 class ConversationConsumer(AsyncJsonWebsocketConsumer):
@@ -88,12 +89,4 @@ class ConversationConsumer(AsyncJsonWebsocketConsumer):
         )
         conversation.updated_at = timezone.now()
         conversation.save(update_fields=["updated_at"])
-        return {
-            "type": "message",
-            "message_id": message.pk,
-            "sender_id": user.pk,
-            "sender_name": user.get_username(),
-            "body": message.body,
-            "created_at": message.created_at.isoformat(),
-            "expires_at": int(message.expires_at.timestamp()),
-        }
+        return message_payload(message)

@@ -1,7 +1,9 @@
 # Chat Lab Lesson 23: Real-Time Chat With Django Channels
 
-The Chat Lab now has a WebSocket path for short text messages. The existing
-HTTP composer remains the fallback and still handles image attachments.
+The Chat Lab now has a WebSocket path for short text messages. Image bytes still
+travel through the validated multipart HTTP upload, then the saved message
+metadata is broadcast over the same WebSocket channel so other participants see
+the attachment without refreshing.
 
 ## Two kinds of delivery
 
@@ -15,11 +17,18 @@ WebSocket text
     -> save Message
     -> broadcast event to the conversation group
     -> every connected participant appends the bubble
+
+HTTP image upload
+    -> validate and store image outside the database
+    -> save MessageAttachment
+    -> broadcast attachment URL metadata
+    -> every connected participant fetches the protected image URL
 ```
 
 WebSockets keep one connection open instead of opening one request for every
-incoming event. They improve instant delivery; they do not replace the database
-or permission checks.
+incoming event. They improve instant delivery; they do not replace the database,
+file storage, or permission checks. Binary image data stays on the HTTP upload
+path; the socket carries only safe metadata and a protected attachment URL.
 
 ## The connection path
 
