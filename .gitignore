@@ -18,4 +18,5 @@ my_python_work/**/*.db
 my_python_work/**/*.sqlite3
 my_python_work/web_practice/**/uploads/
 my_python_work/web_practice/**/private_media/
+my_python_work/web_practice/**/staticfiles/
 !my_python_work/practical_projects/file_organizer/categories.json
