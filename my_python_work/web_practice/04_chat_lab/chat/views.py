@@ -1,11 +1,14 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 import logging
+import mimetypes
+from pathlib import Path
 
 from django.contrib.auth import login, logout
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.core.exceptions import SuspiciousFileOperation
+from django.core.files.storage import default_storage
 from django.db.models import Count, Q
 from django.http import FileResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -206,6 +209,26 @@ def profile_settings(request):
 
 
 @login_required
+@require_GET
+def profile_picture_file(request, path):
+    """Serve profile pictures to signed-in users in every environment."""
+
+    if not path.startswith("uploads/profile_pictures/"):
+        raise Http404
+    try:
+        file_handle = default_storage.open(path, "rb")
+    except (FileNotFoundError, OSError, ValueError, SuspiciousFileOperation):
+        raise Http404 from None
+
+    content_type = mimetypes.guess_type(Path(path).name)[0] or "application/octet-stream"
+    response = FileResponse(file_handle, content_type=content_type)
+    response["Content-Disposition"] = content_disposition_header(False, Path(path).name)
+    response["X-Content-Type-Options"] = "nosniff"
+    response["Cache-Control"] = "private, no-store"
+    return response
+
+
+@login_required
 @require_POST
 def delete_account(request):
     deletion_form = AccountDeletionForm(request.POST, user=request.user)
@@ -220,7 +243,7 @@ def delete_account(request):
         )
 
     user = request.user
-    profile = getattr(user, "profile", None)
+    profile = Profile.objects.filter(user=user).first()
     profile_file = profile.profile_picture if profile and profile.profile_picture else None
     attachments = list(
         MessageAttachment.objects.filter(message__sender=user).only("file")

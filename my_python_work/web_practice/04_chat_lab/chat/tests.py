@@ -131,6 +131,16 @@ class FriendRequestTests(TestCase):
         self.assertContains(response, "sender")
         profile.profile_picture.delete(save=False)
 
+    def test_authenticated_users_can_view_profile_picture(self):
+        self.client.force_login(self.sender)
+        profile = Profile.objects.get(user=self.sender)
+        picture = SimpleUploadedFile("alice.png", b"fake image bytes", content_type="image/png")
+        profile.profile_picture.save("alice.png", picture, save=True)
+        response = self.client.get(profile.profile_picture.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "image/png")
+        profile.profile_picture.delete(save=False)
+
     def test_profile_rejects_non_image_uploads(self):
         self.client.force_login(self.sender)
         picture = SimpleUploadedFile("notes.txt", b"not an image", content_type="text/plain")
