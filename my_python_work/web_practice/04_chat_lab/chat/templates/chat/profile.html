@@ -32,6 +32,20 @@
                 {{ form.profile_picture.errors }}
                 <button class="button" type="submit">Save profile</button>
             </form>
+            <section class="blocked-people">
+                <h2>Blocked people</h2>
+                {% for block in blocked_users %}
+                    <div class="blocked-person">
+                        <span>{{ block.blocked.get_full_name|default:block.blocked.username }}</span>
+                        <form method="post" action="{% url 'chat:unblock_user' block.blocked_id %}">
+                            {% csrf_token %}
+                            <button class="add-button" type="submit">Unblock</button>
+                        </form>
+                    </div>
+                {% empty %}
+                    <p class="storage-note">You have not blocked anyone.</p>
+                {% endfor %}
+            </section>
             <section class="danger-zone">
                 <h2>Delete account</h2>
                 <p>This permanently removes your account, messages, profile, and uploaded files.</p>

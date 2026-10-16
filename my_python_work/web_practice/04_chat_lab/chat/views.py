@@ -93,6 +93,10 @@ def _blocked_user_ids(user):
     return set(outgoing) | set(incoming)
 
 
+def _blocked_users_for(user):
+    return UserBlock.objects.filter(blocker=user).select_related("blocked").order_by("blocked__username")
+
+
 def _users_are_blocked(first_user, second_user):
     return UserBlock.objects.filter(
         Q(blocker=first_user, blocked=second_user)
@@ -219,6 +223,7 @@ def profile_settings(request):
             "form": form,
             "profile": profile,
             "deletion_form": AccountDeletionForm(user=request.user),
+            "blocked_users": _blocked_users_for(request.user),
         },
     )
 
@@ -253,7 +258,12 @@ def delete_account(request):
         return render(
             request,
             "chat/profile.html",
-            {"form": form, "profile": profile, "deletion_form": deletion_form},
+            {
+                "form": form,
+                "profile": profile,
+                "deletion_form": deletion_form,
+                "blocked_users": _blocked_users_for(request.user),
+            },
             status=400,
         )
 
@@ -489,6 +499,13 @@ def block_user(request, user_id):
             status=FriendRequest.Status.PENDING,
         ).update(status=FriendRequest.Status.DECLINED, responded_at=timezone.now())
     return redirect("chat:home")
+
+
+@login_required
+@require_POST
+def unblock_user(request, user_id):
+    UserBlock.objects.filter(blocker=request.user, blocked_id=user_id).delete()
+    return redirect("chat:profile")
 
 
 @login_required

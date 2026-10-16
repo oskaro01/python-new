@@ -8,7 +8,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
-from .models import Conversation, FriendRequest, Friendship, Message, MessageAttachment, Profile
+from .models import Conversation, FriendRequest, Friendship, Message, MessageAttachment, Profile, UserBlock
 
 
 class FriendRequestTests(TestCase):
@@ -183,6 +183,16 @@ class FriendRequestTests(TestCase):
         response = self.client.post(url, {"password": "correct-password", "confirm": "on"})
         self.assertRedirects(response, reverse("chat:landing"))
         self.assertFalse(get_user_model().objects.filter(pk=user.pk).exists())
+
+    def test_blocked_person_can_be_unblocked_from_profile_settings(self):
+        UserBlock.objects.create(blocker=self.sender, blocked=self.outsider)
+        self.client.force_login(self.sender)
+        page = self.client.get(reverse("chat:profile"))
+        self.assertContains(page, "outsider")
+
+        response = self.client.post(reverse("chat:unblock_user", args=[self.outsider.pk]))
+        self.assertRedirects(response, reverse("chat:profile"))
+        self.assertFalse(UserBlock.objects.filter(blocker=self.sender, blocked=self.outsider).exists())
 
 
 class MessageAttachmentTests(TestCase):
