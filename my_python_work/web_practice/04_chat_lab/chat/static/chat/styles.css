@@ -986,6 +986,8 @@ input,
     .chat-shell,
     .messenger-shell {
         width: 100%;
+        height: calc(100vh - var(--mobile-topbar-height, 96px));
+        min-height: 0;
         grid-template-columns: 1fr;
         border: 0;
     }
@@ -1081,10 +1083,10 @@ input,
     }
 
     .thread-panel {
-        height: auto;
+        height: 100%;
         max-height: none;
-        min-height: calc(100vh - 220px);
-        overflow: visible;
+        min-height: 0;
+        overflow: hidden;
     }
 }
 

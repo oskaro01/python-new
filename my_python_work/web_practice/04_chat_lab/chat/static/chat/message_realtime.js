@@ -4,8 +4,9 @@ const realtimeFeedback = document.querySelector("#composer-feedback");
 if (realtimeMessageList && realtimeMessageList.dataset.conversationId) {
     const scheme = window.location.protocol === "https:" ? "wss" : "ws";
     const socketUrl = `${scheme}://${window.location.host}/ws/chat/conversations/${realtimeMessageList.dataset.conversationId}/`;
-    const socket = new WebSocket(socketUrl);
-    window.chatRealtimeSocket = socket;
+    let socket;
+    let reconnectTimer;
+    let reconnectDelay = 1000;
 
     function appendRealtimeMessage(payload) {
         if (realtimeMessageList.dataset.canAppend !== "true") {
@@ -69,15 +70,33 @@ if (realtimeMessageList && realtimeMessageList.dataset.conversationId) {
         window.setTimeout(() => article.remove(), Math.max(0, payload.expires_at * 1000 - Date.now()));
     }
 
-    socket.addEventListener("message", (event) => {
-        const payload = JSON.parse(event.data);
-        if (payload.type === "message") appendRealtimeMessage(payload);
-        if (payload.type === "error" && realtimeFeedback) {
-            realtimeFeedback.textContent = payload.error;
-            realtimeFeedback.style.color = "";
-            realtimeFeedback.hidden = false;
-        }
-    });
+    function connect() {
+        socket = new WebSocket(socketUrl);
+        window.chatRealtimeSocket = socket;
+
+        socket.addEventListener("open", () => {
+            reconnectDelay = 1000;
+        });
+
+        socket.addEventListener("message", (event) => {
+            const payload = JSON.parse(event.data);
+            if (payload.type === "message") appendRealtimeMessage(payload);
+            if (payload.type === "error" && realtimeFeedback) {
+                realtimeFeedback.textContent = payload.error;
+                realtimeFeedback.style.color = "";
+                realtimeFeedback.hidden = false;
+            }
+        });
+
+        socket.addEventListener("error", () => socket.close());
+        socket.addEventListener("close", () => {
+            window.clearTimeout(reconnectTimer);
+            reconnectTimer = window.setTimeout(connect, reconnectDelay);
+            reconnectDelay = Math.min(reconnectDelay * 2, 10000);
+        });
+    }
+
+    connect();
 
     window.chatRealtimeSend = (body) => {
         if (socket.readyState !== WebSocket.OPEN || !body.trim() || body.length > 5000) {
