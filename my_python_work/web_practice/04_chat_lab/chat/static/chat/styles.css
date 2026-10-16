@@ -174,18 +174,6 @@ h1 {
     display: none;
 }
 
-.unread-total-badge {
-    display: inline-grid;
-    min-width: 18px;
-    height: 18px;
-    place-items: center;
-    padding: 0 5px;
-    border-radius: 9px;
-    color: #ffffff;
-    background: #d9534f;
-    font-size: 0.65rem;
-    font-weight: 700;
-}
 
 .friends-drawer-backdrop {
     display: none;

@@ -85,11 +85,6 @@ if (realtimeMessageList && realtimeMessageList.dataset.conversationId) {
             badge.textContent = String(Number(badge.textContent || 0) + 1);
         }
 
-        const totalBadge = document.querySelector("#unread-total-badge");
-        if (totalBadge) {
-            totalBadge.textContent = String(Number(totalBadge.textContent || 0) + 1);
-            totalBadge.hidden = false;
-        }
     }
 
     function connect() {
