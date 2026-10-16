@@ -21,6 +21,7 @@ body {
 
 .shell {
     min-height: 100vh;
+    min-height: 100dvh;
     display: grid;
     place-items: center;
     padding: 24px;
@@ -96,6 +97,15 @@ h1 {
 .topbar-icon {
     color: #ffffff;
     text-decoration: none;
+}
+
+.topbar-chat-toggle {
+    padding: 0;
+    border: 0;
+    color: #ffffff;
+    background: transparent;
+    font: inherit;
+    cursor: pointer;
 }
 
 .topbar-search-form {
@@ -205,7 +215,9 @@ h1 {
 .messenger-shell {
     width: min(100% - 28px, 980px);
     height: calc(100vh - 46px);
+    height: calc(100dvh - 46px);
     min-height: calc(100vh - 46px);
+    min-height: calc(100dvh - 46px);
     display: grid;
     grid-template-columns: 215px 1fr;
     margin: 0 auto;
@@ -219,6 +231,7 @@ h1 {
     display: flex;
     flex-direction: column;
     min-height: calc(100vh - 46px);
+    min-height: calc(100dvh - 46px);
     padding: 18px 10px;
     background: #f7f7f7;
     border-right: 1px solid #c6c9ce;
@@ -565,6 +578,7 @@ input,
 
 .profile-page {
     min-height: calc(100vh - 46px);
+    min-height: calc(100dvh - 46px);
     padding: 32px 16px;
     background: #e9ebee;
 }
@@ -720,7 +734,9 @@ input,
     grid-template-rows: auto auto 1fr auto auto;
     min-width: 0;
     height: calc(100vh - 46px);
+    height: calc(100dvh - 46px);
     min-height: calc(100vh - 46px);
+    min-height: calc(100dvh - 46px);
     overflow: hidden;
     background: #ffffff;
 }
@@ -1006,6 +1022,20 @@ input,
         border: 0;
     }
 
+    .shell {
+        min-height: 100dvh;
+        padding: 16px;
+    }
+
+    .panel {
+        padding: 20px;
+    }
+
+    .profile-page {
+        min-height: calc(100dvh - var(--mobile-topbar-height, 96px));
+        padding: 20px 12px;
+    }
+
     .inbox-sidebar,
     .messenger-sidebar {
         display: none;
@@ -1027,7 +1057,7 @@ input,
         z-index: 40;
         display: flex;
         width: min(86vw, 310px);
-        max-height: calc(100vh - var(--mobile-topbar-height, 46px));
+        max-height: calc(100dvh - var(--mobile-topbar-height, 46px));
         overflow-y: auto;
         border: 1px solid #c6c9ce;
         box-shadow: 3px 0 10px rgb(0 0 0 / 20%);
