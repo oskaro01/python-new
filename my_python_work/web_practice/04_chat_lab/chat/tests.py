@@ -254,6 +254,7 @@ class MessageAttachmentTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.json()["ok"])
+        self.assertIsNotNone(response.json()["message_id"])
         self.assertTrue(broadcast.called)
         broadcasted_message = broadcast.call_args.args[0]
         self.assertEqual(broadcasted_message.conversation_id, self.conversation.pk)

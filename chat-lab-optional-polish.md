@@ -110,6 +110,21 @@ The sender can receive both the HTTP response and the broadcast event. The
 rendered HTML includes `data-message-id`, so the browser ignores the live
 duplicate instead of showing the message twice.
 
+### Why the race happens
+
+The two paths run independently:
+
+```text
+save message
+   ├─ broadcast WebSocket event ──> sender may render first
+   └─ return HTTP response       ──> sender may render second
+```
+
+Network timing decides which arrives first. The message ID is generated once
+by the database, so both paths can compare the same ID. Before inserting the
+HTTP response HTML, `message_send.js` checks for that ID; the live-message code
+performs the same check before appending a WebSocket event.
+
 ## What is stored where?
 
 ```text

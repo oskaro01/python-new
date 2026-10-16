@@ -423,6 +423,7 @@ def conversation_detail(request, conversation_id):
             if async_request:
                 return JsonResponse({
                     "ok": True,
+                    "message_id": message.pk,
                     "html": render_to_string(
                         "chat/_message.html",
                         {

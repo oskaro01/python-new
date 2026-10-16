@@ -46,6 +46,15 @@ if (composer && messageList) {
                 return;
             }
 
+            // The WebSocket broadcast can arrive before this HTTP response.
+            // Use the durable ID to avoid inserting the same message twice.
+            if (
+                payload.message_id
+                && document.querySelector(`[data-message-id="${payload.message_id}"]`)
+            ) {
+                return;
+            }
+
             const emptyState = messageList.querySelector(".intro");
             if (emptyState) emptyState.remove();
             messageList.insertAdjacentHTML("beforeend", payload.html);
