@@ -1,8 +1,10 @@
 """Public product catalog views."""
 
 from pathlib import Path
+from decimal import Decimal
 from uuid import uuid4
 
+from django.conf import settings
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -11,6 +13,7 @@ from django.core.files.storage import default_storage
 from django.db import transaction
 from django.http import FileResponse, Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
@@ -31,9 +34,13 @@ from .inventory import deduct_paid_order_inventory
 from .jobs import enqueue_receipt_job
 from .models import Order, OrderItem, Product, ReturnRequest, WebhookEvent
 from .payments import (
+    BkashAPIError,
     PaymentConfigurationError,
+    bkash_is_configured,
     construct_stripe_event,
+    create_bkash_payment as create_bkash_provider_payment,
     create_stripe_checkout_session,
+    execute_bkash_payment as execute_bkash_provider_payment,
     stripe_is_configured,
 )
 from .refunds import CancellationNotAllowed, cancel_order
@@ -104,6 +111,48 @@ def fail_stripe_payment(session):
                 "updated_at",
             ]
         )
+
+
+def confirm_bkash_payment(order, payment):
+    """Confirm only a completed, matching bKash execution response."""
+
+    if payment.get("transactionStatus") != "Completed":
+        raise BkashAPIError("bKash did not report a completed transaction.")
+    if payment.get("merchantInvoiceNumber") != f"order-{order.pk}":
+        raise BkashAPIError("bKash returned a different merchant invoice.")
+    if payment.get("currency") != settings.BKASH_CURRENCY:
+        raise BkashAPIError("bKash returned an unexpected currency.")
+    if Decimal(str(payment.get("amount", "0"))) != order.total_amount:
+        raise BkashAPIError("bKash returned an unexpected amount.")
+
+    with transaction.atomic():
+        locked_order = Order.objects.select_for_update().get(pk=order.pk)
+        if locked_order.payment_status == Order.PAYMENT_PAID:
+            return locked_order
+
+        locked_order.payment_status = Order.PAYMENT_PAID
+        locked_order.status = Order.PROCESSING
+        locked_order.payment_provider = "bkash"
+        locked_order.payment_reference = payment.get("trxId") or payment.get(
+            "trxID"
+        ) or payment.get("paymentId") or payment.get("paymentID", "")
+        locked_order.payment_method = "mobile_wallet"
+        locked_order.paid_at = timezone.now()
+        locked_order.save(
+            update_fields=[
+                "payment_status",
+                "status",
+                "payment_provider",
+                "payment_reference",
+                "payment_method",
+                "paid_at",
+                "updated_at",
+            ]
+        )
+        deduct_paid_order_inventory(locked_order)
+        mark_order_ready_for_fulfillment(locked_order)
+        enqueue_receipt_job(locked_order)
+        return locked_order
 
 
 @require_GET
@@ -308,6 +357,7 @@ def order_success(request, order_id):
             "order": order,
             "download_items": download_items,
             "stripe_payment_enabled": stripe_is_configured(),
+            "bkash_payment_enabled": bkash_is_configured(),
             "return_request": ReturnRequest.objects.filter(order=order).first(),
             "can_request_return": (
                 is_owner and order_can_be_returned(order)
@@ -441,6 +491,90 @@ def start_payment(request, order_id):
         ]
     )
     return redirect(session.url)
+
+
+def _payment_order_for_request(request, order_id):
+    if request.session.get(LAST_ORDER_SESSION_KEY) != order_id:
+        raise Http404
+    return get_object_or_404(
+        Order.objects.prefetch_related("items"),
+        pk=order_id,
+    )
+
+
+@require_POST
+def create_bkash_payment(request, order_id):
+    order = _payment_order_for_request(request, order_id)
+    if order.payment_status != Order.PAYMENT_PENDING:
+        return JsonResponse({"ok": False, "error": "This order is no longer payable."}, status=400)
+
+    try:
+        response = create_bkash_provider_payment(
+            order,
+            request.build_absolute_uri(reverse("shop:bkash_callback")),
+        )
+    except (PaymentConfigurationError, BkashAPIError) as error:
+        return JsonResponse({"ok": False, "error": str(error)}, status=503)
+
+    payment_id = response.get("paymentId") or response.get("paymentID")
+    if not payment_id:
+        return JsonResponse({"ok": False, "error": "bKash did not return a payment ID."}, status=502)
+
+    order.payment_provider = "bkash"
+    order.payment_reference = str(payment_id)
+    order.payment_method = "mobile_wallet"
+    order.save(update_fields=["payment_provider", "payment_reference", "payment_method", "updated_at"])
+    return JsonResponse(response)
+
+
+@require_GET
+def bkash_callback(request):
+    payment_id = (request.GET.get("paymentId") or request.GET.get("paymentID") or "").strip()
+    status = request.GET.get("status", "").lower()
+    if not payment_id:
+        messages.error(request, "bKash did not return a payment ID.")
+        return redirect("shop:product_list")
+
+    order = get_object_or_404(
+        Order,
+        payment_provider="bkash",
+        payment_reference=payment_id,
+    )
+    if order.payment_status == Order.PAYMENT_PAID:
+        return redirect("shop:order_success", order_id=order.pk)
+    if status not in {"success", "completed"}:
+        messages.error(request, "The bKash payment was not completed.")
+        return redirect("shop:order_success", order_id=order.pk)
+
+    try:
+        response = execute_bkash_provider_payment(payment_id)
+        confirm_bkash_payment(order, response)
+    except (PaymentConfigurationError, BkashAPIError, ValueError, TypeError) as error:
+        messages.error(request, f"bKash payment could not be verified: {error}")
+    else:
+        messages.success(request, "bKash payment confirmed successfully.")
+    return redirect("shop:order_success", order_id=order.pk)
+
+
+@require_POST
+def execute_bkash_payment(request, order_id):
+    order = _payment_order_for_request(request, order_id)
+    payment_id = request.POST.get("payment_id", "").strip()
+    if order.payment_status == Order.PAYMENT_PAID:
+        return JsonResponse({"ok": True, "redirect_url": reverse("shop:order_success", kwargs={"order_id": order.pk})})
+    if order.payment_provider != "bkash" or not payment_id or order.payment_reference != payment_id:
+        return JsonResponse({"ok": False, "error": "This bKash payment does not match the order."}, status=400)
+
+    try:
+        response = execute_bkash_provider_payment(payment_id)
+        confirm_bkash_payment(order, response)
+    except (PaymentConfigurationError, BkashAPIError, ValueError, TypeError) as error:
+        return JsonResponse({"ok": False, "error": str(error)}, status=400)
+
+    return JsonResponse({
+        "ok": True,
+        "redirect_url": reverse("shop:order_success", kwargs={"order_id": order.pk}),
+    })
 
 
 @csrf_exempt

@@ -23,7 +23,7 @@ Personal Dictionary app.
 16. [Lesson 51: Pathao Courier API](51_pathao_courier_api/README.md)
 17. [Lesson 52: Secure Digital Fulfillment](52_secure_digital_fulfillment/README.md)
 18. **Pending:** Pathao location IDs and webhook integration (sandbox `522`)
-19. **Pending:** bKash sandbox payment and webhook integration
+19. [Lesson 62: bKash Payment Integration](62_bkash_payment_integration/README.md)
 20. [Lesson 53: Customer Accounts and Order History](53_customer_accounts_order_history/README.md)
 21. [Lesson 54: Refunds and Cancellations](54_refunds_cancellations/README.md)
 22. [Lesson 55: Returns and Reverse Logistics](55_returns_reverse_logistics/README.md)
@@ -82,6 +82,6 @@ site. It does not use the Personal Dictionary database.
 
 ## Not Built Yet
 
-Pathao API completion and bKash remain pending integrations. The final design
-supports physical, digital, and hybrid products rather than only digital
-downloads.
+Pathao API completion remains pending while the provider sandbox is
+unreachable. The final design supports physical, digital, and hybrid products
+rather than only digital downloads.

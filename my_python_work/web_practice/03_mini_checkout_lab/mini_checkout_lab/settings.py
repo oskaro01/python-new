@@ -144,6 +144,16 @@ PAYMENT_PROVIDER = os.environ.get("PAYMENT_PROVIDER", "")
 PAYMENT_CURRENCY = os.environ.get("PAYMENT_CURRENCY", "usd").lower()
 STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "")
 STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
+BKASH_BASE_URL = os.environ.get(
+    "BKASH_BASE_URL",
+    "https://tokenized.sandbox.bka.sh/v2/tokenized-checkout",
+).rstrip("/")
+BKASH_APP_KEY = os.environ.get("BKASH_APP_KEY", "")
+BKASH_APP_SECRET = os.environ.get("BKASH_APP_SECRET", "")
+BKASH_USERNAME = os.environ.get("BKASH_USERNAME", "")
+BKASH_PASSWORD = os.environ.get("BKASH_PASSWORD", "")
+BKASH_CURRENCY = os.environ.get("BKASH_CURRENCY", "BDT").upper()
+BKASH_TIMEOUT = int(os.environ.get("BKASH_TIMEOUT", "30"))
 FULFILLMENT_PROVIDER = os.environ.get("FULFILLMENT_PROVIDER", "manual")
 PATHAO_BASE_URL = os.environ.get("PATHAO_BASE_URL", "")
 PATHAO_CLIENT_ID = os.environ.get("PATHAO_CLIENT_ID", "")

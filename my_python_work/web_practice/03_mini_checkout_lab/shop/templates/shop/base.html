@@ -40,6 +40,7 @@
         {% block content %}{% endblock %}
     </main>
     <div class="toast-stack" aria-live="polite" aria-atomic="true"></div>
+    {% block extra_scripts %}{% endblock %}
     <script src="{% static 'shop/shop.js' %}"></script>
 </body>
 </html>

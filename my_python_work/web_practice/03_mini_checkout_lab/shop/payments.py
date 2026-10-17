@@ -1,6 +1,10 @@
 """Payment-provider boundary for the checkout lab."""
 
 from decimal import Decimal
+import json
+import time
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 from django.conf import settings
 from django.urls import reverse
@@ -10,9 +14,112 @@ class PaymentConfigurationError(RuntimeError):
     """Raised when a real payment provider is not configured."""
 
 
+class BkashAPIError(RuntimeError):
+    """Raised when bKash rejects or cannot answer an API request."""
+
+
 def stripe_is_configured():
     return settings.PAYMENT_PROVIDER == "stripe" and bool(
         settings.STRIPE_SECRET_KEY
+    )
+
+
+def bkash_is_configured():
+    return settings.PAYMENT_PROVIDER == "bkash" and all(
+        [
+            settings.BKASH_BASE_URL,
+            settings.BKASH_APP_KEY,
+            settings.BKASH_APP_SECRET,
+            settings.BKASH_USERNAME,
+            settings.BKASH_PASSWORD,
+        ]
+    )
+
+
+_bkash_token = ""
+_bkash_token_expires_at = 0.0
+
+
+def _bkash_request(method, path, payload=None, token="", extra_headers=None):
+    headers = {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+    }
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+        headers["X-App-Key"] = settings.BKASH_APP_KEY
+    if extra_headers:
+        headers.update(extra_headers)
+    body = json.dumps(payload).encode() if payload is not None else None
+    request = Request(
+        f"{settings.BKASH_BASE_URL}{path}",
+        data=body,
+        headers=headers,
+        method=method,
+    )
+    try:
+        with urlopen(request, timeout=settings.BKASH_TIMEOUT) as response:
+            return json.loads(response.read().decode())
+    except (HTTPError, URLError, ValueError) as error:
+        raise BkashAPIError("bKash API request failed.") from error
+
+
+def _bkash_access_token():
+    global _bkash_token, _bkash_token_expires_at
+    now = time.monotonic()
+    if _bkash_token and now < _bkash_token_expires_at:
+        return _bkash_token
+    response = _bkash_request(
+        "POST",
+        "/auth/grant-token",
+        {
+            "app_key": settings.BKASH_APP_KEY,
+            "app_secret": settings.BKASH_APP_SECRET,
+        },
+        extra_headers={
+            "username": settings.BKASH_USERNAME,
+            "password": settings.BKASH_PASSWORD,
+        },
+    )
+    token = response.get("id_token") or response.get("access_token")
+    if not token:
+        raise BkashAPIError("bKash did not return an access token.")
+    expires_in = int(response.get("expires_in") or 3600)
+    _bkash_token = token
+    _bkash_token_expires_at = now + max(expires_in - 60, 60)
+    return _bkash_token
+
+
+def create_bkash_payment(order, callback_url):
+    if not bkash_is_configured():
+        raise PaymentConfigurationError(
+            "Configure PAYMENT_PROVIDER=bkash and the BKASH_* credentials first."
+        )
+    return _bkash_request(
+        "POST",
+        "/payment/create",
+        {
+            "callbackURL": callback_url,
+            "payerReference": str(order.customer_id or order.email)[:255],
+            "amount": f"{order.total_amount:.2f}",
+            "currency": settings.BKASH_CURRENCY,
+            "intent": "sale",
+            "merchantInvoiceNumber": f"order-{order.pk}",
+        },
+        token=_bkash_access_token(),
+    )
+
+
+def execute_bkash_payment(payment_id):
+    if not bkash_is_configured():
+        raise PaymentConfigurationError(
+            "Configure PAYMENT_PROVIDER=bkash and the BKASH_* credentials first."
+        )
+    return _bkash_request(
+        "POST",
+        "/payment/execute",
+        {"paymentId": payment_id},
+        token=_bkash_access_token(),
     )
 
 
