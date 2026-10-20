@@ -72,3 +72,14 @@ So the revised path is:
 -> Chat Lab
 
 The important distinction is that Lessons 59–60 are needed for almost any launch, while Lessons 61–62 are provider-specific. The architecture is already ready for them; we just need to connect and verify each provider properly.
+
+======
+
+The only remaining work is external/integration work: bKash credentials, Pathao access, durable production media storage, and the later production launch checklist.
+
+The actual integrations still pending are:
+- bKash merchant credentials and sandbox completion
+- Pathao location IDs and webhook access
+- Production private object storage for digital files
+
+======

@@ -12,7 +12,7 @@ from django.db import transaction
 from django.core.exceptions import SuspiciousFileOperation
 from django.core.files.storage import default_storage
 from django.db.models import Count, Q
-from django.http import FileResponse, Http404, JsonResponse
+from django.http import FileResponse, Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.utils.http import content_disposition_header
@@ -221,7 +221,10 @@ def profile_settings(request):
     form = ProfileForm(request.POST or None, request.FILES or None, instance=profile)
     if request.method == "POST" and form.is_valid():
         try:
-            form.save()
+            # Keep storage failures inside a savepoint so the outer request
+            # transaction remains usable when we render the form error.
+            with transaction.atomic():
+                form.save()
         except (OSError, SuspiciousFileOperation):
             logger.exception("Profile picture storage failed for user_id=%s", request.user.pk)
             form.add_error(
@@ -262,12 +265,13 @@ def profile_picture_file(request, path):
     if not path.startswith("uploads/profile_pictures/"):
         raise Http404
     try:
-        file_handle = default_storage.open(path, "rb")
+        with default_storage.open(path, "rb") as file_handle:
+            file_bytes = file_handle.read()
     except (FileNotFoundError, OSError, ValueError, SuspiciousFileOperation):
         raise Http404 from None
 
     content_type = mimetypes.guess_type(Path(path).name)[0] or "application/octet-stream"
-    response = FileResponse(file_handle, content_type=content_type)
+    response = HttpResponse(file_bytes, content_type=content_type)
     response["Content-Disposition"] = content_disposition_header(False, Path(path).name)
     response["X-Content-Type-Options"] = "nosniff"
     response["Cache-Control"] = "private, no-store"
