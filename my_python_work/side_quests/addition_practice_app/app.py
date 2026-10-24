@@ -20,6 +20,9 @@ from tkinter import ttk
 
 QUESTION_COUNT = 10
 HISTORY_FILE = Path(__file__).with_name("addition_progress.json")
+PAGE_BG = "#fff9d6"
+TEXT_COLOR = "#222222"
+APP_FONT = ("Consolas", 10)
 
 # Each tuple is (minimum and maximum for the first number,
 #                minimum and maximum for the second number).
@@ -64,7 +67,7 @@ def generate_questions(difficulty: str, count: int = QUESTION_COUNT) -> list[dic
 
 
 def load_history() -> list[dict]:
-    """Read finished rounds from the local progress file, if it exists."""
+    """Read finished pages from the local progress file, if it exists."""
     try:
         data = json.loads(HISTORY_FILE.read_text(encoding="utf-8"))
         return data if isinstance(data, list) else []
@@ -74,14 +77,14 @@ def load_history() -> list[dict]:
 
 
 def save_history(history: list[dict]) -> None:
-    """Save only the latest 100 rounds so the file stays small."""
+    """Save only the latest 100 pages so the file stays small."""
     try:
         HISTORY_FILE.write_text(
             json.dumps(history[-100:], indent=2),
             encoding="utf-8",
         )
     except OSError:
-        # The round itself still works if the folder is temporarily read-only.
+        # The page itself still works if the folder is temporarily read-only.
         pass
 
 
@@ -93,11 +96,11 @@ class AdditionPracticeApp:
         self.root.title("Addition Practice")
         self.root.geometry("760x700")
         self.root.minsize(600, 560)
-        self.root.configure(bg="#eeeeee")
+        self.root.configure(bg=PAGE_BG)
         self.root.protocol("WM_DELETE_WINDOW", self.close)
 
         self.questions: list[dict[str, int]] = []
-        self.entries: list[ttk.Entry] = []
+        self.entries: list[tk.Entry] = []
         self.history = load_history()
         self.started_at = 0.0
         self.timer_job: str | None = None
@@ -105,7 +108,6 @@ class AdditionPracticeApp:
 
         self.difficulty_var = tk.StringVar(value="Easy")
         self.timer_var = tk.StringVar(value="Time: 0 seconds")
-        self.round_var = tk.StringVar(value="Round 1")
         self.status_var = tk.StringVar(value="Type an answer for each question.")
 
         self.setup_styles()
@@ -118,10 +120,9 @@ class AdditionPracticeApp:
             style.theme_use("clam")
         except tk.TclError:
             pass
-        style.configure("Page.TFrame", background="#ffffff")
-        style.configure("Header.TLabel", background="#ffffff", foreground="#222222", font=("Segoe UI", 16, "bold"))
-        style.configure("Muted.TLabel", background="#ffffff", foreground="#555555")
-        style.configure("Question.TLabel", background="#ffffff", foreground="#222222", font=("Consolas", 11))
+        style.configure("Page.TFrame", background=PAGE_BG)
+        style.configure("Header.TLabel", background=PAGE_BG, foreground=TEXT_COLOR, font=("Consolas", 16, "bold"))
+        style.configure("Muted.TLabel", background=PAGE_BG, foreground=TEXT_COLOR, font=APP_FONT)
 
     def build_interface(self) -> None:
         # The page uses ordinary frames and separators to keep the notepad feel.
@@ -131,7 +132,6 @@ class AdditionPracticeApp:
         header = ttk.Frame(page, style="Page.TFrame")
         header.pack(fill="x")
         ttk.Label(header, text="Addition Practice", style="Header.TLabel").pack(side="left")
-        ttk.Label(header, textvariable=self.round_var, style="Muted.TLabel").pack(side="right", pady=5)
 
         controls = ttk.Frame(page, style="Page.TFrame")
         controls.pack(fill="x", pady=(14, 8))
@@ -145,7 +145,7 @@ class AdditionPracticeApp:
         )
         self.difficulty_box.pack(side="left", padx=(7, 14))
         self.difficulty_box.bind("<<ComboboxSelected>>", lambda _event: self.start_round())
-        ttk.Button(controls, text="Refresh round", command=self.start_round).pack(side="left")
+        ttk.Button(controls, text="Refresh page", command=self.start_round).pack(side="left")
         ttk.Label(controls, textvariable=self.timer_var, style="Muted.TLabel").pack(side="right")
 
         ttk.Separator(page).pack(fill="x", pady=(0, 10))
@@ -166,13 +166,13 @@ class AdditionPracticeApp:
             page,
             height=12,
             wrap="word",
-            bg="#fffef5",
-            fg="#222222",
+            bg=PAGE_BG,
+            fg=TEXT_COLOR,
             relief="solid",
             borderwidth=1,
             padx=10,
             pady=8,
-            font=("Consolas", 10),
+            font=APP_FONT,
         )
         self.results.pack(fill="both", expand=True, pady=(6, 0))
         self.results.configure(state="disabled")
@@ -187,7 +187,6 @@ class AdditionPracticeApp:
         self.entries.clear()
         self.submitted = False
         self.started_at = time.perf_counter()
-        self.round_var.set(f"Round {len(self.history) + 1}")
         self.timer_var.set("Time: 0 seconds")
         self.status_var.set("Type an answer for each question.")
         self.check_button.configure(state="normal")
@@ -202,11 +201,32 @@ class AdditionPracticeApp:
         for index, question in enumerate(self.questions):
             row = ttk.Frame(self.questions_frame, style="Page.TFrame")
             row.pack(fill="x", pady=3)
-            prompt = f"{index + 1:>2}. {question['left']:,} + {question['right']:,} ="
-            ttk.Label(row, text=prompt, width=25, style="Question.TLabel").pack(side="left")
-            entry = ttk.Entry(row, width=18, justify="right")
+            prompt = f"{question['left']:,} + {question['right']:,} ="
+            tk.Label(
+                row,
+                text=prompt,
+                bg=PAGE_BG,
+                fg=TEXT_COLOR,
+                font=APP_FONT,
+            ).pack(side="left")
+            # A flat Entry keeps the answer editable while making the line read
+            # like ordinary text: "12 + 5 = 17".
+            entry = tk.Entry(
+                row,
+                width=8,
+                justify="left",
+                bg=PAGE_BG,
+                fg=TEXT_COLOR,
+                insertbackground=TEXT_COLOR,
+                relief="flat",
+                borderwidth=0,
+                highlightthickness=0,
+                font=APP_FONT,
+            )
             entry.pack(side="left")
             entry.bind("<Return>", lambda _event, current=index: self.handle_enter(current))
+            entry.bind("<Up>", lambda _event, current=index: self.handle_arrow(current, -1))
+            entry.bind("<Down>", lambda _event, current=index: self.handle_arrow(current, 1))
             self.entries.append(entry)
 
         if self.entries:
@@ -221,6 +241,16 @@ class AdditionPracticeApp:
             self.entries[index + 1].selection_range(0, tk.END)
         else:
             self.check_answers()
+        return "break"
+
+    def handle_arrow(self, index: int, direction: int) -> str:
+        """Move to the previous or next answer with the Up/Down keys."""
+        if self.submitted:
+            return "break"
+        target = index + direction
+        if 0 <= target < len(self.entries):
+            self.entries[target].focus_set()
+            self.entries[target].selection_range(0, tk.END)
         return "break"
 
     def update_timer(self) -> None:
@@ -255,7 +285,7 @@ class AdditionPracticeApp:
             self.root.after_cancel(self.timer_job)
             self.timer_job = None
         self.timer_var.set(f"Time: {format_duration(elapsed)}")
-        self.status_var.set("Round complete. Choose Refresh round to practise again.")
+        self.status_var.set("Page complete. Choose Refresh page to practise again.")
         self.check_button.configure(state="disabled")
         for entry in self.entries:
             entry.configure(state="disabled")
@@ -273,7 +303,6 @@ class AdditionPracticeApp:
             "seconds": round(elapsed, 2),
         })
         save_history(self.history)
-        self.round_var.set(f"Round {len(self.history)}")
 
     def show_results(
         self,
@@ -296,20 +325,20 @@ class AdditionPracticeApp:
                     f"| You: {user_answer} | Correct: {question['answer']:,}"
                 )
         else:
-            lines.append("Perfect round! Every answer was correct.")
+            lines.append("Perfect page! Every answer was correct.")
 
         lines.extend(["", self.progress_summary()])
         self.write_results("\n".join(lines))
 
     def progress_summary(self) -> str:
         if not self.history:
-            return "Progress: no completed rounds yet."
+            return "Progress: no completed pages yet."
         recent = self.history[-5:]
         average_accuracy = sum(item["accuracy"] for item in recent) / len(recent)
         average_seconds = sum(item["seconds"] for item in recent) / len(recent)
         best_accuracy = max(item["accuracy"] for item in self.history)
         return (
-            f"Progress (last {len(recent)} rounds): average accuracy "
+            f"Progress (last {len(recent)} pages): average accuracy "
             f"{average_accuracy:.0f}%, average time {format_duration(average_seconds)}; "
             f"best accuracy {best_accuracy:.0f}%."
         )
