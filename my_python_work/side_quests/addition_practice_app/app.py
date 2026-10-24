@@ -123,6 +123,16 @@ class AdditionPracticeApp:
         style.configure("Page.TFrame", background=PAGE_BG)
         style.configure("Header.TLabel", background=PAGE_BG, foreground=TEXT_COLOR, font=("Consolas", 16, "bold"))
         style.configure("Muted.TLabel", background=PAGE_BG, foreground=TEXT_COLOR, font=APP_FONT)
+        style.configure(
+            "Theme.TCombobox",
+            fieldbackground=PAGE_BG,
+            background=PAGE_BG,
+            foreground=TEXT_COLOR,
+            bordercolor=TEXT_COLOR,
+            lightcolor=PAGE_BG,
+            darkcolor=TEXT_COLOR,
+            font=APP_FONT,
+        )
 
     def build_interface(self) -> None:
         # The page uses ordinary frames and separators to keep the notepad feel.
@@ -142,10 +152,11 @@ class AdditionPracticeApp:
             values=("Easy", "Medium", "Hard", "Mixed"),
             state="readonly",
             width=10,
+            style="Theme.TCombobox",
         )
         self.difficulty_box.pack(side="left", padx=(7, 14))
         self.difficulty_box.bind("<<ComboboxSelected>>", lambda _event: self.start_round())
-        ttk.Button(controls, text="Refresh page", command=self.start_round).pack(side="left")
+        self.make_theme_button(controls, "Refresh page", self.start_round).pack(side="left")
         ttk.Label(controls, textvariable=self.timer_var, style="Muted.TLabel").pack(side="right")
 
         ttk.Separator(page).pack(fill="x", pady=(0, 10))
@@ -156,7 +167,7 @@ class AdditionPracticeApp:
 
         actions = ttk.Frame(page, style="Page.TFrame")
         actions.pack(fill="x", pady=(8, 4))
-        self.check_button = ttk.Button(actions, text="Check Answers", command=self.check_answers)
+        self.check_button = self.make_theme_button(actions, "Check Answers", self.check_answers)
         self.check_button.pack(side="left")
         ttk.Label(actions, textvariable=self.status_var, style="Muted.TLabel").pack(side="left", padx=12)
 
@@ -176,6 +187,25 @@ class AdditionPracticeApp:
         )
         self.results.pack(fill="both", expand=True, pady=(6, 0))
         self.results.configure(state="disabled")
+
+    def make_theme_button(self, parent: tk.Widget, text: str, command) -> tk.Button:
+        """Create a simple outlined button that blends into the paper."""
+        return tk.Button(
+            parent,
+            text=text,
+            command=command,
+            bg=PAGE_BG,
+            fg=TEXT_COLOR,
+            activebackground="#f2eebc",
+            activeforeground=TEXT_COLOR,
+            relief="solid",
+            bd=1,
+            highlightthickness=0,
+            padx=8,
+            pady=3,
+            font=APP_FONT,
+            cursor="hand2",
+        )
 
     def start_round(self) -> None:
         """Reset the page, generate ten questions, and start the timer."""
