@@ -70,15 +70,12 @@ button:disabled { cursor: default; opacity: 0.55; }
   margin-left: 5px;
   padding: 0 2px;
   border: 0;
-  border-bottom: 1px solid var(--text);
   border-radius: 0;
   outline: 0;
   background: transparent;
   color: var(--text);
   font: inherit;
 }
-
-.question-line input:focus { border-bottom-width: 2px; }
 hr { margin: 22px 0 0; border: 0; border-top: 1px solid var(--text); }
 
 #results {
