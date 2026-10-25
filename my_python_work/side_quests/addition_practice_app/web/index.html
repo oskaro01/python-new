@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Addition Practice</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <main class="paper" aria-labelledby="app-title">
+      <header class="app-header">
+        <h1 id="app-title">Addition Practice</h1>
+      </header>
+
+      <section class="controls" aria-label="Practice controls">
+        <label for="difficulty">Difficulty:</label>
+        <select id="difficulty">
+          <option>Easy</option>
+          <option>Medium</option>
+          <option>Hard</option>
+          <option>Mixed</option>
+        </select>
+        <button id="refresh-button" type="button">Refresh page</button>
+        <span id="timer" aria-live="polite">Time: 0 seconds</span>
+      </section>
+
+      <p class="instruction">Answer each line, then press Enter on the last answer.</p>
+      <section id="questions" class="questions" aria-label="Addition questions"></section>
+
+      <section class="actions">
+        <button id="check-button" type="button">Check Answers</button>
+        <span id="status" aria-live="polite">Type an answer for each question.</span>
+      </section>
+
+      <hr>
+      <h2>Results</h2>
+      <pre id="results">Your score and answer review will appear here after submission.</pre>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>

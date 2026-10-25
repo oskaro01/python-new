@@ -1,0 +1,101 @@
+:root {
+  color-scheme: light;
+  --paper: #fff9d6;
+  --text: #222222;
+  --active-paper: #f2eebc;
+}
+
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+
+body {
+  margin: 0;
+  padding: 24px;
+  background: var(--paper);
+  color: var(--text);
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 15px;
+}
+
+.paper {
+  width: min(100%, 760px);
+  min-height: calc(100vh - 48px);
+  margin: 0 auto;
+  padding: 18px 20px 28px;
+}
+
+.app-header { margin-bottom: 22px; }
+h1, h2 { margin: 0; font-size: 1.2rem; font-weight: 700; }
+h2 { margin-top: 18px; font-size: 1rem; }
+
+.controls, .actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+button, select {
+  min-height: 32px;
+  padding: 5px 9px;
+  border: 1px solid var(--text);
+  border-radius: 0;
+  background: var(--paper);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+
+button:hover, button:focus-visible, select:focus-visible {
+  background: var(--active-paper);
+  outline: 1px solid var(--text);
+  outline-offset: 1px;
+}
+
+button:disabled { cursor: default; opacity: 0.55; }
+#timer { margin-left: auto; }
+.instruction, #status { margin: 0 0 14px; font-size: 0.9rem; }
+.questions { display: grid; gap: 6px; margin: 8px 0 18px; }
+
+.question-line {
+  display: flex;
+  align-items: baseline;
+  min-height: 24px;
+  white-space: nowrap;
+}
+
+.question-line input {
+  width: 7ch;
+  margin-left: 5px;
+  padding: 0 2px;
+  border: 0;
+  border-bottom: 1px solid var(--text);
+  border-radius: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+}
+
+.question-line input:focus { border-bottom-width: 2px; }
+hr { margin: 22px 0 0; border: 0; border-top: 1px solid var(--text); }
+
+#results {
+  min-height: 150px;
+  margin: 8px 0 0;
+  padding: 0;
+  white-space: pre-wrap;
+  font: inherit;
+  line-height: 1.45;
+}
+
+@media (max-width: 560px) {
+  body { padding: 10px; font-size: 14px; }
+  .paper { min-height: calc(100vh - 20px); padding: 12px 8px 20px; }
+  .app-header { margin-bottom: 16px; }
+  .controls, .actions { gap: 7px; }
+  #timer { width: 100%; margin-left: 0; }
+  .question-line input { width: 8ch; font-size: 16px; }
+  #status { width: 100%; margin-top: 2px; }
+}
