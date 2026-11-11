@@ -8,6 +8,7 @@
     <link rel="icon" href="assets/icons/notebook-pen.svg" type="image/svg+xml">
     <link rel="stylesheet" href="styles.css">
     <script src="storage.js" defer></script>
+    <script src="image-storage.js" defer></script>
     <script src="app.js" defer></script>
 </head>
 <body>
@@ -47,6 +48,7 @@
                     <input id="note-title" class="note-title" type="text" placeholder="Untitled" aria-label="Note title" maxlength="120" autocomplete="off">
                     <p id="created-at" class="created-at"></p>
                     <textarea id="note-body" class="note-body" placeholder="Write a note..." aria-label="Note text" maxlength="80000" spellcheck="true"></textarea>
+                    <div id="note-images" class="note-images" aria-label="Screenshots" hidden></div>
                 </div>
             </div>
             <footer class="editor-footer">
@@ -58,6 +60,10 @@
     </main>
 
     <div id="toast" class="toast" role="status" hidden></div>
+    <dialog id="image-dialog" class="image-dialog" aria-label="Screenshot preview">
+        <img id="image-preview" alt="Pasted screenshot">
+        <form method="dialog" class="dialog-actions"><button type="submit">Close</button></form>
+    </dialog>
     <dialog id="download-dialog" aria-labelledby="download-title">
         <form id="download-form" method="dialog">
             <h2 id="download-title">Download note</h2>
@@ -66,6 +72,7 @@
                 <option value="txt">Plain text (.txt)</option>
                 <option value="md">Markdown (.md)</option>
             </select>
+            <p id="image-export-warning" hidden>Images are downloaded separately using their download buttons.</p>
             <div class="dialog-actions">
                 <button type="submit" value="cancel">Cancel</button>
                 <button type="submit" value="download">Download</button>

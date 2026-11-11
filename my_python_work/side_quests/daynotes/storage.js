@@ -95,7 +95,7 @@
         }
     }
 
-    const api = { NotesStore, ExpiredNoteError, DAY_MS, STORAGE_KEY };
+    const api = { NotesStore, ExpiredNoteError, DAY_MS, STORAGE_KEY, makeNoteId };
     root.DaynotesStorage = api;
     if (typeof module !== "undefined" && module.exports) module.exports = api;
 })(globalThis);

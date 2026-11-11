@@ -11,7 +11,12 @@
     const mobile = window.matchMedia("(max-width: 700px)");
     const PREFERENCES_KEY = "daynotes.preferences.v1";
     const DEFAULT_PREFERENCES = { fontSize: 18, sidebarWidth: 210, noteSpacing: 16 };
+    const imageStore = new window.DaynotesImages.ScreenshotStore();
     let preferences = { ...DEFAULT_PREFERENCES };
+    let imageUrls = [];
+    let imageVersion = 0;
+    let imageWarningShown = false;
+    let pendingPastes = 0;
     let store;
     let notes = [];
     let active = null;
@@ -29,6 +34,98 @@
     function setStatus(message, error = false) {
         status.textContent = message;
         status.dataset.state = error ? "error" : "saved";
+    }
+
+    function downloadBlob(blob, name) {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = name;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    function imageError(error) {
+        if (!imageWarningShown) notify(error.message || "Screenshot storage is unavailable. Text notes still work.");
+        imageWarningShown = true;
+    }
+
+    async function loadImages() {
+        const note = active;
+        const version = ++imageVersion;
+        if (byId("image-dialog").open) byId("image-dialog").close();
+        byId("image-preview").removeAttribute("src");
+        imageUrls.forEach((url) => URL.revokeObjectURL(url));
+        imageUrls = [];
+        byId("note-images").replaceChildren();
+        byId("note-images").hidden = true;
+        byId("image-export-warning").hidden = true;
+        document.querySelector(".paper").classList.remove("has-images");
+        sizeBody();
+        if (!note) return;
+        try {
+            const images = await imageStore.list(note.id);
+            if (version !== imageVersion || active?.id !== note.id || note.expiresAt <= Date.now()) return;
+            const list = byId("note-images");
+            images.forEach((image, index) => {
+                const url = URL.createObjectURL(image.blob);
+                imageUrls.push(url);
+                const figure = document.createElement("figure");
+                figure.className = "screenshot";
+                const preview = document.createElement("button");
+                preview.type = "button";
+                preview.className = "screenshot-preview";
+                preview.setAttribute("aria-label", `View screenshot ${index + 1}`);
+                const picture = document.createElement("img");
+                picture.src = url;
+                picture.alt = `Pasted screenshot ${index + 1}`;
+                if (image.width && image.height) { picture.width = image.width; picture.height = image.height; }
+                preview.appendChild(picture);
+                const stillLive = () => active?.id === note.id && note.expiresAt > Date.now();
+                preview.addEventListener("click", () => {
+                    if (!stillLive()) { refresh(); return; }
+                    byId("image-preview").src = url;
+                    byId("image-dialog").showModal();
+                });
+                const caption = document.createElement("figcaption");
+                const name = document.createElement("span");
+                name.textContent = `Screenshot ${index + 1}`;
+                caption.appendChild(name);
+                for (const [label, icon, action] of [
+                    ["Download screenshot", "download", () => {
+                        if (!stillLive()) { refresh(); return; }
+                        const extension = { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp" }[image.blob.type];
+                        downloadBlob(image.blob, `screenshot-${index + 1}.${extension}`);
+                    }],
+                    ["Remove screenshot", "trash", async () => {
+                        try {
+                            await imageStore.remove(image.id);
+                            if (active?.id === note.id) await loadImages();
+                        } catch (error) { notify(error.message); }
+                    }],
+                ]) {
+                    const button = document.createElement("button");
+                    button.type = "button";
+                    button.className = "icon-button";
+                    button.title = label;
+                    button.setAttribute("aria-label", label);
+                    const symbol = document.createElement("span");
+                    symbol.className = `icon icon-${icon}`;
+                    symbol.setAttribute("aria-hidden", "true");
+                    button.appendChild(symbol);
+                    button.addEventListener("click", action);
+                    caption.appendChild(button);
+                }
+                figure.append(preview, caption);
+                list.appendChild(figure);
+            });
+            list.hidden = !images.length;
+            byId("image-export-warning").hidden = !images.length;
+            document.querySelector(".paper").classList.toggle("has-images", images.length > 0);
+            sizeBody();
+        } catch (error) { imageError(error); }
     }
 
     function remaining(note) {
@@ -107,7 +204,7 @@
             name.textContent = note.title.trim() || "Untitled";
             const preview = document.createElement("span");
             preview.className = "note-row-preview";
-            preview.textContent = note.body.trim().replace(/\s+/g, " ").slice(0, 100) || "Empty note";
+            preview.textContent = note.body.trim().replace(/\s+/g, " ").slice(0, 100) || "No text";
             const time = document.createElement("span");
             time.className = "note-row-time";
             time.textContent = `${remaining(note)} left`;
@@ -141,11 +238,18 @@
         updateMeta();
         renderList();
         sizeBody();
+        loadImages();
     }
 
     function refresh() {
         if (!store) return;
+        const previous = notes;
         notes = store.prune();
+        const liveIds = new Set(notes.map((note) => note.id));
+        previous.filter((note) => !liveIds.has(note.id)).forEach((note) => {
+            imageStore.removeNote(note.id).catch(imageError);
+        });
+        imageStore.prune().catch(imageError);
         if (active && !notes.some((note) => note.id === active.id)) {
             window.clearTimeout(saveTimer);
             openNote();
@@ -203,6 +307,41 @@
         saveTimer = window.setTimeout(flush, 250);
     }));
     search.addEventListener("input", renderList);
+    byId("writing-surface").addEventListener("paste", async (event) => {
+        const files = Array.from(event.clipboardData?.files || []).filter((file) => file.type.startsWith("image/"));
+        if (!files.length) return;
+        event.preventDefault();
+        if (!flush()) return;
+        pendingPastes += 1;
+        let note;
+        try {
+            if (!store) throw new Error("Browser storage is unavailable. The screenshot was not saved.");
+            if (!active) {
+                active = store.save({ title: title.value, body: body.value });
+                refresh();
+            }
+            note = active;
+            setStatus("Saving screenshot...");
+            await imageStore.prune();
+            await imageStore.add(note, files);
+            // The note may have been deleted in another tab while the image was being decoded.
+            if (!store.prune().some((item) => item.id === note.id)) {
+                await imageStore.removeNote(note.id);
+                refresh();
+                throw new Error("The note expired or was deleted before the screenshot was saved.");
+            }
+            if (active?.id === note.id) {
+                await loadImages();
+                byId("note-images").lastElementChild?.scrollIntoView({ block: "nearest" });
+            }
+            notify(files.length === 1 ? "Screenshot saved." : "Screenshots saved.");
+        } catch (error) {
+            notify(error.message || "The screenshot could not be saved.");
+        } finally {
+            pendingPastes -= 1;
+            if (active?.id === note?.id) setStatus(dirty ? "Saving..." : "Saved");
+        }
+    });
     byId("new-note").addEventListener("click", () => {
         if (!flush()) return;
         search.value = "";
@@ -292,17 +431,11 @@
         const markdown = byId("download-format").value === "md";
         const extension = markdown ? "md" : "txt";
         const text = title.value.trim() ? `${title.value.trim()}\n\n${body.value}` : body.value;
-        const url = URL.createObjectURL(new Blob([text], {
+        const blob = new Blob([text], {
             type: markdown ? "text/markdown;charset=utf-8" : "text/plain;charset=utf-8",
-        }));
-        const link = document.createElement("a");
+        });
         const name = title.value.trim().replace(/[<>:"/\\|?*\x00-\x1f]/g, "-").slice(0, 70) || "untitled";
-        link.href = url;
-        link.download = `${name}.${extension}`;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+        downloadBlob(blob, `${name}.${extension}`);
     });
 
     // A browser cannot run timers while closed; prune on return as well as periodically.
@@ -314,7 +447,7 @@
         else { try { refresh(); } catch (error) { setStatus(error.message, true); } }
     });
     window.addEventListener("beforeunload", (event) => {
-        if (!flush()) { event.preventDefault(); event.returnValue = ""; }
+        if (!flush() || pendingPastes) { event.preventDefault(); event.returnValue = ""; }
     });
     window.addEventListener("storage", (event) => {
         if (event.key === PREFERENCES_KEY || event.key === null) loadPreferences();
@@ -345,4 +478,5 @@
         setStatus(error.message || "Browser storage unavailable. Download before leaving.", true);
     }
     showSidebar(!mobile.matches);
+    imageStore.prune().catch(imageError);
 })();

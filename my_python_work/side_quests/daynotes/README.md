@@ -22,6 +22,9 @@ or published by this app.
   preserve the note's text and Markdown markers, with the title on the first
   line when present. **Cancel** closes the dialog without saving a file.
 - The trash icon deletes a note after confirmation.
+- Paste a screenshot into the note with `Ctrl+V` (or `Cmd+V`). It appears below
+  the text. Click/tap the image to enlarge it; its download and trash buttons
+  save or remove that screenshot. Image-only notes work too.
 - The panel icon opens the note list on phones or hides it on desktop.
 - The sliders icon opens **Appearance**: adjust note text from 14 to 28 px,
   sidebar width from 160 to 320 px, and outer note spacing from 0 to 40 px.
@@ -32,6 +35,28 @@ or published by this app.
 
 Appearance preferences are saved separately under `daynotes.preferences.v1`
 in this browser. They do not reset a note's expiry or disappear when it expires.
+
+## Pasted Screenshots
+
+Copy the actual image to the clipboard, not its file path or a link. The browser
+must expose image data in its paste event; mobile clipboard support depends on
+the browser and keyboard. Ordinary text pasting is unchanged.
+
+Screenshots are attachments below the text, not inline rich-text content.
+PNG, JPEG, and WebP are supported, with limits of 5 MB and 16 megapixels per
+image, 5 images per note, and 25 MB of screenshots across the app.
+
+Image blobs are stored in the browser's local IndexedDB database
+`daynotes-images`, separate from text in `localStorage`. This is NOT a server
+database or cloud sync. Screenshots survive refreshes in the same browser
+profile, subject to browser storage availability/eviction. They expire with
+their parent note, not 24 hours after each paste. Cleanup removes the image
+blobs, not just their previews, when the app runs. The same closed-browser
+cleanup limitation described below applies.
+
+Text and Markdown downloads contain only the note's text; use the image's own
+download button to save each screenshot separately. Downloaded copies do not
+expire. Clearing browser/site data can remove both notes and screenshots.
 
 ## Get a Phone and PC URL with Render
 
@@ -133,14 +158,26 @@ last successful save.
 - `styles.css`: screenshot-inspired colors and responsive layout.
 - `app.js`: autosave, selection, search, downloads, and cleanup scheduling.
 - `storage.js`: local persistence and expiry rules, isolated from the UI.
+- `image-storage.js`: IndexedDB screenshot blobs, limits, and expiry cleanup.
 - `tests/store.test.cjs`: small storage tests using Node's built-in test runner.
+- `tests/screenshots_smoke.py`: an optional isolated-browser screenshot check.
 
 Run checks from the repository root:
 
 ```powershell
 node --check my_python_work/side_quests/daynotes/app.js
 node --check my_python_work/side_quests/daynotes/storage.js
+node --check my_python_work/side_quests/daynotes/image-storage.js
 node --test my_python_work/side_quests/daynotes/tests/store.test.cjs
+```
+
+For development, if Playwright and Microsoft Edge are already installed, run
+the screenshot lifecycle check from the repository root. It uses a fresh,
+temporary browser profile, not your saved notes. Neither dependency is needed
+to use Daynotes itself.
+
+```powershell
+.\.venv\Scripts\python.exe my_python_work/side_quests/daynotes/tests/screenshots_smoke.py
 ```
 
 ## Later: Database Storage
