@@ -10,7 +10,7 @@
     const workspace = byId("workspace");
     const mobile = window.matchMedia("(max-width: 700px)");
     const PREFERENCES_KEY = "daynotes.preferences.v1";
-    const DEFAULT_PREFERENCES = { fontSize: 18, sidebarWidth: 210 };
+    const DEFAULT_PREFERENCES = { fontSize: 18, sidebarWidth: 210, noteSpacing: 16 };
     let preferences = { ...DEFAULT_PREFERENCES };
     let store;
     let notes = [];
@@ -51,6 +51,9 @@
             if (saved && Number.isFinite(saved.sidebarWidth)) {
                 preferences.sidebarWidth = Math.max(160, Math.min(320, Math.round(saved.sidebarWidth / 10) * 10));
             }
+            if (saved && Number.isFinite(saved.noteSpacing)) {
+                preferences.noteSpacing = Math.max(0, Math.min(40, Math.round(saved.noteSpacing / 2) * 2));
+            }
         } catch {
             // A broken or blocked preferences entry must not prevent note editing.
         }
@@ -60,10 +63,13 @@
     function applyPreferences() {
         document.documentElement.style.setProperty("--note-font-size", `${preferences.fontSize}px`);
         document.documentElement.style.setProperty("--sidebar-width", `${preferences.sidebarWidth}px`);
+        document.documentElement.style.setProperty("--note-spacing", `${preferences.noteSpacing}px`);
         byId("text-size").value = String(preferences.fontSize);
         byId("sidebar-width").value = String(preferences.sidebarWidth);
+        byId("note-spacing").value = String(preferences.noteSpacing);
         byId("text-size-value").textContent = `${preferences.fontSize} px`;
         byId("sidebar-width-value").textContent = `${preferences.sidebarWidth} px`;
+        byId("note-spacing-value").textContent = `${preferences.noteSpacing} px`;
         sizeBody();
     }
 
@@ -215,6 +221,10 @@
     });
     byId("sidebar-width").addEventListener("input", (event) => {
         preferences.sidebarWidth = Number(event.target.value);
+        savePreferences();
+    });
+    byId("note-spacing").addEventListener("input", (event) => {
+        preferences.noteSpacing = Number(event.target.value);
         savePreferences();
     });
     byId("reset-appearance").addEventListener("click", () => {

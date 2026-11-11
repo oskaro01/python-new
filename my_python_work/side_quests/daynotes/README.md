@@ -15,9 +15,11 @@ or published by this app.
 - Use the download icon to keep a `.txt` copy before a note expires.
 - The trash icon deletes a note after confirmation.
 - The panel icon opens the note list on phones or hides it on desktop.
-- The sliders icon opens **Appearance**: adjust note text from 14 to 28 px and
-  sidebar width from 160 to 320 px. Changes apply immediately; **Reset** returns
-  to 18 px text and a 210 px sidebar. On phones the sidebar is capped at 86% of
+- The sliders icon opens **Appearance**: adjust note text from 14 to 28 px,
+  sidebar width from 160 to 320 px, and outer note spacing from 0 to 40 px.
+  Note spacing controls the gap around the rounded note, not its inner text
+  padding. Changes apply immediately; **Reset** returns to 18 px text, a 210 px
+  sidebar, and 16 px note spacing. On phones the sidebar is capped at 86% of
   the screen so there is still room to close it.
 
 Appearance preferences are saved separately under `daynotes.preferences.v1`
