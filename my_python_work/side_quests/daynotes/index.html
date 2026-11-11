@@ -20,6 +20,7 @@
             <span class="lifetime">24h</span>
         </div>
         <div class="toolbar" aria-label="Note actions">
+            <button id="open-appearance" class="icon-button" type="button" title="Appearance" aria-label="Appearance" aria-haspopup="dialog"><span class="icon icon-sliders" aria-hidden="true"></span></button>
             <button id="new-note" class="icon-button" type="button" title="New note" aria-label="New note"><span class="icon icon-plus" aria-hidden="true"></span></button>
             <button id="download-note" class="icon-button" type="button" title="Download note" aria-label="Download note" disabled><span class="icon icon-download" aria-hidden="true"></span></button>
             <button id="delete-note" class="icon-button" type="button" title="Delete note" aria-label="Delete note" disabled><span class="icon icon-trash" aria-hidden="true"></span></button>
@@ -55,6 +56,25 @@
     </main>
 
     <div id="toast" class="toast" role="status" hidden></div>
+    <dialog id="appearance-dialog" aria-labelledby="appearance-title">
+        <form method="dialog">
+            <h2 id="appearance-title">Appearance</h2>
+            <div class="appearance-control">
+                <label for="text-size">Text size</label>
+                <output id="text-size-value" for="text-size">18 px</output>
+                <input id="text-size" type="range" min="14" max="28" step="1" value="18">
+            </div>
+            <div class="appearance-control">
+                <label for="sidebar-width">Sidebar width</label>
+                <output id="sidebar-width-value" for="sidebar-width">210 px</output>
+                <input id="sidebar-width" type="range" min="160" max="320" step="10" value="210">
+            </div>
+            <div class="dialog-actions">
+                <button id="reset-appearance" type="button">Reset</button>
+                <button type="submit">Done</button>
+            </div>
+        </form>
+    </dialog>
     <dialog id="delete-dialog">
         <form method="dialog">
             <h2>Delete this note?</h2>

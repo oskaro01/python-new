@@ -15,6 +15,13 @@ or published by this app.
 - Use the download icon to keep a `.txt` copy before a note expires.
 - The trash icon deletes a note after confirmation.
 - The panel icon opens the note list on phones or hides it on desktop.
+- The sliders icon opens **Appearance**: adjust note text from 14 to 28 px and
+  sidebar width from 160 to 320 px. Changes apply immediately; **Reset** returns
+  to 18 px text and a 210 px sidebar. On phones the sidebar is capped at 86% of
+  the screen so there is still room to close it.
+
+Appearance preferences are saved separately under `daynotes.preferences.v1`
+in this browser. They do not reset a note's expiry or disappear when it expires.
 
 ## Get a Phone and PC URL with Render
 

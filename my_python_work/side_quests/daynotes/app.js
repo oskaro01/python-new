@@ -9,6 +9,9 @@
     const search = byId("search-notes");
     const workspace = byId("workspace");
     const mobile = window.matchMedia("(max-width: 700px)");
+    const PREFERENCES_KEY = "daynotes.preferences.v1";
+    const DEFAULT_PREFERENCES = { fontSize: 18, sidebarWidth: 210 };
+    let preferences = { ...DEFAULT_PREFERENCES };
     let store;
     let notes = [];
     let active = null;
@@ -36,6 +39,41 @@
     function sizeBody() {
         body.style.height = "0px";
         body.style.height = `${body.scrollHeight}px`;
+    }
+
+    function loadPreferences() {
+        preferences = { ...DEFAULT_PREFERENCES };
+        try {
+            const saved = JSON.parse(window.localStorage.getItem(PREFERENCES_KEY));
+            if (saved && Number.isFinite(saved.fontSize)) {
+                preferences.fontSize = Math.max(14, Math.min(28, Math.round(saved.fontSize)));
+            }
+            if (saved && Number.isFinite(saved.sidebarWidth)) {
+                preferences.sidebarWidth = Math.max(160, Math.min(320, Math.round(saved.sidebarWidth / 10) * 10));
+            }
+        } catch {
+            // A broken or blocked preferences entry must not prevent note editing.
+        }
+        applyPreferences();
+    }
+
+    function applyPreferences() {
+        document.documentElement.style.setProperty("--note-font-size", `${preferences.fontSize}px`);
+        document.documentElement.style.setProperty("--sidebar-width", `${preferences.sidebarWidth}px`);
+        byId("text-size").value = String(preferences.fontSize);
+        byId("sidebar-width").value = String(preferences.sidebarWidth);
+        byId("text-size-value").textContent = `${preferences.fontSize} px`;
+        byId("sidebar-width-value").textContent = `${preferences.sidebarWidth} px`;
+        sizeBody();
+    }
+
+    function savePreferences() {
+        applyPreferences();
+        try {
+            window.localStorage.setItem(PREFERENCES_KEY, JSON.stringify(preferences));
+        } catch {
+            notify("Appearance applied for this session; browser storage is unavailable.");
+        }
     }
 
     function updateMeta() {
@@ -170,6 +208,19 @@
         showSidebar(byId("toggle-notes").getAttribute("aria-expanded") !== "true");
     });
     byId("sidebar-backdrop").addEventListener("click", () => showSidebar(false));
+    byId("open-appearance").addEventListener("click", () => byId("appearance-dialog").showModal());
+    byId("text-size").addEventListener("input", (event) => {
+        preferences.fontSize = Number(event.target.value);
+        savePreferences();
+    });
+    byId("sidebar-width").addEventListener("input", (event) => {
+        preferences.sidebarWidth = Number(event.target.value);
+        savePreferences();
+    });
+    byId("reset-appearance").addEventListener("click", () => {
+        preferences = { ...DEFAULT_PREFERENCES };
+        savePreferences();
+    });
     byId("delete-note").addEventListener("click", () => {
         if (flush()) byId("delete-dialog").showModal();
     });
@@ -208,6 +259,7 @@
         if (!flush()) { event.preventDefault(); event.returnValue = ""; }
     });
     window.addEventListener("storage", (event) => {
+        if (event.key === PREFERENCES_KEY || event.key === null) loadPreferences();
         if (event.key !== STORAGE_KEY && event.key !== null) return;
         try {
             const selectedId = active?.id;
@@ -225,6 +277,7 @@
         if (event.key === "Escape" && mobile.matches) showSidebar(false);
     });
 
+    loadPreferences();
     try {
         store = new NotesStore(window.localStorage);
         notes = store.prune();
