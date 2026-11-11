@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark">
+    <title>Daynotes</title>
+    <link rel="icon" href="assets/icons/notebook-pen.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="styles.css">
+    <script src="storage.js" defer></script>
+    <script src="app.js" defer></script>
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-start">
+            <button id="toggle-notes" class="icon-button" type="button" title="Show or hide notes" aria-label="Show or hide notes" aria-controls="sidebar" aria-expanded="true">
+                <span class="icon icon-panel" aria-hidden="true"></span>
+            </button>
+            <h1>Daynotes</h1>
+            <span class="lifetime">24h</span>
+        </div>
+        <div class="toolbar" aria-label="Note actions">
+            <button id="new-note" class="icon-button" type="button" title="New note" aria-label="New note"><span class="icon icon-plus" aria-hidden="true"></span></button>
+            <button id="download-note" class="icon-button" type="button" title="Download note" aria-label="Download note" disabled><span class="icon icon-download" aria-hidden="true"></span></button>
+            <button id="delete-note" class="icon-button" type="button" title="Delete note" aria-label="Delete note" disabled><span class="icon icon-trash" aria-hidden="true"></span></button>
+        </div>
+    </header>
+
+    <main id="workspace" class="workspace">
+        <button id="sidebar-backdrop" class="sidebar-backdrop" type="button" aria-label="Close notes" hidden></button>
+        <aside id="sidebar" class="sidebar" aria-label="Notes">
+            <div class="sidebar-heading"><h2>Notes</h2><span id="note-count">0</span></div>
+            <label class="search-field">
+                <span class="icon icon-search" aria-hidden="true"></span>
+                <input id="search-notes" type="search" placeholder="Search notes" aria-label="Search notes" autocomplete="off">
+            </label>
+            <div id="note-list" class="note-list"></div>
+            <p id="list-empty" class="list-empty">No notes yet.</p>
+        </aside>
+
+        <section class="editor" aria-label="Note editor">
+            <div id="writing-surface" class="writing-surface">
+                <div class="paper">
+                    <input id="note-title" class="note-title" type="text" placeholder="Untitled" aria-label="Note title" maxlength="120" autocomplete="off">
+                    <p id="created-at" class="created-at"></p>
+                    <textarea id="note-body" class="note-body" placeholder="Write a note..." aria-label="Note text" maxlength="80000" spellcheck="true"></textarea>
+                </div>
+            </div>
+            <footer class="editor-footer">
+                <span id="save-status" role="status">New note</span>
+                <span id="expires-in" class="expiry"><span class="icon icon-clock" aria-hidden="true"></span><span id="expiry-text">24h</span></span>
+                <span id="character-count">0 characters</span>
+            </footer>
+        </section>
+    </main>
+
+    <div id="toast" class="toast" role="status" hidden></div>
+    <dialog id="delete-dialog">
+        <form method="dialog">
+            <h2>Delete this note?</h2>
+            <p>This cannot be undone.</p>
+            <div class="dialog-actions">
+                <button type="submit" value="cancel">Cancel</button>
+                <button id="confirm-delete" class="danger-button" type="submit" value="delete">Delete note</button>
+            </div>
+        </form>
+    </dialog>
+</body>
+</html>
