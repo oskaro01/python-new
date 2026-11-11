@@ -22,7 +22,7 @@
         <div class="toolbar" aria-label="Note actions">
             <button id="open-appearance" class="icon-button" type="button" title="Appearance" aria-label="Appearance" aria-haspopup="dialog"><span class="icon icon-sliders" aria-hidden="true"></span></button>
             <button id="new-note" class="icon-button" type="button" title="New note" aria-label="New note"><span class="icon icon-plus" aria-hidden="true"></span></button>
-            <button id="download-note" class="icon-button" type="button" title="Download note" aria-label="Download note" disabled><span class="icon icon-download" aria-hidden="true"></span></button>
+            <button id="download-note" class="icon-button" type="button" title="Download note" aria-label="Download note" aria-haspopup="dialog" disabled><span class="icon icon-download" aria-hidden="true"></span></button>
             <button id="delete-note" class="icon-button" type="button" title="Delete note" aria-label="Delete note" disabled><span class="icon icon-trash" aria-hidden="true"></span></button>
         </div>
     </header>
@@ -56,6 +56,20 @@
     </main>
 
     <div id="toast" class="toast" role="status" hidden></div>
+    <dialog id="download-dialog" aria-labelledby="download-title">
+        <form id="download-form" method="dialog">
+            <h2 id="download-title">Download note</h2>
+            <label class="download-label" for="download-format">Format</label>
+            <select id="download-format" class="download-select" name="format">
+                <option value="txt">Plain text (.txt)</option>
+                <option value="md">Markdown (.md)</option>
+            </select>
+            <div class="dialog-actions">
+                <button type="submit" value="cancel">Cancel</button>
+                <button type="submit" value="download">Download</button>
+            </div>
+        </form>
+    </dialog>
     <dialog id="appearance-dialog" aria-labelledby="appearance-title">
         <form method="dialog">
             <h2 id="appearance-title">Appearance</h2>

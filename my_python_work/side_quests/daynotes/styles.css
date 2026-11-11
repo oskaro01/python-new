@@ -10,12 +10,13 @@
     --note-font-size: 18px;
     --sidebar-width: 210px;
     --note-spacing: 16px;
+    --header-height: 48px;
 }
 
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 body { margin: 0; height: 100vh; height: 100dvh; overflow: hidden; }
-button, input, textarea { font: inherit; color: inherit; letter-spacing: 0; }
+button, input, textarea, select { font: inherit; color: inherit; letter-spacing: 0; }
 button { cursor: pointer; }
 button:disabled { opacity: 0.35; cursor: default; }
 button, input, textarea { -webkit-tap-highlight-color: transparent; }
@@ -23,7 +24,7 @@ button, input, textarea { -webkit-tap-highlight-color: transparent; }
 ::selection { background: #656969; color: #ffffff; }
 
 .app-header {
-    height: 64px;
+    height: var(--header-height);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -45,7 +46,7 @@ h1 { margin: 0 8px 0 0; font-size: 18px; font-weight: 500; }
 .icon-clock { --icon: url("assets/icons/clock.svg"); }
 .icon-sliders { --icon: url("assets/icons/sliders-horizontal.svg"); }
 
-.workspace { height: calc(100% - 64px); display: grid; grid-template-columns: var(--sidebar-width) minmax(0, 1fr); }
+.workspace { height: calc(100% - var(--header-height)); display: grid; grid-template-columns: var(--sidebar-width) minmax(0, 1fr); }
 .sidebar { min-height: 0; overflow: auto; border-right: 1px solid var(--border); padding: 18px 10px; scrollbar-width: thin; }
 .sidebar-heading { display: flex; align-items: center; justify-content: space-between; padding: 0 10px 18px; }
 .sidebar-heading h2 { margin: 0; font-size: 14px; font-weight: 500; }
@@ -87,6 +88,8 @@ dialog { width: min(400px, calc(100% - 32px)); padding: 24px; border: 1px solid 
 dialog::backdrop { background: rgb(0 0 0 / 60%); }
 dialog h2 { margin: 0 0 10px; font-size: 18px; font-weight: 500; }
 dialog p { color: var(--muted); font-size: 14px; }
+.download-label { display: block; margin: 20px 0 8px; font-size: 14px; }
+.download-select { width: 100%; padding: 9px; border: 1px solid #626667; border-radius: 4px; background: var(--page); font-size: 14px; }
 .dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
 .dialog-actions button { padding: 8px 13px; border: 1px solid #626667; border-radius: 4px; background: transparent; font-size: 13px; }
 .dialog-actions .danger-button { background: #bfc0c1; border-color: #bfc0c1; color: #252829; }

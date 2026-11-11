@@ -12,7 +12,10 @@ or published by this app.
 
 - Use the plus button for a new note; typing saves automatically.
 - The side panel lists notes and searches their titles and text.
-- Use the download icon to keep a `.txt` copy before a note expires.
+- Use the download icon, choose **Plain text (.txt)** or **Markdown (.md)**,
+  then press **Download** to keep a copy before a note expires. Both formats
+  preserve the note's text and Markdown markers, with the title on the first
+  line when present. **Cancel** closes the dialog without saving a file.
 - The trash icon deletes a note after confirmation.
 - The panel icon opens the note list on phones or hides it on desktop.
 - The sliders icon opens **Appearance**: adjust note text from 14 to 28 px,

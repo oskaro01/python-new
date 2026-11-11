@@ -245,12 +245,22 @@
     });
     byId("download-note").addEventListener("click", () => {
         if (active && active.expiresAt <= Date.now()) { refresh(); return; }
+        byId("download-dialog").showModal();
+    });
+    byId("download-form").addEventListener("submit", (event) => {
+        if (event.submitter?.value !== "download") return;
+        if (active && active.expiresAt <= Date.now()) { refresh(); return; }
+        if (!title.value.trim() && !body.value.trim()) return;
+        const markdown = byId("download-format").value === "md";
+        const extension = markdown ? "md" : "txt";
         const text = title.value.trim() ? `${title.value.trim()}\n\n${body.value}` : body.value;
-        const url = URL.createObjectURL(new Blob([text], { type: "text/plain;charset=utf-8" }));
+        const url = URL.createObjectURL(new Blob([text], {
+            type: markdown ? "text/markdown;charset=utf-8" : "text/plain;charset=utf-8",
+        }));
         const link = document.createElement("a");
         const name = title.value.trim().replace(/[<>:"/\\|?*\x00-\x1f]/g, "-").slice(0, 70) || "untitled";
         link.href = url;
-        link.download = `${name}.txt`;
+        link.download = `${name}.${extension}`;
         document.body.appendChild(link);
         link.click();
         link.remove();
