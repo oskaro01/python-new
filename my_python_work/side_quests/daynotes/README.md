@@ -11,6 +11,11 @@ key, or server is needed. All icons are bundled locally. Nothing is uploaded
 or published by this app.
 
 - Use the plus button for a new note; typing saves automatically.
+- Use the upload icon to open a UTF-8 `.md` file as a new editable note. The
+  filename becomes its title, and the Markdown stays as plain text. This does
+  not overwrite the open note, modify the original file, or upload anything to
+  a server. Imported notes get their own 24-hour lifetime starting at import.
+  Files must be at most 320 KB and contain at most 80,000 characters.
 - The side panel lists notes and searches their titles and text.
 - Use the download icon, choose **Plain text (.txt)** or **Markdown (.md)**,
   then press **Download** to keep a copy before a note expires. Both formats

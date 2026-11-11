@@ -41,6 +41,7 @@ h1 { margin: 0 8px 0 0; font-size: 18px; font-weight: 500; }
 .icon-panel { --icon: url("assets/icons/panel-left.svg"); }
 .icon-plus { --icon: url("assets/icons/plus.svg"); }
 .icon-download { --icon: url("assets/icons/download.svg"); }
+.icon-upload { --icon: url("assets/icons/upload.svg"); }
 .icon-trash { --icon: url("assets/icons/trash-2.svg"); }
 .icon-search { --icon: url("assets/icons/search.svg"); }
 .icon-clock { --icon: url("assets/icons/clock.svg"); }
@@ -83,7 +84,7 @@ h1 { margin: 0 8px 0 0; font-size: 18px; font-weight: 500; }
 .workspace.sidebar-hidden { grid-template-columns: minmax(0, 1fr); }
 .sidebar-hidden .sidebar { display: none; }
 .sidebar-backdrop { display: none; }
-.toast { position: fixed; z-index: 5; bottom: 60px; left: 50%; transform: translateX(-50%); width: max-content; max-width: calc(100% - 32px); padding: 12px 16px; border: 1px solid #626667; border-radius: 4px; background: #252829; font-size: 13px; line-height: 1.5; }
+.toast { position: fixed; z-index: 5; bottom: 60px; left: 50%; transform: translateX(-50%); width: max-content; max-width: calc(100% - 32px); padding: 12px 16px; border: 1px solid #626667; border-radius: 4px; background: #252829; font-size: 13px; line-height: 1.5; overflow-wrap: anywhere; }
 dialog { width: min(400px, calc(100% - 32px)); padding: 24px; border: 1px solid #626667; border-radius: 6px; color: #bfc0c1; background: var(--paper); }
 dialog::backdrop { background: rgb(0 0 0 / 60%); }
 dialog h2 { margin: 0 0 10px; font-size: 18px; font-weight: 500; }
@@ -114,6 +115,9 @@ dialog p { color: var(--muted); font-size: 14px; }
 
 @media (max-width: 420px) {
     .lifetime { display: none; }
+    .app-header { gap: 8px; }
+    .toolbar { gap: 2px; }
+    .icon-button { width: 32px; height: 32px; flex-basis: 32px; }
 }
 
 @media (prefers-reduced-motion: no-preference) {

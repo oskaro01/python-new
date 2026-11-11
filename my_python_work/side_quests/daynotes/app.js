@@ -210,6 +210,44 @@
         if (mobile.matches) showSidebar(false);
         title.focus();
     });
+    byId("import-note").addEventListener("click", () => {
+        if (flush()) byId("import-file").click();
+    });
+    byId("import-file").addEventListener("change", async (event) => {
+        const input = event.target;
+        const file = input.files[0];
+        if (!file) return;
+        byId("import-note").disabled = true;
+        try {
+            if (!/\.md$/i.test(file.name)) throw new Error("Choose a Markdown (.md) file.");
+            if (file.size > 320 * 1024) throw new Error("Choose a Markdown file no larger than 320 KB.");
+            let text;
+            try {
+                text = new TextDecoder("utf-8", { fatal: true }).decode(await file.arrayBuffer());
+            } catch {
+                throw new Error("This file could not be read as UTF-8 text.");
+            }
+            if (text.includes("\0")) throw new Error("Choose a text Markdown file, not a binary file.");
+            if (text.length > body.maxLength) throw new Error("Markdown files must contain 80,000 characters or fewer.");
+            if (!flush()) return;
+            if (!store) throw new Error("Browser storage is unavailable. The file was not imported.");
+            // Save a separate note before switching the editor, so failure cannot replace a draft.
+            const imported = store.save({
+                title: file.name.replace(/\.md$/i, "").trim().slice(0, title.maxLength) || "Untitled",
+                body: text,
+            });
+            notes = store.prune();
+            search.value = "";
+            openNote(imported);
+            if (mobile.matches) showSidebar(false);
+            notify(`Opened ${file.name}.`);
+        } catch (error) {
+            notify(error.message || "The file could not be opened. Your current note is unchanged.");
+        } finally {
+            input.value = "";
+            byId("import-note").disabled = false;
+        }
+    });
     byId("toggle-notes").addEventListener("click", () => {
         showSidebar(byId("toggle-notes").getAttribute("aria-expanded") !== "true");
     });
