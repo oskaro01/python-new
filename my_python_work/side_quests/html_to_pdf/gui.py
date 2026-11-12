@@ -6,13 +6,18 @@ from threading import Thread
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
-from converter import PdfOptions, convert_html, open_pdf, validate_paths
+if __package__:
+    from .converter import LAYOUTS, SOURCE_FORMATS, PdfOptions, convert_document, open_pdf, validate_paths
+else:
+    from converter import LAYOUTS, SOURCE_FORMATS, PdfOptions, convert_document, open_pdf, validate_paths
 
 
 class ConverterApp:
-    def __init__(self, root):
+    def __init__(self, root, *, source_format="html"):
         self.root = root
-        self.root.title("HTML to PDF")
+        self.source_format = source_format
+        self.label, self.extensions = SOURCE_FORMATS[source_format]
+        self.root.title(f"{self.label} to PDF")
         self.root.geometry("680x430")
         self.root.minsize(560, 430)
         self.root.protocol("WM_DELETE_WINDOW", self.close)
@@ -22,6 +27,7 @@ class ConverterApp:
         self.output = tk.StringVar()
         self.paper = tk.StringVar(value="HTML print CSS")
         self.browser = tk.StringVar(value="Auto")
+        self.layout = tk.StringVar(value="Auto")
         self.margin = tk.StringVar()
         self.delay = tk.StringVar(value="250")
         self.timeout = tk.StringVar(value="30")
@@ -32,9 +38,9 @@ class ConverterApp:
         frame = ttk.Frame(root, padding=20)
         frame.pack(fill="both", expand=True)
         frame.columnconfigure(1, weight=1)
-        ttk.Label(frame, text="HTML to PDF", font=("Segoe UI", 17)).grid(row=0, column=0, columnspan=3, sticky="w", pady=(0, 20))
+        ttk.Label(frame, text=f"{self.label} to PDF", font=("Segoe UI", 17)).grid(row=0, column=0, columnspan=3, sticky="w", pady=(0, 20))
         for row, label, value, command in (
-            (1, "HTML file", self.source, self.browse_source),
+            (1, f"{self.label} file", self.source, self.browse_source),
             (2, "Save PDF", self.output, self.browse_output),
         ):
             ttk.Label(frame, text=label).grid(row=row, column=0, sticky="w", padx=(0, 10), pady=6)
@@ -47,11 +53,13 @@ class ConverterApp:
         for row, label, value, column in (
             (0, "Paper", self.paper, 0), (0, "Browser", self.browser, 2),
             (1, "Margin (mm)", self.margin, 0), (1, "Extra wait (ms)", self.delay, 2),
-            (2, "Load timeout (s)", self.timeout, 0),
+            (2, "Load timeout (s)", self.timeout, 0), (2, "Layout", self.layout, 2),
         ):
             ttk.Label(options, text=label).grid(row=row, column=column, sticky="w", padx=(0, 10), pady=6)
-            if label in {"Paper", "Browser"}:
-                values = ["HTML print CSS", "A4", "A5", "Letter", "Legal"] if label == "Paper" else ["Auto", "Chrome", "Edge", "Chromium"]
+            choices = {"Paper": ["HTML print CSS", "A4", "A5", "Letter", "Legal"],
+                       "Browser": ["Auto", "Chrome", "Edge", "Chromium"], "Layout": list(LAYOUTS.values())}
+            if label in choices:
+                values = choices[label]
                 widget = ttk.Combobox(options, textvariable=value, values=values, state="readonly", width=17)
                 if label == "Paper":
                     widget.bind("<<ComboboxSelected>>", self.paper_changed)
@@ -77,7 +85,10 @@ class ConverterApp:
             self.landscape.set(False)
 
     def browse_source(self):
-        path = filedialog.askopenfilename(title="Choose HTML file", filetypes=[("HTML files", "*.html *.htm"), ("All files", "*.*")])
+        path = filedialog.askopenfilename(
+            title=f"Choose {self.label} file",
+            filetypes=[(f"{self.label} files", " ".join(f"*{extension}" for extension in self.extensions)), ("All files", "*.*")],
+        )
         if path:
             self.source.set(path)
             self.output.set(str(Path(path).with_suffix(".pdf")))
@@ -97,16 +108,19 @@ class ConverterApp:
             return
         try:
             if not self.source.get().strip():
-                raise ValueError("Choose an HTML file first.")
+                raise ValueError(f"Choose a {self.label} file first.")
             paper = "css" if self.paper.get() == "HTML print CSS" else self.paper.get().lower()
             options = PdfOptions(
                 paper=paper, browser=self.browser.get().lower(), landscape=self.landscape.get(),
                 margin_mm=float(self.margin.get()) if self.margin.get().strip() else None,
                 delay_ms=int(self.delay.get()), timeout_seconds=float(self.timeout.get()),
                 background=self.background.get(), allow_missing_assets=self.allow_missing.get(),
+                layout=next(key for key, label in LAYOUTS.items() if label == self.layout.get()),
             )
             options.validate()
-            source, target = validate_paths(self.source.get(), self.output.get() or None, overwrite=True)
+            source, target = validate_paths(
+                self.source.get(), self.output.get() or None, overwrite=True, source_format=self.source_format,
+            )
             overwrite = target.exists()
             if overwrite and not messagebox.askyesno("Replace PDF?", f"Replace this existing file?\n\n{target}"):
                 return
@@ -123,7 +137,7 @@ class ConverterApp:
 
     def worker(self, source, target, options, overwrite):
         try:
-            result = convert_html(source, target, options, overwrite=overwrite)
+            result = convert_document(source, target, options, overwrite=overwrite, source_format=self.source_format)
             self.queue.put((True, result))
         except Exception as error:
             self.queue.put((False, str(error)))
@@ -141,7 +155,8 @@ class ConverterApp:
             self.status.set("Conversion failed")
             messagebox.showerror("Conversion failed", value)
             return
-        self.status.set(f"Saved {value.size_bytes:,} bytes using {value.browser}")
+        self.status.set(f"Saved {value.size_bytes:,} bytes using {value.browser}"
+                        + (f" / {value.message_count} messages" if value.message_count else ""))
         details = f"PDF saved:\n{value.path}"
         if value.warnings:
             details += "\n\nWarnings:\n" + "\n".join(value.warnings)
@@ -158,7 +173,7 @@ class ConverterApp:
             self.root.destroy()
 
 
-def launch():
+def launch(*, source_format="html"):
     root = tk.Tk()
-    ConverterApp(root)
+    ConverterApp(root, source_format=source_format)
     root.mainloop()

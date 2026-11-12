@@ -1,0 +1,79 @@
+From: <Saved by MHTML to PDF example>
+Snapshot-Content-Location: https://example.invalid/notes.html
+Subject: Archived field notes
+MIME-Version: 1.0
+Content-Type: multipart/related; boundary="mhtml-example-boundary"; type="text/html"
+
+--mhtml-example-boundary
+Content-Type: text/html; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Location: https://example.invalid/notes.html
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Archived Field Notes</title>
+<link rel="stylesheet" href="https://example.invalid/style.css">
+</head>
+<body>
+<p class="eyebrow">FIELD JOURNAL / 01</p>
+<h1>Archived Field Notes</h1>
+<p class="intro">A saved webpage, printed as a document.</p>
+<img src="https://example.invalid/diagram.svg" width="240" height="96" alt="A small diagram of three connected stages">
+<h2>What is inside this archive?</h2>
+<p>This MHTML contains the HTML document, a stylesheet, and an image in a single file. The original website does not need to exist for these resources to appear.</p>
+<table>
+<thead><tr><th>Resource</th><th>Saved with the page</th></tr></thead>
+<tbody><tr><td>Text and structure</td><td>HTML part</td></tr>
+<tr><td>Typography and page layout</td><td>CSS part</td></tr>
+<tr><td>Diagram</td><td>Image part</td></tr></tbody>
+</table>
+<p>Text remains selectable in the resulting PDF. The browser's print layout handles page size, margins, and normal content flow.</p>
+<p class="screen-only">This screen-only sentence should not appear in the PDF.</p>
+<section class="next-page">
+<p class="eyebrow">FIELD JOURNAL / 02</p>
+<h1>The Next Page</h1>
+<p>This section begins on page two because the archived stylesheet contains an explicit page break.</p>
+<h2>Longer documents</h2>
+<p>Long paragraphs and lists flow onto additional pages automatically. You do not need to split the archive into separate files.</p>
+<p>An archive can only contain what was saved. Missing images, unloaded content, and a site's restrictive print styles cannot always be repaired during conversion.</p>
+<p class="ending">End of the archived notes.</p>
+</section>
+</body>
+</html>
+
+--mhtml-example-boundary
+Content-Type: text/css; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Location: https://example.invalid/style.css
+
+@page { size: A4; margin: 18mm; }
+* { box-sizing: border-box; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+body { margin: 0; font-family: Arial, sans-serif; color: #252a2c; font-size: 12pt; line-height: 1.6; }
+h1 { font-size: 28pt; line-height: 1.2; margin: 12px 0 18px; }
+h2 { font-size: 16pt; margin-top: 28px; }
+.eyebrow { color: #26715a; font-size: 10pt; font-weight: bold; }
+.intro { color: #596162; font-size: 15pt; }
+table { width: 100%; border-collapse: collapse; margin: 22px 0; }
+th, td { padding: 10px; border: 1px solid #cdd6d2; text-align: left; }
+th { background: #e5f1eb; }
+tr, img { break-inside: avoid; }
+.next-page { break-before: page; }
+.ending { border-top: 2px solid #26715a; padding-top: 16px; margin-top: 28px; }
+@media print { .screen-only { display: none; } }
+
+--mhtml-example-boundary
+Content-Type: image/svg+xml
+Content-Transfer-Encoding: 7bit
+Content-Location: https://example.invalid/diagram.svg
+
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="96" viewBox="0 0 240 96">
+<rect width="240" height="96" fill="#f0f5f2"/>
+<path d="M42 48H198" stroke="#78948a" stroke-width="4"/>
+<rect x="20" y="26" width="44" height="44" rx="4" fill="#26715a"/>
+<rect x="98" y="26" width="44" height="44" rx="4" fill="#e7b655"/>
+<rect x="176" y="26" width="44" height="44" rx="4" fill="#4c80a0"/>
+</svg>
+
+--mhtml-example-boundary--

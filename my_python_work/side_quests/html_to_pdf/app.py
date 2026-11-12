@@ -3,20 +3,28 @@
 import argparse
 import sys
 
-from converter import BROWSERS, PAPERS, PdfOptions, convert_html, open_pdf
+if __package__:
+    from .converter import BROWSERS, LAYOUTS, PAPERS, SOURCE_FORMATS, PdfOptions, convert_document, open_pdf
+else:
+    from converter import BROWSERS, LAYOUTS, PAPERS, SOURCE_FORMATS, PdfOptions, convert_document, open_pdf
 
 
-def main(argv=None):
+def main(argv=None, *, source_format="html"):
     argv = sys.argv[1:] if argv is None else argv
+    label, extensions = SOURCE_FORMATS[source_format]
     if not argv:
-        from gui import launch
-        launch()
+        if __package__:
+            from .gui import launch
+        else:
+            from gui import launch
+        launch(source_format=source_format)
         return 0
-    parser = argparse.ArgumentParser(description="Convert a local HTML file to PDF using Chrome, Edge, or Chromium.")
-    parser.add_argument("html", help="Local .html or .htm source file")
-    parser.add_argument("-o", "--output", help="PDF output path; defaults to the HTML filename with .pdf")
+    parser = argparse.ArgumentParser(description=f"Convert a local {label} file to PDF using Chrome, Edge, or Chromium.")
+    parser.add_argument("source", help=f"Local {' or '.join(extensions)} source file")
+    parser.add_argument("-o", "--output", help="PDF output path; defaults to the source filename with .pdf")
     parser.add_argument("--browser", choices=sorted(BROWSERS), default="auto")
     parser.add_argument("--paper", choices=list(PAPERS), default="css", help="Respect HTML print CSS by default (A4 fallback)")
+    parser.add_argument("--layout", choices=list(LAYOUTS), default="auto", help="Auto reformats recognized MHTML chats for pagination")
     parser.add_argument("--landscape", action="store_true", help="Requires an explicit paper size")
     parser.add_argument("--margin-mm", type=float, help="Override all page margins; otherwise preserve HTML CSS")
     parser.add_argument("--no-background", action="store_true")
@@ -31,13 +39,15 @@ def main(argv=None):
         paper=args.paper, landscape=args.landscape, margin_mm=args.margin_mm,
         background=not args.no_background, browser=args.browser, timeout_seconds=args.timeout,
         delay_ms=args.delay_ms, wait_selector=args.wait_for, allow_missing_assets=args.allow_missing_assets,
+        layout=args.layout,
     )
     try:
-        result = convert_html(args.html, args.output, options, overwrite=args.force)
+        result = convert_document(args.source, args.output, options, overwrite=args.force, source_format=source_format)
     except (ValueError, OSError, RuntimeError) as error:
         print(f"Error: {error}", file=sys.stderr)
         return 1
     print(f"Created: {result.path}\nSize: {result.size_bytes:,} bytes | Browser: {result.browser}")
+    print(f"Layout: {LAYOUTS[result.layout]}" + (f" | Messages: {result.message_count}" if result.message_count else ""))
     for warning in result.warnings:
         print(f"Warning: {warning}", file=sys.stderr)
     if args.open:

@@ -1,5 +1,9 @@
 # HTML to PDF
 
+For saved `.mhtml` / `.mht` webpages, use the dedicated
+[MHTML to PDF side quest](../mhtml_to_pdf/README.md). It shares this print
+engine while adding archive validation and offline rendering.
+
 A Python desktop and command-line converter inspired by
 `HTML-to-PDF-Friendly.ps1`. It uses Playwright with Chrome, Edge, or Chromium
 to print local HTML rather than rebuilding the document with a limited HTML
