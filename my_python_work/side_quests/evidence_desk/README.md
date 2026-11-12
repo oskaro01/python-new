@@ -8,7 +8,7 @@ Open [index.html](index.html) in Edge or Chrome. Choose **Import Markdown** and 
 
 1. Choose a section in the left sidebar.
 2. Fill in the answer fields. Prefilled country names and search phrases remain editable.
-3. Paste a screenshot while an answer field is focused, or use **Add screenshot** beside that entry. Pasting outside an entry attaches it to the current section.
+3. Click the **Screenshot clipboard** box beside an entry, then press **Ctrl+V** to paste a screenshot. The border highlights when the box is focused; it stays focused after pasting so you can add another image. You can still paste while an answer field is focused, or use **Add screenshot** to choose a file. The section-level box attaches evidence to the whole section.
 4. Add a caption and source reference under the screenshot. Click its preview to enlarge it, or its download icon to retrieve it.
 5. Set the section status when appropriate. Completion is your decision, not a claim that the app verified your research.
 6. Choose **Export Excel** to download the filled `.xlsx` workbook.

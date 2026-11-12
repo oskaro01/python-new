@@ -15,8 +15,8 @@ def saved(page):
     expect(page.locator("#save-status")).to_have_text("Saved on this device")
 
 
-def paste_image(page):
-    page.evaluate("""async () => {
+def paste_image(page, document_target=False):
+    page.evaluate("""async (documentTarget) => {
         const canvas = document.createElement('canvas');
         canvas.width = 640; canvas.height = 320;
         const ctx = canvas.getContext('2d');
@@ -26,10 +26,10 @@ def paste_image(page):
         ctx.fillStyle = '#337fb0'; ctx.fillRect(35, 110, 340, 150);
         const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
         const data = new DataTransfer(); data.items.add(new File([blob], 'test.png', {type: 'image/png'}));
-        document.querySelector('.entry textarea').dispatchEvent(new ClipboardEvent('paste', {
+        (documentTarget ? document.body : document.activeElement).dispatchEvent(new ClipboardEvent('paste', {
             clipboardData: data, bubbles: true, cancelable: true
         }));
-    }""")
+    }""", document_target)
 
 
 def check_layout(page):
@@ -56,8 +56,13 @@ def main():
             page.locator(".entry textarea").first.fill("=SUM(1,2) - AED 200")
             page.locator(".entry textarea").nth(1).fill("AED 25")
             saved(page)
+            clipboard = page.locator(".entry .screenshot-input").first
+            clipboard.click()
+            expect(clipboard).to_be_focused()
             paste_image(page)
             expect(page.locator(".evidence-item")).to_have_count(1)
+            expect(clipboard).to_be_focused()
+            assert page.evaluate("EvidenceDesk.getState().images[0].contextId === EvidenceDesk.getState().schema.sections[1].items[0].id")
             page.get_by_role("textbox", name="E-001 Caption", exact=True).fill("Test price capture")
             page.get_by_role("textbox", name="E-001 Source URL or reference", exact=True).fill("https://example.com/product")
             saved(page)
@@ -76,6 +81,25 @@ def main():
             expect(page.locator(".entry textarea").first).to_have_value("=SUM(1,2) - AED 200")
             expect(page.locator(".entry textarea").nth(1)).to_have_value("")
             assert page.evaluate("EvidenceDesk.getState().images.length") == 1
+            # A body-targeted paste still belongs to the focused entry, not the section.
+            other_clipboard = page.locator(".entry .screenshot-input").nth(1)
+            other_clipboard.click(); expect(other_clipboard).to_be_focused()
+            paste_image(page, document_target=True)
+            expect(page.locator(".evidence-item")).to_have_count(2)
+            expect(other_clipboard).to_be_focused()
+            assert page.evaluate("EvidenceDesk.getState().images[1].contextId === EvidenceDesk.getState().schema.sections[1].items[1].id")
+            page.once("dialog", lambda dialog: dialog.accept())
+            page.locator(".entry").nth(1).get_by_role("button", name="Remove screenshot", exact=True).click()
+            expect(page.locator(".evidence-item")).to_have_count(1)
+            # Section-level boxes use their own context and support keyboard focus too.
+            section_clipboard = page.locator("#section-evidence .screenshot-input")
+            section_clipboard.focus(); expect(section_clipboard).to_be_focused()
+            paste_image(page)
+            expect(page.locator("#section-evidence .evidence-item")).to_have_count(1)
+            assert page.evaluate("EvidenceDesk.getState().images[1].contextId === EvidenceDesk.getState().schema.sections[1].id")
+            page.once("dialog", lambda dialog: dialog.accept())
+            page.locator("#section-evidence").get_by_role("button", name="Remove screenshot", exact=True).click()
+            expect(page.locator(".evidence-item")).to_have_count(1)
             page.locator("#section-status").select_option("Complete"); saved(page)
             check_layout(page)
             page.screenshot(path=str(OUTPUT / "desktop.png"), full_page=True)

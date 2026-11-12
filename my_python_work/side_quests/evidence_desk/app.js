@@ -127,7 +127,13 @@
     toolbar.append(el('span', '', 'Evidence'), command('Add screenshot', 'plus', () => {
       uploadContext = {id: contextId, label: contextLabel, sectionId}; $('image-file').click();
     }));
-    area.append(toolbar, imageGrid(images.filter(image => image.contextId === contextId))); return area;
+    const clipboard = el('div', 'screenshot-input'); clipboard.tabIndex = 0;
+    clipboard.setAttribute('role', 'group'); clipboard.setAttribute('aria-label', `Screenshot clipboard for ${contextLabel}`);
+    clipboard.title = 'Paste screenshot';
+    const icon = el('img'); icon.src = 'assets/icons/upload.svg'; icon.alt = '';
+    clipboard.append(icon, el('span', '', 'Screenshot clipboard'));
+    clipboard.onclick = () => clipboard.focus();
+    area.append(toolbar, clipboard, imageGrid(images.filter(image => image.contextId === contextId))); return area;
   }
   function entry(item, expanded) {
     const details = el('details', 'entry'); details.open = expanded; details.dataset.context = item.id; details.dataset.contextLabel = item.label;
@@ -205,7 +211,14 @@
       const image = {id: crypto.randomUUID(), projectId: project.id, sectionId: context.sectionId, contextId: context.id, contextLabel: context.label, label: `E-${String(number).padStart(3, '0')}`, caption: '', source: '', createdAt: new Date().toISOString(), width, height, extension, blob};
       await S.putImage(image); images.push(image); touch();
     }
-    renderSection(); review(); toast('Screenshot saved.');
+    const focused = document.activeElement;
+    const restoreClipboardFocus = focused?.classList.contains('screenshot-input') && focused.closest('[data-context]')?.dataset.context === context.id;
+    renderSection(); review();
+    if (restoreClipboardFocus) {
+      const target = [...document.querySelectorAll('.screenshot-input')].find(node => node.closest('[data-context]').dataset.context === context.id);
+      target?.focus({preventScroll: true});
+    }
+    toast('Screenshot saved.');
   }
   async function run(action) {
     if (busy) return;
@@ -230,7 +243,7 @@
     const files = [...(event.clipboardData?.items || [])].filter(item => item.kind === 'file' && item.type.startsWith('image/')).map(item => item.getAsFile()).filter(Boolean);
     if (!files.length) return;
     event.preventDefault();
-    const node = event.target.closest('[data-context]');
+    const node = event.target.closest('[data-context]') || document.activeElement?.closest('[data-context]');
     const section = schema.sections.find(section => section.id === sectionId);
     run(() => addImages(files, {id: node?.dataset.context || sectionId, label: node?.dataset.contextLabel || section.title, sectionId}));
   });
