@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>HTML to PDF - Print Demo</title>
+    <style>
+        @page { size: A4; margin: 18mm; }
+        * { box-sizing: border-box; }
+        body { margin: 0; color: #252c32; font: 14px/1.6 Arial, sans-serif; }
+        h1 { margin: 0 0 6px; font-size: 28px; line-height: 1.2; }
+        h2 { margin: 24px 0 10px; font-size: 18px; }
+        p { margin: 8px 0 16px; }
+        header { padding-bottom: 18px; border-bottom: 3px solid #365a73; }
+        .subtitle { color: #56646d; }
+        .summary { margin-top: 24px; padding: 16px; background: #e9f1ec; border-left: 4px solid #487357; }
+        table { width: 100%; margin: 18px 0; border-collapse: collapse; }
+        th, td { border: 1px solid #cbd2d6; padding: 10px; text-align: left; }
+        th { background: #edf0f3; }
+        tr, .summary { break-inside: avoid; }
+        .page-two { break-before: page; }
+        .screen-only { padding: 12px; border: 1px solid #cbd2d6; }
+        @media print { .screen-only { display: none; } }
+    </style>
+</head>
+<body>
+    <p class="screen-only">This line is visible on screen but should not appear in the PDF.</p>
+    <header>
+        <h1>Project Notes</h1>
+        <p class="subtitle">A two-page print layout</p>
+    </header>
+    <section class="summary">
+        <strong>Review complete</strong>
+        <p>Keep the layout readable, the text selectable, and the page breaks intentional.</p>
+    </section>
+    <h2>Rendering Checklist</h2>
+    <table>
+        <thead><tr><th>Item</th><th>Expected Result</th></tr></thead>
+        <tbody>
+            <tr><td>Print stylesheet</td><td>A4 pages with 18 mm margins</td></tr>
+            <tr><td>Backgrounds</td><td>The summary and table header retain their shading</td></tr>
+            <tr><td>Text</td><td>Searchable, selectable document content</td></tr>
+            <tr><td>Page breaks</td><td>The next section starts on page two</td></tr>
+        </tbody>
+    </table>
+    <p><a href="https://playwright.dev/python/docs/api/class-page#page-pdf">PDF rendering reference</a></p>
+    <section class="page-two">
+        <h1>Next Steps</h1>
+        <p>This section begins on a new page because the HTML includes a print page-break rule.</p>
+        <h2>A Useful Print Rule</h2>
+        <pre>@page { size: A4; margin: 18mm; }</pre>
+        <p>The converter leaves this rule in charge unless an explicit paper or margin override is selected.</p>
+        <p>Use your own HTML file next. Keep its relative CSS, images, and fonts alongside it.</p>
+    </section>
+</body>
+</html>
