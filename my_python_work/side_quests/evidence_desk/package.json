@@ -1,0 +1,16 @@
+{
+  "name": "evidence-desk",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local Markdown evidence workbooks with screenshots and Excel export",
+  "scripts": {
+    "vendor": "node scripts/vendor.cjs",
+    "test": "node --test tests/model.test.cjs"
+  },
+  "dependencies": {
+    "dompurify": "3.4.17",
+    "exceljs": "4.4.0",
+    "fflate": "0.8.3",
+    "marked": "17.0.1"
+  }
+}
