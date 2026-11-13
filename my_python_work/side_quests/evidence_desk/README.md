@@ -27,6 +27,21 @@ The parser uses the Marked Markdown library rather than splitting table text by 
 
 These conventions fit the supplied GCC evidence capture pack. Arbitrary Markdown is not a formal form schema; review the result after importing a differently structured document.
 
+## Manual Form Controls
+
+When a document uses a different structure, the automatic detection does not have to get everything right:
+
+- Choose **Edit table** above a read-only reference table to turn its existing rows into editable forms. This is a workbook-specific override; the source file is not changed.
+- Choose **Add answer** after a content block, table or checklist. Enter your question or label in the dialog. Empty sections also have an Add answer control.
+- Every custom answer has a text field and its own screenshot clipboard/upload area. You can leave the answer blank and attach only evidence.
+- Use the custom answer's rename icon to change its label without losing the answer or attached screenshots. Its trash icon deletes the answer and its screenshots after confirmation.
+
+Custom controls autosave and are included in Excel, the filled Markdown report, printing and backup/restore. They are stored in `project.json`, not written into the original Markdown. Sharing only `template.md` will not transfer them; use the backup ZIP.
+
+Custom answers stay after their selected content block. If that block changes during a template update, they move to the end of the same section. Renumbering a section is supported. Renaming or removing the entire section may leave answers/screenshots in the existing review panel instead; the data is retained. Table overrides match the section and table headers, so review tables again after changing those identifiers. A reference table with no data rows needs a manually added answer instead.
+
+There is a maximum of 200 custom answer boxes per workbook. These are manual controls, not an AI form generator; unusual Markdown might still need your judgment.
+
 To explicitly make the next table editable, place this on its own line before the table:
 
 ```markdown

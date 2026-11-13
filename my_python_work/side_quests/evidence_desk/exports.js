@@ -83,6 +83,9 @@
           }
           page.addRow([]);
         }
+        if (block.type === 'referenceTable') {
+          row(page, block.headers, true); block.rows.forEach(cells => row(page, cells)); page.addRow([]);
+        }
         if (block.type === 'notes') row(page, [block.item.label, M.value(project, block.item.fields[0]), refs(block.item.id)]);
         if (block.type === 'checklist') for (const item of block.items) row(page, [item.id ? M.checked(project, item) ? 'Done' : 'Pending' : '', item.label || item.text]);
       }
@@ -100,6 +103,7 @@
     const files = {};
     const metadata = images.map(({blob, ...image}) => image);
     files['project.json'] = fflate.strToU8(JSON.stringify({format: 'evidence-desk', version: 1, project, images: metadata}));
+    if (files['project.json'].length > 3000000) throw new Error('Workbook answer data exceeds the 3 MB backup limit. Export Excel instead.');
     files['template.md'] = fflate.strToU8(project.markdown);
     files['report.md'] = fflate.strToU8(M.report(project, schema, images));
     for (const image of images) files[`images/${image.id}.${image.extension}`] = new Uint8Array(await image.blob.arrayBuffer());
@@ -128,6 +132,7 @@
     }
     project.values = record(source.values, 'string'); project.checks = record(source.checks, 'boolean');
     project.statuses = record(source.statuses, 'string');
+    Object.assign(project, M.customizations(source));
     if (Object.values(project.statuses).some(status => !M.STATUSES.includes(status))) throw new Error('Invalid section status.');
     // Only copy known catalog properties; backup data never becomes HTML or executable code.
     for (const [key, entry] of Object.entries(source.catalog || {})) {

@@ -17,9 +17,26 @@
     }
     return read(marked.Lexer.lexInline(text)).trim();
   }
-  function parse(markdown, filename = 'Workbook.md') {
+  function customizations(options = {}) {
+    const modes = options.tableModes === undefined ? {} : options.tableModes;
+    const answers = options.manualAnswers === undefined ? [] : options.manualAnswers;
+    if (!modes || typeof modes !== 'object' || Array.isArray(modes) || Object.keys(modes).length > 1000 || !Array.isArray(answers) || answers.length > 200) throw new Error('Invalid workbook customizations (maximum 200 custom answers).');
+    const tableModes = Object.fromEntries(Object.entries(modes).map(([key, value]) => {
+      if (!/^(overview|s-[a-z0-9-]+)\/[tr]-[a-z0-9-]+$/.test(key) || key.length > 500 || typeof value !== 'boolean') throw new Error('Invalid table customization.');
+      return [key, value];
+    }));
+    const seen = new Set();
+    const manualAnswers = answers.map(answer => {
+      if (!answer || !/^m-[a-zA-Z0-9-]{1,80}$/.test(answer.id) || seen.has(answer.id) || typeof answer.sectionId !== 'string' || !answer.sectionId || answer.sectionId.length > 500 || (answer.afterId !== null && (typeof answer.afterId !== 'string' || answer.afterId.length > 500)) || typeof answer.label !== 'string' || !answer.label.trim() || answer.label.length > 160) throw new Error('Invalid custom answer.');
+      seen.add(answer.id);
+      return {id: answer.id, sectionId: answer.sectionId, afterId: answer.afterId, label: answer.label.trim()};
+    });
+    return {tableModes, manualAnswers};
+  }
+  function parse(markdown, filename = 'Workbook.md', options = {}) {
     if (typeof markdown !== 'string' || !markdown.trim()) throw new Error('Choose a Markdown file with some content.');
     if (markdown.length > 500000) throw new Error('Markdown files must contain fewer than 500,000 characters.');
+    const settings = customizations(options);
     const tokens = marked.lexer(markdown, {gfm: true});
     const titleToken = tokens.find(token => token.type === 'heading');
     const schema = {title: titleToken ? plain(titleToken.text) : filename.replace(/\.md$/i, ''), metadata: {}, sections: [], fields: [], checks: []};
@@ -63,10 +80,12 @@
         const rows = token.rows.map(row => row.map(cell => plain(cell.text)));
         const keyValue = headers.length === 2 && /answer|response|value|your input/i.test(headers[1]);
         const pivot = headers.length > 1 && /^field$/i.test(headers[0]);
-        const editable = tableMode !== 'reference' && (tableMode === 'form' || keyValue || pivot || rows.some(row => row.some(value => !value.trim())));
+        const detected = tableMode !== 'reference' && (tableMode === 'form' || keyValue || pivot || rows.some(row => row.some(value => !value.trim())));
         tableMode = null;
-        if (!editable) { prose(token.raw + '\n'); continue; }
-        const id = unique(`${section.id}/t-${hash(headers.join('|'))}`);
+        // Reference-table IDs use a separate namespace to preserve existing answer IDs.
+        const id = unique(`${section.id}/${detected ? 't' : 'r'}-${hash(headers.join('|'))}`);
+        const editable = Object.hasOwn(settings.tableModes, id) ? settings.tableModes[id] : detected;
+        if (!editable) { section.blocks.push({type: 'referenceTable', id, markdown: token.raw, headers, rows}); continue; }
         const table = {type: 'table', id, sectionId: section.id, headers, rows, kind: keyValue ? 'keyValue' : pivot ? 'pivot' : 'records', items: []};
         function field(item, row, column, label) {
           const value = rows[row][column] || '';
@@ -116,6 +135,28 @@
       }
       prose(token.raw || '');
     }
+    for (const section of schema.sections) {
+      section.blocks = section.blocks.filter(block => block.type !== 'prose' || block.markdown.trim());
+      for (const block of section.blocks) {
+        if (!block.id) block.id = block.type === 'notes' ? block.item.id : unique(`${section.id}/b-${hash(block.markdown || JSON.stringify(block.items))}`);
+      }
+      const local = settings.manualAnswers.filter(answer => answer.sectionId === section.id);
+      const placed = new Set(), blocks = [];
+      function insert(answer) {
+        placed.add(answer.id);
+        const item = {id: answer.id, label: answer.label, manual: true, fields: []};
+        const field = {id: `${item.id}/answer`, sectionId: section.id, itemId: item.id, itemLabel: item.label, label: item.label, default: ''};
+        item.fields.push(field); schema.fields.push(field); section.items.push(item);
+        blocks.push({type: 'notes', id: item.id, item});
+      }
+      for (const block of section.blocks) {
+        blocks.push(block);
+        local.filter(answer => answer.afterId === block.id).forEach(insert);
+      }
+      // If surrounding text changes, keep the answer at the end of its surviving section.
+      local.filter(answer => !placed.has(answer.id)).forEach(insert);
+      section.blocks = blocks;
+    }
     return schema;
   }
   const value = (project, field) => Object.hasOwn(project.values, field.id) ? project.values[field.id] : field.default;
@@ -125,11 +166,17 @@
   }
   function create(markdown, filename, id) {
     const schema = parse(markdown, filename);
-    return {id, version: 1, filename, markdown, title: schema.metadata.product || schema.title, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), values: {}, checks: {}, statuses: {}, catalog: catalog(schema)};
+    return {id, version: 1, filename, markdown, title: schema.metadata.product || schema.title, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), values: {}, checks: {}, statuses: {}, tableModes: {}, manualAnswers: [], catalog: catalog(schema)};
   }
   function revise(project, markdown, filename) {
-    const schema = parse(markdown, filename);
+    const schema = parse(markdown, filename, project);
     return {...project, markdown, filename, title: schema.metadata.product || schema.title, catalog: {...project.catalog, ...catalog(schema)}, updatedAt: new Date().toISOString()};
+  }
+  function customize(project, changes) {
+    const next = {...project, ...customizations({...project, ...changes}), updatedAt: new Date().toISOString()};
+    const schema = parse(next.markdown, next.filename, next);
+    next.catalog = {...project.catalog, ...catalog(schema)};
+    return next;
   }
   function unmatched(project, schema) {
     const live = new Set([...schema.fields, ...schema.checks].map(field => field.id));
@@ -146,7 +193,7 @@
     for (const section of schema.sections) {
       text += `## ${section.title}\n\nStatus: ${project.statuses[section.id] || 'Not started'}\n\n`;
       for (const block of section.blocks) {
-        if (block.type === 'prose') text += `${block.markdown}\n\n`;
+        if (block.type === 'prose' || block.type === 'referenceTable') text += `${block.markdown}\n\n`;
         if (block.type === 'table') {
           text += '<!-- evidence:form -->\n';
           text += `| ${block.headers.map(cell).join(' | ')} |\n| ${block.headers.map(() => '---').join(' | ')} |\n`;
@@ -164,5 +211,5 @@
     if (old.length) text += '\n## Saved answers needing review\n\n' + old.map(([key, answer]) => `- ${project.catalog[key]?.label || key}: ${String(answer)}`).join('\n');
     return text;
   }
-  return {STATUSES, parse, plain, create, revise, value, checked, unmatched, filledRows, report};
+  return {STATUSES, parse, plain, create, revise, customize, customizations, value, checked, unmatched, filledRows, report};
 });

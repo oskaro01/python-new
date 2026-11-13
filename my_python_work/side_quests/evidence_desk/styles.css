@@ -57,6 +57,13 @@ textarea { resize: vertical; min-height: 70px; line-height: 1.55; width: 100%; }
 .entry > summary span { margin-left: 9px; color: var(--muted); font-weight: 400; font-size: 11px; }
 .entry[open] > summary { border-bottom: 1px solid #e9edf0; }
 .entry-body { padding: 16px; }
+.block-tools, .answer-tools { display: flex; justify-content: flex-end; gap: 7px; margin: 8px 0 16px; }
+.block-tools button { font-size: 11px; min-height: 28px; padding: 4px 8px; }
+.answer-tools { margin: 0 0 12px; }
+#answer-dialog { width: min(440px, 92vw); padding: 22px; }
+#answer-dialog h2 { margin: 0 0 20px; font-size: 19px; }
+#answer-label { width: 100%; }
+.dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 22px; }
 .fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .fields.single { grid-template-columns: minmax(0, 1fr); }
 .field { display: flex; flex-direction: column; gap: 7px; font-size: 12px; line-height: 1.5; }

@@ -1,5 +1,6 @@
 """Exercise a local workbook in a disposable browser profile, not personal drafts."""
 import argparse
+import json
 from pathlib import Path
 import zipfile
 from xml.etree import ElementTree as ET
@@ -36,6 +37,87 @@ def check_layout(page):
     assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), "Horizontal page overflow"
     assert page.evaluate("""[...document.querySelectorAll('button')].filter(node => node.getClientRects().length)
         .every(node => node.scrollWidth <= node.clientWidth + 2)"""), "Button text overflows"
+
+
+def manual_controls(page):
+    template = '# Different format\n\n## Interview\n\nWhat did you observe in the recording?\n\n| Item | Finding |\n| --- | --- |\n| Camera | Recorded |\n\n- [ ] Reviewed sources\n\n## Empty\n'
+    page.locator("#import-md").click()
+    page.locator("#md-file").set_input_files({"name": "different.md", "mimeType": "text/markdown", "buffer": template.encode()})
+    expect(page.locator("#product-title")).to_have_text("Different format")
+    page.locator("#sections button").filter(has_text="Interview").click()
+    expect(page.locator(".prose table")).to_have_count(1)
+    page.get_by_role("button", name="Add answer", exact=True).first.click()
+    page.locator("#answer-label").fill("My own question")
+    page.locator("#answer-dialog").get_by_role("button", name="Save", exact=True).click()
+    expect(page.get_by_role("textbox", name="My own question", exact=True)).to_be_focused()
+    page.get_by_role("textbox", name="My own question", exact=True).fill("Manual answer persists")
+    manual = page.locator(".entry").filter(has=page.locator("summary", has_text="My own question"))
+    manual.locator(".screenshot-input").click(); paste_image(page)
+    expect(page.locator(".evidence-item")).to_have_count(1)
+    manual.get_by_role("button", name="Rename answer", exact=True).click()
+    page.locator("#answer-label").fill("My renamed question")
+    page.locator("#answer-dialog").get_by_role("button", name="Save", exact=True).click()
+    expect(page.get_by_role("textbox", name="My renamed question", exact=True)).to_have_value("Manual answer persists")
+    assert page.evaluate("EvidenceDesk.getState().images[0].contextLabel") == "My renamed question"
+    page.get_by_role("button", name="Edit table", exact=True).click()
+    expect(page.locator(".prose table")).to_have_count(0)
+    page.get_by_role("textbox", name="Finding", exact=True).fill("Audited")
+    saved(page)
+    # Even a section with no recognized fields can hold screenshot-only evidence.
+    page.locator("#sections button").filter(has_text="Empty").click()
+    page.get_by_role("button", name="Add answer", exact=True).click()
+    page.locator("#answer-label").fill("Visual note")
+    page.locator("#answer-dialog").get_by_role("button", name="Save", exact=True).click()
+    page.locator(".entry .screenshot-input").click(); paste_image(page)
+    expect(page.locator(".entry .evidence-item")).to_have_count(1)
+    page.once("dialog", lambda dialog: dialog.accept())
+    page.get_by_role("button", name="Delete answer", exact=True).click()
+    expect(page.locator(".entry")).to_have_count(0)
+    assert page.evaluate("EvidenceDesk.getState().images.length") == 1
+    page.locator("#sections button").filter(has_text="Interview").click()
+    revised = template.replace('## Interview', '## 12. Interview').replace('What did you observe in the recording?', 'Changed paragraph with a different structure.')
+    page.locator("#update-md").click()
+    page.locator("#md-file").set_input_files({"name": "revised-different.md", "mimeType": "text/markdown", "buffer": revised.encode()})
+    expect(page.locator("#document-label")).to_have_text("revised-different.md")
+    expect(page.locator("#section-content > .entry:last-child").get_by_role("textbox", name="My renamed question", exact=True)).to_have_value("Manual answer persists")
+    expect(page.get_by_role("textbox", name="Finding", exact=True)).to_have_value("Audited")
+    saved(page); page.reload(); page.evaluate("EvidenceDesk.ready")
+    expect(page.get_by_role("textbox", name="My renamed question", exact=True)).to_have_value("Manual answer persists")
+    expect(page.get_by_role("textbox", name="Finding", exact=True)).to_have_value("Audited")
+    check_layout(page); page.screenshot(path=str(OUTPUT / "manual-desktop.png"), full_page=True)
+    page.set_viewport_size({"width": 390, "height": 844})
+    check_layout(page); page.screenshot(path=str(OUTPUT / "manual-mobile.png"), full_page=True)
+    page.set_viewport_size({"width": 1360, "height": 960})
+    with page.expect_download() as downloaded:
+        page.locator("#export-xlsx").click()
+    xlsx = OUTPUT / "manual-workbook.xlsx"; downloaded.value.save_as(xlsx)
+    with zipfile.ZipFile(xlsx) as archive:
+        strings = archive.read("xl/sharedStrings.xml").decode()
+        assert all(value in strings for value in ["My renamed question", "Manual answer persists", "Audited"])
+        assert len([name for name in archive.namelist() if name.startswith("xl/media/") and not name.endswith("/")]) == 1
+    with page.expect_download() as downloaded:
+        page.locator("#backup").click()
+    backup = OUTPUT / "manual-backup.zip"; downloaded.value.save_as(backup)
+    with zipfile.ZipFile(backup) as archive:
+        data = json.loads(archive.read("project.json"))
+        assert len(data["project"]["manualAnswers"]) == 1
+        assert len(data["project"]["tableModes"]) == 1
+        assert "Manual answer persists" in archive.read("report.md").decode()
+        assert archive.read("template.md").decode() == revised
+    original_id = page.evaluate("EvidenceDesk.getState().project.id")
+    page.locator("#backup-file").set_input_files(backup)
+    page.wait_for_function("id => EvidenceDesk.getState().project.id !== id", arg=original_id)
+    expect(page.get_by_role("textbox", name="My renamed question", exact=True)).to_have_value("Manual answer persists")
+    expect(page.get_by_role("textbox", name="Finding", exact=True)).to_have_value("Audited")
+    assert page.evaluate("EvidenceDesk.getState().images.length") == 1
+    page.once("dialog", lambda dialog: dialog.accept())
+    page.get_by_role("button", name="Delete answer", exact=True).click()
+    expect(page.get_by_role("textbox", name="My renamed question", exact=True)).to_have_count(0)
+    saved(page)
+    assert page.evaluate("async () => (await EvidenceStore.getImages(EvidenceDesk.getState().project.id)).length") == 0
+    assert page.evaluate("async id => (await EvidenceStore.getImages(id)).length", original_id) == 1
+    expect(page.locator("#review-banner")).to_be_hidden()
+    print("PASS: reference-table conversion, custom answer placement/rename/deletion, screenshots, template update, reload, Excel and backup restore")
 
 
 def main():
@@ -110,7 +192,7 @@ def main():
             expect(page.locator("#sidebar")).to_be_visible()
             page.locator("#sections button").filter(has_text="Security check").click()
             assert not page.evaluate("Boolean(window.importedScriptRan)")
-            assert page.locator("#section-content img").count() == 0
+            assert page.locator("#section-content .prose img").count() == 0
             check_layout(page)
             page.set_viewport_size({"width": 1360, "height": 960})
             with page.expect_download() as downloaded:
@@ -149,6 +231,7 @@ def main():
                 try { await EvidenceExports.restore(new File(['no zip'], 'bad.zip')); return false; }
                 catch (_) { return true; }
             }""")
+            manual_controls(page)
             if args.template:
                 page.locator("#import-md").click(); page.locator("#md-file").set_input_files(args.template)
                 page.wait_for_function("EvidenceDesk.getState().project.filename !== 'Updated.md'")

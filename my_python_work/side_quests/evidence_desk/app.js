@@ -4,6 +4,7 @@
   const $ = id => document.getElementById(id);
   let project = null, schema = null, images = [], projects = [], sectionId = '', updating = false;
   let saveTimer, toastTimer, saveChain = Promise.resolve(), uploadContext = null, busy = false;
+  let answerEditor = null;
   const urls = new Map();
   function el(tag, className, text) {
     const node = document.createElement(tag); if (className) node.className = className;
@@ -50,7 +51,7 @@
     if (saveCurrent) await flush();
     project = (await S.getProjects()).find(item => item.id === id) || null;
     forgetURLs(); images = project ? await S.getImages(id) : [];
-    schema = project ? M.parse(project.markdown, project.filename) : null;
+    schema = project ? M.parse(project.markdown, project.filename, project) : null;
     sectionId = preferred || schema?.sections.find(section => section.items.length)?.id || schema?.sections[0].id || '';
     try { localStorage.setItem('evidence-desk-active', id || ''); } catch (_) { /* IndexedDB still stores the workbook. */ }
     await refreshProjects(); render();
@@ -146,8 +147,42 @@
       input.oninput = () => { project.values[field.id] = input.value; touch(); };
       label.append(input); fields.append(label);
     }
-    const body = el('div', 'entry-body'); body.append(fields, evidence(item.id, item.label));
+    const body = el('div', 'entry-body');
+    if (item.manual) {
+      const tools = el('div', 'answer-tools');
+      tools.append(command('Rename answer', 'notebook-pen', () => editAnswer(null, item), true), command('Delete answer', 'trash-2', () => run(async () => {
+        if (!confirm(`Delete "${item.label}" and its answer and screenshots?`)) return;
+        await flush();
+        const attached = images.filter(image => image.contextId === item.id);
+        for (const image of attached) await S.removeImage(image.id);
+        images = images.filter(image => image.contextId !== item.id);
+        for (const image of attached) { if (urls.has(image.id)) URL.revokeObjectURL(urls.get(image.id)); urls.delete(image.id); }
+        const values = {...project.values}, catalog = {...project.catalog};
+        delete values[item.fields[0].id]; delete catalog[item.fields[0].id];
+        applyCustomization({manualAnswers: project.manualAnswers.filter(answer => answer.id !== item.id)});
+        project.values = values; project.catalog = catalog; touch(); review();
+      }), true));
+      body.append(tools);
+    }
+    body.append(fields, evidence(item.id, item.label));
     details.append(body); return details;
+  }
+  function applyCustomization(changes) {
+    project = M.customize(project, changes);
+    schema = M.parse(project.markdown, project.filename, project);
+    touch(); renderSection(); review(); nav();
+  }
+  function editAnswer(afterId, item = null) {
+    answerEditor = {sectionId, afterId, id: item?.id || null};
+    $('answer-dialog-title').textContent = item ? 'Rename answer' : 'Add answer';
+    $('answer-label').value = item?.label || '';
+    $('answer-label').setCustomValidity('');
+    $('answer-dialog').showModal(); $('answer-label').focus();
+  }
+  function answerTools(afterId) {
+    const tools = el('div', 'block-tools');
+    tools.append(command('Add answer', 'plus', () => editAnswer(afterId)));
+    return tools;
   }
   function renderSection() {
     if (!schema) return;
@@ -160,6 +195,13 @@
     content.replaceChildren();
     for (const block of section.blocks) {
       if (block.type === 'prose') content.append(markdown(block.markdown));
+      if (block.type === 'referenceTable') {
+        const tools = el('div', 'block-tools');
+        tools.append(command('Edit table', 'notebook-pen', () => run(async () => {
+          applyCustomization({tableModes: {...project.tableModes, [block.id]: true}});
+        })));
+        content.append(tools, markdown(block.markdown));
+      }
       if (block.type === 'table') block.items.forEach((item, index) => content.append(entry(item, expanded.get(item.id) ?? (block.kind === 'keyValue' || index === 0))));
       if (block.type === 'notes') content.append(entry(block.item, true));
       if (block.type === 'checklist') {
@@ -171,7 +213,9 @@
         }
         content.append(list);
       }
+      if (!block.item?.manual) content.append(answerTools(block.id));
     }
+    if (!section.blocks.some(block => !block.item?.manual)) content.append(answerTools(null));
     $('section-evidence').replaceChildren(evidence(sectionId, section.title));
     $('evidence-count').textContent = `${images.length} screenshot${images.length === 1 ? '' : 's'}`;
   }
@@ -227,6 +271,31 @@
     finally { busy = false; document.body.classList.remove('busy'); }
   }
   function selectFile(update) { updating = update; $('md-file').click(); }
+  $('cancel-answer').onclick = () => $('answer-dialog').close();
+  $('answer-label').oninput = () => $('answer-label').setCustomValidity('');
+  $('answer-form').onsubmit = event => {
+    event.preventDefault();
+    const label = $('answer-label').value.trim();
+    if (!label) { $('answer-label').setCustomValidity('Enter a question or label.'); $('answer-label').reportValidity(); return; }
+    run(async () => {
+      if (!answerEditor || !project) return;
+      const answers = [...(project.manualAnswers || [])];
+      if (answerEditor.id) {
+        const index = answers.findIndex(answer => answer.id === answerEditor.id);
+        if (index < 0) throw new Error('This answer no longer exists.');
+        answers[index] = {...answers[index], label};
+      } else answers.push({...answerEditor, id: `m-${crypto.randomUUID()}`, label});
+      const savedId = answerEditor.id || answers.at(-1).id;
+      applyCustomization({manualAnswers: answers});
+      if (answerEditor.id) {
+        for (const image of images.filter(image => image.contextId === answerEditor.id)) image.contextLabel = label;
+        renderSection(); review();
+      }
+      $('answer-dialog').close(); answerEditor = null;
+      const target = schema.fields.find(field => field.itemId === savedId);
+      if (target) [...document.querySelectorAll('textarea[data-field-id]')].find(node => node.dataset.fieldId === target.id)?.focus();
+    });
+  };
   $('import-md').onclick = $('empty-import').onclick = () => selectFile(false);
   $('update-md').onclick = () => selectFile(true);
   $('md-file').onchange = event => run(async () => {
@@ -239,7 +308,7 @@
     run(() => addImages(files, uploadContext));
   };
   document.addEventListener('paste', event => {
-    if (!project || busy || $('image-preview').open) return;
+    if (!project || busy || $('image-preview').open || $('answer-dialog').open) return;
     const files = [...(event.clipboardData?.items || [])].filter(item => item.kind === 'file' && item.type.startsWith('image/')).map(item => item.getAsFile()).filter(Boolean);
     if (!files.length) return;
     event.preventDefault();
