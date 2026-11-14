@@ -46,7 +46,8 @@ def manual_controls(page):
     expect(page.locator("#product-title")).to_have_text("Different format")
     page.locator("#sections button").filter(has_text="Interview").click()
     expect(page.locator(".prose table")).to_have_count(1)
-    page.get_by_role("button", name="Add answer", exact=True).first.click()
+    expect(page.locator("#add-section-answer")).to_be_visible()
+    page.locator("#section-content").get_by_role("button", name="Add answer", exact=True).first.click()
     page.locator("#answer-label").fill("My own question")
     page.locator("#answer-dialog").get_by_role("button", name="Save", exact=True).click()
     expect(page.get_by_role("textbox", name="My own question", exact=True)).to_be_focused()
@@ -65,7 +66,7 @@ def manual_controls(page):
     saved(page)
     # Even a section with no recognized fields can hold screenshot-only evidence.
     page.locator("#sections button").filter(has_text="Empty").click()
-    page.get_by_role("button", name="Add answer", exact=True).click()
+    page.locator("#add-section-answer").click()
     page.locator("#answer-label").fill("Visual note")
     page.locator("#answer-dialog").get_by_role("button", name="Save", exact=True).click()
     page.locator(".entry .screenshot-input").click(); paste_image(page)

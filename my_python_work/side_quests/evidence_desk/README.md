@@ -32,7 +32,7 @@ These conventions fit the supplied GCC evidence capture pack. Arbitrary Markdown
 When a document uses a different structure, the automatic detection does not have to get everything right:
 
 - Choose **Edit table** above a read-only reference table to turn its existing rows into editable forms. This is a workbook-specific override; the source file is not changed.
-- Choose **Add answer** after a content block, table or checklist. Enter your question or label in the dialog. Empty sections also have an Add answer control.
+- Choose **Add answer** beside the section heading to append an answer to that section, or use the smaller Add answer controls after individual content blocks, tables or checklists. Enter your question or label in the dialog. The heading control is also available in empty sections.
 - Every custom answer has a text field and its own screenshot clipboard/upload area. You can leave the answer blank and attach only evidence.
 - Use the custom answer's rename icon to change its label without losing the answer or attached screenshots. Its trash icon deletes the answer and its screenshots after confirmation.
 

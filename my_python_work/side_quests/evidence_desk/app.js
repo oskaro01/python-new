@@ -271,6 +271,7 @@
     finally { busy = false; document.body.classList.remove('busy'); }
   }
   function selectFile(update) { updating = update; $('md-file').click(); }
+  $('add-section-answer').onclick = () => editAnswer(null);
   $('cancel-answer').onclick = () => $('answer-dialog').close();
   $('answer-label').oninput = () => $('answer-label').setCustomValidity('');
   $('answer-form').onsubmit = event => {
