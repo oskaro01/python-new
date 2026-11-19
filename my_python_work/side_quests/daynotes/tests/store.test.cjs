@@ -3,37 +3,38 @@ const { test } = require("node:test");
 const { readFileSync } = require("node:fs");
 const { join } = require("node:path");
 const { runInNewContext } = require("node:vm");
-const { ExpiredNoteError, DAY_MS, NOTE_TTL_MS, prepareNote, parseLegacy, liveNotes } = require("../storage.js");
+const { DeletedNoteError, prepareNote, parseLegacy, liveNotes } = require("../storage.js");
+const DAY_MS = 86400000;
 
 const NOW = 1700000000000;
 const create = (draft = {}, notes = [], now = NOW) => prepareNote(notes,
     { title: "A note", body: "Some text", ...draft }, { now, makeId: () => "new-id" });
 
-test("notes last 72 hours and edits preserve the original creation and expiry", () => {
-    assert.equal(NOTE_TTL_MS, 3 * DAY_MS);
+test("notes have no expiry and edits preserve their original creation time", () => {
     const note = create();
     const edited = create({ id: note.id, body: "Changed" }, [note], NOW + 2 * DAY_MS);
     assert.equal(edited.createdAt, NOW);
-    assert.equal(edited.expiresAt, NOW + NOTE_TTL_MS);
+    assert.equal("expiresAt" in edited, false);
     assert.equal(edited.updatedAt, NOW + 2 * DAY_MS);
     assert.equal(note.body, "Some text");
 });
 
-test("expiry is exact, cannot be extended by stored expiresAt, and cannot revive a deleted note", () => {
+test("old deadlines are ignored but deleted notes cannot be revived by an edit", () => {
     const note = create();
-    assert.equal(liveNotes([note], NOW + NOTE_TTL_MS - 1).length, 1);
-    assert.deepEqual(liveNotes([{ ...note, expiresAt: Infinity }], NOW + NOTE_TTL_MS), []);
-    assert.throws(() => create({ id: note.id }, [note], NOW + NOTE_TTL_MS), ExpiredNoteError);
-    assert.throws(() => create({ id: note.id }), ExpiredNoteError);
+    assert.deepEqual(liveNotes([{ ...note, expiresAt: NOW - DAY_MS }]), [note]);
+    const edited = create({ id: note.id }, [note], NOW + 365 * DAY_MS);
+    assert.equal(edited.createdAt, note.createdAt);
+    assert.equal("expiresAt" in edited, false);
+    assert.throws(() => create({ id: note.id }), DeletedNoteError);
 });
 
-test("legacy migration keeps IDs and clocks, extends remaining records to three days, and drops expired ones", () => {
+test("legacy migration preserves all remaining records regardless of age", () => {
     const old = create({}, [], NOW - 2 * DAY_MS);
     const expired = { ...old, id: "expired", createdAt: NOW - 4 * DAY_MS };
     const migrated = parseLegacy(JSON.stringify({ version: 1, notes: [
         { ...old, expiresAt: old.createdAt + DAY_MS }, expired,
     ] }), NOW);
-    assert.deepEqual(migrated, [{ ...old, expiresAt: old.createdAt + NOTE_TTL_MS }]);
+    assert.deepEqual(migrated, [old, expired]);
     assert.deepEqual(parseLegacy(null, NOW), []);
 });
 

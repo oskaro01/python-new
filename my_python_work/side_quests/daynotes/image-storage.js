@@ -51,12 +51,11 @@
                 const parentRequest = notes.get(note.id);
                 parentRequest.onsuccess = () => {
                     const parent = parentRequest.result;
-                    if (!parent || parent.expiresAt <= Date.now()) { fail("This note expired or was deleted before the screenshot was saved."); return; }
+                    if (!parent) { fail("This note was deleted before the screenshot was saved."); return; }
                     const request = images.getAll();
                     request.onsuccess = () => {
                         const now = Date.now();
-                        if (parent.expiresAt <= now) { fail("This note expired before the screenshot was saved."); return; }
-                        const live = request.result.filter((image) => image.expiresAt > now);
+                        const live = request.result;
                         if (live.filter((image) => image.noteId === note.id).length + files.length > 5) {
                             fail("You can attach up to 5 screenshots per note."); return;
                         }
@@ -65,7 +64,7 @@
                         if (bytes > MAX_TOTAL_BYTES) { fail("Screenshot storage is full (25 MB). Remove some images first."); return; }
                         const added = files.map((file, index) => ({
                             id: root.DaynotesStorage.makeNoteId(), noteId: note.id,
-                            blob: file, name: file.name || "Screenshot", createdAt: now, expiresAt: parent.expiresAt,
+                            blob: file, name: file.name || "Screenshot", createdAt: now,
                             ...dimensions[index],
                         }));
                         added.forEach((image) => images.add(image));
@@ -78,8 +77,7 @@
         list(noteId) {
             return this.transaction("readonly", (images, done) => {
                 const request = images.index("noteId").getAll(noteId);
-                request.onsuccess = () => done(request.result.filter((image) => image.expiresAt > Date.now())
-                    .sort((a, b) => a.createdAt - b.createdAt));
+                request.onsuccess = () => done(request.result.sort((a, b) => a.createdAt - b.createdAt));
             });
         }
 
@@ -97,16 +95,6 @@
             });
         }
 
-        prune() {
-            return this.transaction("readwrite", (images) => {
-                // Key cursors remove expired blobs without loading their image bytes.
-                const request = images.index("expiresAt").openKeyCursor(root.IDBKeyRange.upperBound(Date.now()));
-                request.onsuccess = () => {
-                    const cursor = request.result;
-                    if (cursor) { images.delete(cursor.primaryKey); cursor.continue(); }
-                };
-            });
-        }
     }
 
     root.DaynotesImages = { ScreenshotStore };

@@ -1,7 +1,7 @@
 window.DaynotesReady = (async function () {
     "use strict";
 
-    const { NotesStore, ExpiredNoteError, STORAGE_KEY } = window.DaynotesStorage;
+    const { NotesStore, DeletedNoteError, STORAGE_KEY } = window.DaynotesStorage;
     const byId = (id) => document.getElementById(id);
     const title = byId("note-title");
     const body = byId("note-body");
@@ -72,7 +72,7 @@ window.DaynotesReady = (async function () {
         if (!note) return;
         try {
             const images = await imageStore.list(note.id);
-            if (version !== imageVersion || active?.id !== note.id || note.expiresAt <= Date.now()) return;
+            if (version !== imageVersion || active?.id !== note.id) return;
             const list = byId("note-images");
             images.forEach((image, index) => {
                 const url = URL.createObjectURL(image.blob);
@@ -88,7 +88,7 @@ window.DaynotesReady = (async function () {
                 picture.alt = `Pasted screenshot ${index + 1}`;
                 if (image.width && image.height) { picture.width = image.width; picture.height = image.height; }
                 preview.appendChild(picture);
-                const stillLive = () => active?.id === note.id && note.expiresAt > Date.now();
+                const stillLive = () => active?.id === note.id;
                 preview.addEventListener("click", () => {
                     if (!stillLive()) { safeRefresh(); return; }
                     byId("image-preview").src = url;
@@ -132,12 +132,6 @@ window.DaynotesReady = (async function () {
             document.querySelector(".paper").classList.toggle("has-images", images.length > 0);
             sizeBody();
         } catch (error) { imageError(error); }
-    }
-
-    function remaining(note) {
-        const minutes = Math.max(1, Math.ceil((note.expiresAt - Date.now()) / 60000));
-        if (minutes >= 1440) return `${Math.floor(minutes / 1440)}d ${Math.floor(minutes % 1440 / 60)}h`;
-        return `${Math.floor(minutes / 60)}h ${String(minutes % 60).padStart(2, "0")}m`;
     }
 
     function sizeBody() {
@@ -197,8 +191,6 @@ window.DaynotesReady = (async function () {
         byId("download-note").disabled = !hasContent;
         byId("delete-note").disabled = editorBusy || (!active && !hasContent);
         byId("character-count").textContent = `${body.value.length.toLocaleString()} characters`;
-        byId("expiry-text").textContent = active ? `${remaining(active)} left` : "3 days";
-        byId("expires-in").title = active ? `Expires ${new Date(active.expiresAt).toLocaleString()}` : "3 days from first save";
         byId("created-at").textContent = active ? new Date(active.createdAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }) : "";
         document.title = `${title.value.trim() || "Untitled"} | Daynotes`;
     }
@@ -221,13 +213,13 @@ window.DaynotesReady = (async function () {
             preview.textContent = note.body.trim().replace(/\s+/g, " ").slice(0, 100) || "No text";
             const time = document.createElement("span");
             time.className = "note-row-time";
-            time.textContent = `${remaining(note)} left`;
+            time.textContent = new Date(note.updatedAt).toLocaleDateString();
             row.append(name, preview, time);
             row.addEventListener("click", () => withSavedDraft(async () => {
                 await refresh();
                 const selected = notes.find((item) => item.id === note.id);
                 if (selected) openNote(selected);
-                else notify("That note expired or was deleted.");
+                else notify("That note was deleted.");
                 if (mobile.matches) showSidebar(false);
             }));
             fragment.appendChild(row);
@@ -263,13 +255,13 @@ window.DaynotesReady = (async function () {
         if (!store) return;
         const request = ++refreshVersion;
         const version = editorVersion;
-        const next = await store.prune();
+        const next = await store.read();
         if (request !== refreshVersion || version !== editorVersion) return;
         notes = next;
         if (active && !notes.some((note) => note.id === active.id)) {
             window.clearTimeout(saveTimer);
             openNote();
-            notify("The open note expired or was deleted.");
+            notify("The open note was deleted.");
         } else if (reloadActive && active && !dirty && !pendingSave) {
             const latest = notes.find((note) => note.id === active.id);
             if (latest.updatedAt !== active.updatedAt || latest.body !== body.value || latest.title !== title.value) openNote(latest, true);
@@ -305,7 +297,7 @@ window.DaynotesReady = (async function () {
                 await refresh();
                 return true;
             } catch (error) {
-                if (error instanceof ExpiredNoteError) await refresh();
+                if (error instanceof DeletedNoteError) await refresh();
                 setStatus(error.message, true);
                 return false;
             }
@@ -379,14 +371,13 @@ window.DaynotesReady = (async function () {
                 }
                 note = active;
                 setStatus("Saving screenshot...");
-                await imageStore.prune();
                 await imageStore.add(note, files);
                 store.announce();
                 // The note may have been deleted in another tab while the image was being decoded.
-                if (!(await store.prune()).some((item) => item.id === note.id)) {
+                if (!(await store.read()).some((item) => item.id === note.id)) {
                     await imageStore.removeNote(note.id);
                     await refresh();
-                    throw new Error("The note expired or was deleted before the screenshot was saved.");
+                    throw new Error("The note was deleted before the screenshot was saved.");
                 }
                 if (active?.id === note.id) {
                     await loadImages();
@@ -433,7 +424,7 @@ window.DaynotesReady = (async function () {
                     title: file.name.replace(/\.md$/i, "").trim().slice(0, title.maxLength) || "Untitled",
                     body: text,
                 });
-                notes = await store.prune();
+                notes = await store.read();
                 search.value = "";
                 openNote(imported);
                 if (mobile.matches) showSidebar(false);
@@ -478,12 +469,10 @@ window.DaynotesReady = (async function () {
         });
     });
     byId("download-note").addEventListener("click", () => {
-        if (active && active.expiresAt <= Date.now()) { safeRefresh(); return; }
         byId("download-dialog").showModal();
     });
     byId("download-form").addEventListener("submit", (event) => {
         if (event.submitter?.value !== "download") return;
-        if (active && active.expiresAt <= Date.now()) { safeRefresh(); return; }
         if (!title.value.trim() && !body.value.trim()) return;
         const markdown = byId("download-format").value === "md";
         const extension = markdown ? "md" : "txt";
@@ -495,7 +484,7 @@ window.DaynotesReady = (async function () {
         downloadBlob(blob, `${name}.${extension}`);
     });
 
-    // A browser cannot run timers while closed; prune on return as well as periodically.
+    // Refresh changes from other tabs, including browsers without BroadcastChannel.
     window.setInterval(() => safeRefresh(), 15000);
     window.addEventListener("focus", () => safeRefresh(true));
     window.addEventListener("pagehide", () => { void flush(); });
@@ -528,7 +517,7 @@ window.DaynotesReady = (async function () {
     try {
         store = new NotesStore();
         await store.init();
-        notes = await store.prune();
+        notes = await store.read();
         openNote(notes[0]);
         store.onchange = () => safeRefresh(true);
     } catch (error) {
@@ -541,5 +530,4 @@ window.DaynotesReady = (async function () {
     lockEditor(false);
     renderList();
     showSidebar(!mobile.matches);
-    if (store) await imageStore.prune().catch(imageError);
 })();

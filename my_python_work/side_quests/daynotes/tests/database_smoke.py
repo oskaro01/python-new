@@ -6,7 +6,6 @@ from playwright.sync_api import expect, sync_playwright
 
 
 URL = (Path(__file__).resolve().parents[1] / "index.html").as_uri()
-DAY_MS = 86400000
 
 
 def ready(page):
@@ -25,9 +24,8 @@ def seed_old_database(page, corrupt=False):
     return page.evaluate("""async (corrupt) => {
         const now = Date.now(), day = 86400000;
         const note = {id: 'legacy-note', title: 'Keep this', body: 'Old Markdown',
-            createdAt: now - 2 * day, updatedAt: now - day, expiresAt: now - day};
-        const expired = {...note, id: 'expired-note', createdAt: now - 4 * day};
-        const raw = corrupt ? 'broken json' : JSON.stringify({version: 1, notes: [note, expired]});
+            createdAt: now - 4 * day, updatedAt: now - day, expiresAt: now - day};
+        const raw = corrupt ? 'broken json' : JSON.stringify({version: 1, notes: [note]});
         const canvas = document.createElement('canvas'); canvas.width = 8; canvas.height = 8;
         const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
         (await DaynotesStorage.openDatabase()).close();
@@ -44,7 +42,7 @@ def seed_old_database(page, corrupt=False):
             request.onerror = reject;
             request.onsuccess = () => {
                 const db = request.result, tx = db.transaction('images', 'readwrite');
-                for (const noteId of [note.id, expired.id, 'missing-parent']) {
+                for (const noteId of [note.id, 'another-missing-parent', 'missing-parent']) {
                     tx.objectStore('images').add({id: noteId, noteId, blob, name: 'old.png',
                         createdAt: note.createdAt, expiresAt: note.expiresAt, width: 8, height: 8});
                 }
@@ -75,18 +73,18 @@ def main():
             note = records(page)[0]
             assert note["id"] == legacy["note"]["id"]
             assert note["createdAt"] == legacy["note"]["createdAt"]
-            assert note["expiresAt"] == note["createdAt"] + 3 * DAY_MS
+            assert "expiresAt" not in note
             assert page.evaluate("localStorage.getItem('daynotes.v1')") is None
-            assert page.evaluate("""async (expiry) => {
+            assert page.evaluate("""async () => {
                 const images = await new DaynotesImages.ScreenshotStore().list('legacy-note');
                 const db = await DaynotesStorage.openDatabase();
                 return new Promise(resolve => {
                     const tx = db.transaction('images'), request = tx.objectStore('images').getAll();
                     request.onsuccess = () => resolve(request.result.length === 1 &&
-                        images[0].expiresAt === expiry);
+                        images[0].noteId === 'legacy-note');
                 });
-            }""", note["expiresAt"])
-            print("PASS: old database upgrade, text migration, screenshot lifetime, expired/orphan cleanup", flush=True)
+            }""")
+            print("PASS: old database upgrade, past-deadline notes/images retained, and orphan cleanup", flush=True)
 
             # Simulated failed writes must keep the draft, report failure, and allow retry.
             page.evaluate("""() => {
@@ -122,7 +120,7 @@ def main():
                 try { return (await s.read())[0].body === 'Latest edit during save'; } finally {s.close();}
             }""")
             assert len(records(page)) == 1
-            assert records(page)[0]["expiresAt"] == note["expiresAt"]
+            assert records(page)[0]["createdAt"] == note["createdAt"]
 
             other = context.new_page()
             other.goto(URL)

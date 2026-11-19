@@ -85,8 +85,6 @@ h1 { margin: 0 8px 0 0; font-size: 18px; font-weight: 500; }
 .editor-footer { min-height: 42px; display: flex; align-items: center; gap: 20px; padding: 9px 24px; border-top: 1px solid var(--border); color: var(--muted); font-size: 11px; }
 #save-status { min-width: 0; overflow-wrap: anywhere; }
 #save-status[data-state="error"] { color: #efaaaa; }
-.expiry { display: flex; align-items: center; gap: 5px; margin-left: auto; flex-shrink: 0; font-variant-numeric: tabular-nums; }
-.expiry .icon { width: 13px; height: 13px; }
 #character-count { flex-shrink: 0; font-variant-numeric: tabular-nums; }
 .workspace.sidebar-hidden { grid-template-columns: minmax(0, 1fr); }
 .sidebar-hidden .sidebar { display: none; }

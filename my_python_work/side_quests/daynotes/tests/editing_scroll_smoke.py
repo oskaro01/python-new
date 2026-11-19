@@ -16,10 +16,10 @@ def position(page):
     return page.locator("#writing-surface").evaluate("surface => surface.scrollTop")
 
 
-def expiry(page):
+def created_at(page):
     return page.evaluate("""async () => {
         const store = new DaynotesStorage.NotesStore();
-        try { return (await store.read())[0].expiresAt; }
+        try { return (await store.read())[0].createdAt; }
         finally { store.close(); }
     }""")
 
@@ -35,7 +35,7 @@ def exercise(page, width, height, name):
     body = page.locator("#note-body")
     body.fill(text)
     expect(page.locator("#save-status")).to_have_text("Saved")
-    clock = expiry(page)
+    clock = created_at(page)
     page.evaluate("""() => {
         const body = document.getElementById('note-body');
         const surface = document.getElementById('writing-surface');
@@ -57,7 +57,7 @@ def exercise(page, width, height, name):
         expect(page.locator("#save-status")).to_have_text("Saved")
         assert abs(position(page) - before) <= 2, f"{name}: autosave moved the editor"
     expect(body).to_have_value(text)
-    assert expiry(page) == clock
+    assert created_at(page) == clock
     output = ROOT / "output"
     output.mkdir(exist_ok=True)
     page.screenshot(path=str(output / f"editing-{name}.png"))
@@ -78,7 +78,7 @@ def main():
             exercise(page, 1360, 900, "desktop")
             exercise(page, 390, 844, "mobile")
             assert not errors, errors
-            print("PASS: space/backspace keep scroll and caret, autosave preserves expiry, and auto-height still shrinks (desktop/mobile)")
+            print("PASS: space/backspace keep scroll and caret, autosave preserves creation time, and auto-height still shrinks (desktop/mobile)")
         finally:
             browser.close()
 

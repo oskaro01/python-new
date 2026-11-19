@@ -57,9 +57,9 @@ def main():
                 const note = (await store.read())[0];
                 store.close();
                 const images = await new DaynotesImages.ScreenshotStore().list(note.id);
-                return images.map(image => ({sameExpiry: image.expiresAt === note.expiresAt}));
+                return images.map(image => ({noExpiry: !('expiresAt' in image) && !('expiresAt' in note)}));
             }""")
-            assert images == [{"sameExpiry": True}]
+            assert images == [{"noExpiry": True}]
             page.reload()
             page.evaluate("window.DaynotesReady")
             expect(page.locator(".screenshot")).to_have_count(1)
@@ -81,15 +81,14 @@ def main():
             paste_screenshot(page)
             expect(page.locator(".screenshot")).to_have_count(1)
             page.evaluate("window.testClockOffset = 3 * 86400000 + 1000; window.dispatchEvent(new Event('focus'));")
-            expect(page.locator(".screenshot")).to_have_count(0)
-            expect_no_stored_images(page)
+            expect(page.locator(".screenshot")).to_have_count(1)
             assert page.evaluate("""async () => {
                 const store = new DaynotesStorage.NotesStore();
                 try { return (await store.read()).length; } finally { store.close(); }
-            }""") == 0
+            }""") == 1
             assert page.evaluate("localStorage.getItem('daynotes.v1')") is None
             assert not errors, errors
-            print("PASS: screenshot paste, persistence, preview, download, limits, deletion, and expiry.")
+            print("PASS: screenshot paste, persistence, preview, download, limits, manual deletion, and no expiry.")
         finally:
             browser.close()
 

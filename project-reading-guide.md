@@ -88,7 +88,7 @@ Safety rules:
 - Read install/build/start scripts before executing an unfamiliar repository.
 - Use disposable browser notes, sample PDFs and test accounts for exercises.
 - Use a disposable browser profile for Daynotes practice, not important notes.
-- Daynotes notes expire after 3 days. Download anything you need to keep.
+- Daynotes has no automatic expiry. Download backups of important notes.
 - Do not clear site storage to debug a display problem.
 - Inspect `.env.example` for configuration names, not real `.env` secrets.
 - Do not run migrations, cleanup commands or test payments against production.
@@ -162,7 +162,7 @@ to it. The storage scripts define APIs that `app.js` expects to exist.
 
 The application starts an async function and exposes its promise as
 `window.DaynotesReady`. At the bottom of `app.js`, follow `await store.init()`
-(including migration), then `await store.prune()`, then `openNote(...)`.
+(including migration), then `await store.read()`, then `openNote(...)`.
 The editor is unlocked after this startup work. Loading the scripts and
 finishing database initialization are different milestones.
 
@@ -220,7 +220,7 @@ each. If you cannot say when it runs, you do not have that part of the flow yet.
 index.html          creates the editor and controls
 styles.css          lays out the page and text area
 app.js              handles events and coordinates the UI
-storage.js          validates/stores/expires text notes
+storage.js          validates/stores/deletes text notes
 image-storage.js    stores and cleans up screenshot blobs
 tests/              checks behavior; not the website's runtime backend
 ```
@@ -290,7 +290,7 @@ other UI handlers you pass along the way.
 | `dirty` | Whether the current draft needs saving | No; in-memory state. |
 | `active` | Current saved note object, or no note yet | The variable does not; the note can be reconstructed. |
 | `notes` | Current in-memory list | Rebuilt from storage. |
-| IndexedDB `notes` store | Saved text records | Normally, until expiry/clearing/eviction; not a permanent backup. |
+| IndexedDB `notes` store | Saved text records | Until deletion/clearing/eviction; not a permanent backup. |
 | IndexedDB screenshot store | Image blobs associated with note IDs | Normally, subject to cleanup and browser storage limits. |
 | `daynotes.v1` in localStorage | Legacy source imported on upgrade | Removed after a successful import; no longer the active note store. |
 
@@ -306,7 +306,7 @@ updates `active`, reports Saved and refreshes the list. If another edit arrived
 during the write, the revision check keeps `dirty` true for the next save.
 
 `NotesStore.save()` preserves an existing note's creation time. Editing updates
-its text/update time, not its original 3-day lifetime. `prepareNote()` validates
+its text/update time; notes have no automatic expiry. `prepareNote()` validates
 the draft and builds the record. `notes.put(saved)` queues the IndexedDB write;
 `transaction()` resolves only when the entire transaction completes.
 
@@ -328,7 +328,7 @@ User changes textarea
 -> timer callback runs later
 -> flush() checks whether saving is needed/possible
 -> await NotesStore.save({ id, title, body })
--> validation, expiry checks, record creation/update
+-> validation, deleted-note check, record creation/update
 -> notes.put(saved) -> IndexedDB transaction completes
 -> updated note returns to flush()
 -> Saved status and refreshed list
@@ -349,7 +349,7 @@ Optional: use only disposable notes in a disposable browser profile.
 5. Step over executes a line without descending into every function. Step into enters a function you deliberately want to inspect.
 6. Resume, observe the timer breakpoint, then follow `save()`, `prepareNote()` and `tx.oncomplete`.
 7. In Application > IndexedDB, inspect `daynotes-images` > `notes` for this practice profile. Refresh the DevTools table if necessary.
-8. Reload; locate the startup calls that read/prune notes and open one.
+8. Reload; locate the startup calls that read notes and open one.
 
 These read-only Console expressions help:
 
@@ -383,7 +383,7 @@ rg -n -F -e 'function sizeBody' -e 'function openNote' -e 'scrollTop' -e 'scroll
 `-e` lets you search several literal patterns. Read both functions.
 `openNote()` intentionally starts a different note at the top. That does not
 make it the cause of an edit-time jump. The normal save refresh only reopens
-the editor for an expired/deleted active note. Prove the executed path.
+the editor for a deleted active note. Prove the executed path.
 
 Auto-sizing briefly sets the textarea height to zero to measure
 `scrollHeight`. That can shrink the outer scroll range and clamp its position.
@@ -407,7 +407,7 @@ then after autosave. Space followed by Backspace should restore the text.
 Replacing all text with a short note should still shrink the editor and
 legitimately clamp scroll to the top.
 
-Check that `expiresAt` stays unchanged. Test desktop/mobile in an isolated
+Check that `createdAt` stays unchanged. Test desktop/mobile in an isolated
 profile. See [editing_scroll_smoke.py](my_python_work/side_quests/daynotes/tests/editing_scroll_smoke.py).
 The important skill is explaining why each assertion tests the suspected cause.
 
@@ -429,7 +429,7 @@ Close the code and answer in your own words:
 
 The general error branch in `flush()` reports the error and returns false
 without pretending success. Dirty text remains in the editor. Distinguish
-that from the special expired-note path that refreshes the stored note list.
+that from the special deleted-note path that refreshes the stored note list.
 
 </details>
 
@@ -786,7 +786,7 @@ WHAT I STILL DO NOT KNOW:
 ```
 
 An invariant is a rule that must remain true across operations. Examples:
-editing does not extend a note's creation-based expiry; a merge never uses an
+editing preserves a note's creation timestamp; a merge never uses an
 input as output; outsiders cannot read private conversation attachments.
 Name the rule before choosing the test.
 

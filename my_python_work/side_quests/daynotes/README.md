@@ -17,11 +17,11 @@ or published by this app.
 - Use the upload icon to open a UTF-8 `.md` file as a new editable note. The
   filename becomes its title, and the Markdown stays as plain text. This does
   not overwrite the open note, modify the original file, or upload anything to
-  a server. Imported notes get their own 3-day lifetime starting at import.
+  a server. Imported notes stay until you delete them.
   Files must be at most 320 KB and contain at most 80,000 characters.
 - The side panel lists notes and searches their titles and text.
 - Use the download icon, choose **Plain text (.txt)** or **Markdown (.md)**,
-  then press **Download** to keep a copy before a note expires. Both formats
+  then press **Download** to keep a backup copy. Both formats
   preserve the note's text and Markdown markers, with the title on the first
   line when present. **Cancel** closes the dialog without saving a file.
 - The trash icon deletes a note after confirmation.
@@ -37,7 +37,7 @@ or published by this app.
   the screen so there is still room to close it.
 
 Appearance preferences are saved separately under `daynotes.preferences.v1`
-in this browser. They do not reset a note's expiry or disappear when it expires.
+in this browser, independently of the notes.
 
 ## Pasted Screenshots
 
@@ -52,10 +52,8 @@ image, 5 images per note, and 25 MB of screenshots across the app.
 Image blobs and text notes are stored in separate object stores in the same
 browser IndexedDB database, `daynotes-images`. This is NOT a server
 database or cloud sync. Screenshots survive refreshes in the same browser
-profile, subject to browser storage availability/eviction. They expire with
-their parent note, not 3 days after each paste. Cleanup removes the image
-blobs, not just their previews, when the app runs. The same closed-browser
-cleanup limitation described below applies.
+profile, subject to browser storage availability/eviction. They do not expire.
+Deleting a screenshot or its parent note removes the stored image blob too.
 
 Text and Markdown downloads contain only the note's text; use the image's own
 download button to save each screenshot separately. Downloaded copies do not
@@ -68,7 +66,7 @@ Create a separate **Static Site**, not a Web Service. No database, API keys,
 start command, or changes to the repository's existing `render.yaml` are needed.
 
 1. In VS Code Source Control, commit the new `daynotes` folder and this README,
-   then push/sync to GitHub. Suggested message: `Move Daynotes to IndexedDB with 3-day expiry`.
+   then push/sync to GitHub. Suggested message: `Keep Daynotes until manually deleted`.
 2. Open the [Render dashboard](https://dashboard.render.com/) and choose
    **New > Static Site**.
 3. Connect the existing `python-new` repository.
@@ -102,7 +100,7 @@ URL and normal browser profile for persistent local notes.
 
 After deployment, try a short note and refresh the page to confirm it stays.
 Close and reopen the same URL to check persistence. Future deploys at the
-same URL do not intentionally clear notes or restart their 3-day clock.
+same URL do not intentionally clear notes.
 
 References: [Render static sites](https://render.com/docs/static-sites) and
 [root-directory settings](https://render.com/docs/monorepo-support).
@@ -122,23 +120,12 @@ on the same trusted Wi-Fi. If Windows Firewall asks, allow access only on your
 private network. The PC and terminal must stay running for this preview;
 press `Ctrl+C` to stop it. This is not a public internet URL.
 
-## The 3-Day Rule
+## No Automatic Expiry
 
-Each note gets its creation timestamp on its first nonempty save.
-
-```text
-expiresAt = createdAt + 72 hours
-```
-
-Editing and pasting screenshots do not reset this clock. Expired notes and
-their screenshot blobs are deleted from IndexedDB, not just hidden.
-Cleanup runs when opening or returning to the app,
-before saves, and every 15 seconds while the page is running.
-
-A closed or suspended browser cannot run cleanup. Expired data can remain on
-disk until the app next runs; it is then deleted before displaying the notes.
-This is application-level expiry, not guaranteed secure erasure. It relies on
-the device clock and is not a suitable retention guarantee for sensitive data.
+Notes and screenshots stay until you manually delete them. Old deadlines from
+earlier versions are ignored, including for records already past their deadline.
+Already-deleted data cannot be recovered. Creation and update timestamps remain
+for sorting and display; they no longer control retention.
 
 ## Storage and Privacy
 
@@ -147,8 +134,8 @@ The existing database name is retained so old screenshots can migrate too:
 
 | Object store | Contains |
 | --- | --- |
-| `notes` | Titles, bodies, IDs, creation/update times and expiry |
-| `images` | Screenshot blobs and their parent note IDs/expiry |
+| `notes` | Titles, bodies, IDs and creation/update times |
+| `images` | Screenshot blobs and their parent note IDs |
 | `meta` | A migration marker to prevent duplicate imports |
 
 Appearance settings still use `localStorage`; note text no longer does.
@@ -166,7 +153,7 @@ same file in the same normal browser profile. Download important notes.
 There are limits of 100 notes, 80,000 characters per body, and one million
 characters total to keep local storage bounded. If saving fails or storage
 is blocked, the editor warns you and still lets you download your text.
-Downloads are ordinary files and are NOT automatically deleted after 3 days.
+Downloaded backups are ordinary files and do not expire either.
 In browsers supporting BroadcastChannel, other open tabs refresh after changes.
 Writes use transactions so adding different notes from two tabs does not
 overwrite the whole list. Simultaneous edits to the same note still use the
@@ -176,9 +163,9 @@ last successful save; this is not collaborative editing.
 
 On first opening this version, the app imports old `daynotes.v1` text records
 from localStorage and upgrades the screenshot database. It preserves IDs,
-text and creation times. Records still present get a deadline of **original
-creation + 3 days**; older records and their screenshots are removed. Screenshots
-inherit the parent's deadline. Already-deleted notes cannot be recovered.
+text and creation times. All remaining notes are retained, regardless of age.
+Screenshots with a parent note are retained too; orphaned screenshots are removed.
+Already-deleted notes cannot be recovered.
 
 The old text copy is removed only after the migration transaction commits,
 and only if that copy has not changed meanwhile. Invalid data stops migration
@@ -191,10 +178,10 @@ old-version tabs before upgrading; export their drafts first.
 
 - `index.html`: the editor and accessible controls.
 - `styles.css`: screenshot-inspired colors and responsive layout.
-- `app.js`: autosave, selection, search, downloads, and cleanup scheduling.
-- `storage.js`: shared IndexedDB connection, atomic note writes, migration and expiry rules.
-- `image-storage.js`: IndexedDB screenshot blobs, limits, and expiry cleanup.
-- `tests/store.test.cjs`: expiry, validation and migration-policy unit tests using Node.
+- `app.js`: autosave, selection, search, downloads, and cross-tab refresh.
+- `storage.js`: shared IndexedDB connection, atomic note writes and migration.
+- `image-storage.js`: IndexedDB screenshot blobs, limits, and manual deletion.
+- `tests/store.test.cjs`: retention, validation and migration-policy unit tests using Node.
 - `tests/database_smoke.py`: real IndexedDB migration, asynchronous saves and cross-tab checks.
 - `tests/screenshots_smoke.py`: an optional isolated-browser screenshot check.
 - `tests/editing_scroll_smoke.py`: long-note Space/Backspace, caret, autosave
@@ -225,10 +212,9 @@ The editing check writes ignored viewport screenshots to `output/`.
 ## Later: Server Database and Sync
 
 Replace the storage adapter with authenticated API requests and a database
-record containing `id`, `owner`, `title`, `body`, `created_at`, `updated_at`, and
-`expires_at`. Make the retention period configurable for longer-lived notes.
-Use server timestamps and a scheduled cleanup job so deletion also happens
-when nobody has the app open. Importing existing unexpired local notes into
+record containing `id`, `owner`, `title`, `body`, `created_at`, and `updated_at`.
+Keep authenticated ownership checks for viewing, editing and deleting notes.
+Importing existing local notes into
 that database would be a separate, explicit step; adding a database will not
 automatically back up the current local notes.
 

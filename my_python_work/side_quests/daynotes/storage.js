@@ -1,8 +1,6 @@
 (function (root) {
     "use strict";
 
-    const DAY_MS = 24 * 60 * 60 * 1000;
-    const NOTE_TTL_MS = 3 * DAY_MS;
     const STORAGE_KEY = "daynotes.v1"; // Only used to import the old localStorage records.
     const DB_NAME = "daynotes-images"; // Preserve the existing screenshot database.
     const DB_VERSION = 2;
@@ -14,12 +12,12 @@
         const bytes = root.crypto.getRandomValues(new Uint8Array(16));
         return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
     }
-    class ExpiredNoteError extends Error {
-        constructor() { super("This note expired or was deleted."); this.name = "ExpiredNoteError"; }
+    class DeletedNoteError extends Error {
+        constructor() { super("This note was deleted."); this.name = "DeletedNoteError"; }
     }
-    function liveNotes(notes, now) {
-        return notes.map((note) => ({ ...note, expiresAt: note.createdAt + NOTE_TTL_MS }))
-            .filter((note) => note.expiresAt > now).sort((a, b) => b.updatedAt - a.updatedAt);
+    function liveNotes(notes) {
+        // Ignore deadlines written by older versions; existing notes now stay too.
+        return notes.map(({ expiresAt, ...note }) => note).sort((a, b) => b.updatedAt - a.updatedAt);
     }
     function checkLimits(notes) {
         if (notes.length > MAX_NOTES) throw new Error("You have 100 notes. Delete or download one before adding another.");
@@ -27,7 +25,7 @@
             throw new Error("Local note storage is full. Download or delete some notes first.");
         }
     }
-    function parseLegacy(raw, now) {
+    function parseLegacy(raw) {
         if (raw === null) return [];
         let data;
         try { data = JSON.parse(raw); } catch {
@@ -44,7 +42,7 @@
             }
             ids.add(note.id);
         }
-        const notes = liveNotes(data.notes, now);
+        const notes = liveNotes(data.notes);
         checkLimits(notes);
         return notes;
     }
@@ -52,11 +50,11 @@
         if (typeof title !== "string" || typeof body !== "string" || title.length > MAX_TITLE || body.length > MAX_BODY) {
             throw new Error("This note is too long. Download it and start another note.");
         }
-        const live = liveNotes(notes, now);
+        const live = liveNotes(notes);
         const existing = id ? live.find((note) => note.id === id) : null;
-        if (id && !existing) throw new ExpiredNoteError();
+        if (id && !existing) throw new DeletedNoteError();
         const createdAt = existing ? existing.createdAt : now;
-        const note = { id: existing ? id : makeId(), title, body, createdAt, updatedAt: now, expiresAt: createdAt + NOTE_TTL_MS };
+        const note = { id: existing ? id : makeId(), title, body, createdAt, updatedAt: now };
         checkLimits([note, ...live.filter((item) => item.id !== note.id)]);
         return note;
     }
@@ -70,7 +68,6 @@
                     if (!database.objectStoreNames.contains("images")) {
                         const images = database.createObjectStore("images", { keyPath: "id" });
                         images.createIndex("noteId", "noteId");
-                        images.createIndex("expiresAt", "expiresAt");
                     }
                     if (!database.objectStoreNames.contains("notes")) database.createObjectStore("notes", { keyPath: "id" });
                     if (!database.objectStoreNames.contains("meta")) database.createObjectStore("meta", { keyPath: "key" });
@@ -132,14 +129,14 @@
                 marker.onsuccess = () => {
                     if (marker.result) { done(false); return; }
                     let legacy;
-                    try { legacy = parseLegacy(raw, this.now()); } catch (error) { fail(error); return; }
+                    try { legacy = parseLegacy(raw); } catch (error) { fail(error); return; }
                     const notes = tx.objectStore("notes");
                     const request = notes.getAll();
                     request.onsuccess = () => {
                         const current = request.result;
                         const existingIds = new Set(current.map((note) => note.id));
                         const additions = legacy.filter((note) => !existingIds.has(note.id));
-                        const combined = liveNotes([...current, ...additions], this.now());
+                        const combined = liveNotes([...current, ...additions]);
                         try { checkLimits(combined); } catch (error) { fail(error); return; }
                         additions.forEach((note) => notes.put(note));
                         const parents = new Map(combined.map((note) => [note.id, note]));
@@ -148,8 +145,7 @@
                             const cursor = cursorRequest.result;
                             if (!cursor) return;
                             const parent = parents.get(cursor.value.noteId);
-                            if (parent) cursor.update({ ...cursor.value, expiresAt: parent.expiresAt });
-                            else cursor.delete();
+                            if (!parent) cursor.delete();
                             cursor.continue();
                         };
                         tx.objectStore("meta").put({ key: "legacy-notes-migrated", completedAt: this.now() });
@@ -168,24 +164,8 @@
             await this.init();
             return transaction(["notes"], "readonly", (tx, done) => {
                 const request = tx.objectStore("notes").getAll();
-                request.onsuccess = () => done(request.result.sort((a, b) => b.updatedAt - a.updatedAt));
+                request.onsuccess = () => done(liveNotes(request.result));
             });
-        }
-        async prune() {
-            await this.init();
-            const result = await transaction(["notes", "images"], "readwrite", (tx, done) => {
-                const notes = tx.objectStore("notes");
-                const request = notes.getAll();
-                request.onsuccess = () => {
-                    const live = liveNotes(request.result, this.now());
-                    const ids = new Set(live.map((note) => note.id));
-                    const expired = request.result.filter((note) => !ids.has(note.id));
-                    for (const note of expired) { notes.delete(note.id); deleteImages(tx, note.id); }
-                    done({ notes: live, changed: expired.length > 0 });
-                };
-            });
-            if (result.changed) this.announce();
-            return result.notes;
         }
         async save(draft) {
             await this.init();
@@ -196,9 +176,6 @@
                     let saved;
                     try { saved = prepareNote(request.result, draft, { now: this.now(), makeId: this.makeId }); }
                     catch (error) { fail(error); return; }
-                    for (const old of request.result) {
-                        if (old.createdAt + NOTE_TTL_MS <= this.now()) { notes.delete(old.id); deleteImages(tx, old.id); }
-                    }
                     notes.put(saved);
                     done(saved);
                 };
@@ -216,7 +193,7 @@
         }
         close() { if (this.events) this.events.close(); }
     }
-    const api = { NotesStore, ExpiredNoteError, DAY_MS, NOTE_TTL_MS, STORAGE_KEY, DB_NAME, openDatabase, makeNoteId, liveNotes, prepareNote, parseLegacy };
+    const api = { NotesStore, DeletedNoteError, STORAGE_KEY, DB_NAME, openDatabase, makeNoteId, liveNotes, prepareNote, parseLegacy };
     root.DaynotesStorage = api;
     if (typeof module !== "undefined" && module.exports) module.exports = api;
 })(globalThis);
