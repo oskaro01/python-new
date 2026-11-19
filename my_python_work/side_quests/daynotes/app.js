@@ -134,8 +134,14 @@
     }
 
     function sizeBody() {
+        const surface = byId("writing-surface");
+        const scrollTop = surface.scrollTop;
+        const scrollLeft = surface.scrollLeft;
         body.style.height = "0px";
         body.style.height = `${body.scrollHeight}px`;
+        // Measuring briefly collapses the scroll range of a long note.
+        surface.scrollTop = scrollTop;
+        surface.scrollLeft = scrollLeft;
     }
 
     function loadPreferences() {

@@ -11,6 +11,8 @@ key, or server is needed. All icons are bundled locally. Nothing is uploaded
 or published by this app.
 
 - Use the plus button for a new note; typing saves automatically.
+- Editing a long note preserves the editor's scroll position while its text
+  area resizes. Opening a different note still starts at the top.
 - Use the upload icon to open a UTF-8 `.md` file as a new editable note. The
   filename becomes its title, and the Markdown stays as plain text. This does
   not overwrite the open note, modify the original file, or upload anything to
@@ -161,6 +163,8 @@ last successful save.
 - `image-storage.js`: IndexedDB screenshot blobs, limits, and expiry cleanup.
 - `tests/store.test.cjs`: small storage tests using Node's built-in test runner.
 - `tests/screenshots_smoke.py`: an optional isolated-browser screenshot check.
+- `tests/editing_scroll_smoke.py`: long-note Space/Backspace, caret, autosave
+  and auto-height regression checks on desktop and mobile sizes.
 
 Run checks from the repository root:
 
@@ -178,7 +182,10 @@ to use Daynotes itself.
 
 ```powershell
 .\.venv\Scripts\python.exe my_python_work/side_quests/daynotes/tests/screenshots_smoke.py
+.\.venv\Scripts\python.exe my_python_work/side_quests/daynotes/tests/editing_scroll_smoke.py
 ```
+
+The editing check writes ignored viewport screenshots to `output/`.
 
 ## Later: Database Storage
 
