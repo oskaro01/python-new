@@ -1,4 +1,4 @@
-(function () {
+window.DaynotesReady = (async function () {
     "use strict";
 
     const { NotesStore, ExpiredNoteError, STORAGE_KEY } = window.DaynotesStorage;
@@ -23,6 +23,11 @@
     let dirty = false;
     let saveTimer;
     let toastTimer;
+    let pendingSave = null;
+    let editRevision = 0;
+    let editorVersion = 0;
+    let refreshVersion = 0;
+    let editorBusy = true;
 
     function notify(message) {
         window.clearTimeout(toastTimer);
@@ -85,7 +90,7 @@
                 preview.appendChild(picture);
                 const stillLive = () => active?.id === note.id && note.expiresAt > Date.now();
                 preview.addEventListener("click", () => {
-                    if (!stillLive()) { refresh(); return; }
+                    if (!stillLive()) { safeRefresh(); return; }
                     byId("image-preview").src = url;
                     byId("image-dialog").showModal();
                 });
@@ -95,13 +100,14 @@
                 caption.appendChild(name);
                 for (const [label, icon, action] of [
                     ["Download screenshot", "download", () => {
-                        if (!stillLive()) { refresh(); return; }
+                        if (!stillLive()) { safeRefresh(); return; }
                         const extension = { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp" }[image.blob.type];
                         downloadBlob(image.blob, `screenshot-${index + 1}.${extension}`);
                     }],
                     ["Remove screenshot", "trash", async () => {
                         try {
                             await imageStore.remove(image.id);
+                            store.announce();
                             if (active?.id === note.id) await loadImages();
                         } catch (error) { notify(error.message); }
                     }],
@@ -130,6 +136,7 @@
 
     function remaining(note) {
         const minutes = Math.max(1, Math.ceil((note.expiresAt - Date.now()) / 60000));
+        if (minutes >= 1440) return `${Math.floor(minutes / 1440)}d ${Math.floor(minutes % 1440 / 60)}h`;
         return `${Math.floor(minutes / 60)}h ${String(minutes % 60).padStart(2, "0")}m`;
     }
 
@@ -188,10 +195,10 @@
     function updateMeta() {
         const hasContent = Boolean(title.value.trim() || body.value.trim());
         byId("download-note").disabled = !hasContent;
-        byId("delete-note").disabled = !active && !hasContent;
+        byId("delete-note").disabled = editorBusy || (!active && !hasContent);
         byId("character-count").textContent = `${body.value.length.toLocaleString()} characters`;
-        byId("expiry-text").textContent = active ? `${remaining(active)} left` : "24h";
-        byId("expires-in").title = active ? `Expires ${new Date(active.expiresAt).toLocaleString()}` : "24 hours from first save";
+        byId("expiry-text").textContent = active ? `${remaining(active)} left` : "3 days";
+        byId("expires-in").title = active ? `Expires ${new Date(active.expiresAt).toLocaleString()}` : "3 days from first save";
         byId("created-at").textContent = active ? new Date(active.createdAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }) : "";
         document.title = `${title.value.trim() || "Untitled"} | Daynotes`;
     }
@@ -204,6 +211,7 @@
             const row = document.createElement("button");
             row.className = "note-row";
             row.type = "button";
+            row.disabled = editorBusy;
             row.setAttribute("aria-pressed", String(active?.id === note.id));
             const name = document.createElement("span");
             name.className = "note-row-title";
@@ -215,17 +223,13 @@
             time.className = "note-row-time";
             time.textContent = `${remaining(note)} left`;
             row.append(name, preview, time);
-            row.addEventListener("click", () => {
-                if (flush()) {
-                    try {
-                        refresh();
-                        const selected = notes.find((item) => item.id === note.id);
-                        if (selected) openNote(selected);
-                        else notify("That note expired or was deleted.");
-                        if (mobile.matches) showSidebar(false);
-                    } catch (error) { setStatus(error.message, true); }
-                }
-            });
+            row.addEventListener("click", () => withSavedDraft(async () => {
+                await refresh();
+                const selected = notes.find((item) => item.id === note.id);
+                if (selected) openNote(selected);
+                else notify("That note expired or was deleted.");
+                if (mobile.matches) showSidebar(false);
+            }));
             fragment.appendChild(row);
         });
         byId("note-list").replaceChildren(fragment);
@@ -234,39 +238,53 @@
         byId("list-empty").textContent = query ? "No matching notes." : "No notes yet.";
     }
 
-    function openNote(note = null) {
+    function openNote(note = null, preservePosition = false) {
+        const surface = byId("writing-surface");
+        const position = surface.scrollTop;
+        const selection = [body.selectionStart, body.selectionEnd];
+        editorVersion += 1;
         active = note;
         dirty = false;
         title.value = note?.title || "";
         body.value = note?.body || "";
         setStatus(note ? "Saved" : "New note");
-        byId("writing-surface").scrollTop = 0;
+        surface.scrollTop = 0;
         updateMeta();
         renderList();
         sizeBody();
+        if (preservePosition) {
+            body.setSelectionRange(Math.min(selection[0], body.value.length), Math.min(selection[1], body.value.length));
+            surface.scrollTop = position;
+        }
         loadImages();
     }
 
-    function refresh() {
+    async function refresh(reloadActive = false) {
         if (!store) return;
-        const previous = notes;
-        notes = store.prune();
-        const liveIds = new Set(notes.map((note) => note.id));
-        previous.filter((note) => !liveIds.has(note.id)).forEach((note) => {
-            imageStore.removeNote(note.id).catch(imageError);
-        });
-        imageStore.prune().catch(imageError);
+        const request = ++refreshVersion;
+        const version = editorVersion;
+        const next = await store.prune();
+        if (request !== refreshVersion || version !== editorVersion) return;
+        notes = next;
         if (active && !notes.some((note) => note.id === active.id)) {
             window.clearTimeout(saveTimer);
             openNote();
             notify("The open note expired or was deleted.");
+        } else if (reloadActive && active && !dirty && !pendingSave) {
+            const latest = notes.find((note) => note.id === active.id);
+            if (latest.updatedAt !== active.updatedAt || latest.body !== body.value || latest.title !== title.value) openNote(latest, true);
+            else await loadImages();
         }
         renderList();
         updateMeta();
     }
 
-    function flush() {
+    async function flush() {
         window.clearTimeout(saveTimer);
+        if (pendingSave) {
+            if (!await pendingSave) return false;
+            return dirty ? flush() : true;
+        }
         if (!dirty) return true;
         if (!store) { setStatus("Browser storage unavailable. Download this note before leaving.", true); return false; }
         if (!active && !title.value.trim() && !body.value.trim()) {
@@ -274,20 +292,50 @@
             setStatus("New note");
             return true;
         }
-        try {
-            active = store.save({ id: active?.id, title: title.value, body: body.value });
-            dirty = false;
-            setStatus("Saved");
-            refresh();
-            return true;
-        } catch (error) {
-            if (error instanceof ExpiredNoteError) {
-                refresh();
+        const revision = editRevision;
+        const version = editorVersion;
+        const draft = { id: active?.id, title: title.value, body: body.value };
+        pendingSave = (async () => {
+            try {
+                const saved = await store.save(draft);
+                if (version !== editorVersion) return true;
+                active = saved;
+                dirty = editRevision !== revision;
+                setStatus(dirty ? "Saving..." : "Saved");
+                await refresh();
+                return true;
+            } catch (error) {
+                if (error instanceof ExpiredNoteError) await refresh();
+                setStatus(error.message, true);
                 return false;
             }
-            setStatus(error.message, true);
-            return false;
-        }
+        })().finally(() => { pendingSave = null; });
+        return pendingSave;
+    }
+
+    function lockEditor(locked) {
+        title.readOnly = locked;
+        body.readOnly = locked;
+        byId("new-note").disabled = locked;
+        byId("import-note").disabled = locked;
+        document.querySelectorAll(".note-row").forEach((row) => { row.disabled = locked; });
+        updateMeta();
+    }
+
+    async function withSavedDraft(action) {
+        if (editorBusy) return false;
+        editorBusy = true;
+        lockEditor(true);
+        try {
+            if (!await flush()) return false;
+            await action();
+            return true;
+        } catch (error) { setStatus(error.message, true); notify(error.message); return false; }
+        finally { editorBusy = false; lockEditor(false); renderList(); }
+    }
+
+    function safeRefresh(reloadActive = false) {
+        if (!editorBusy) refresh(reloadActive).catch((error) => setStatus(error.message, true));
     }
 
     function showSidebar(show) {
@@ -305,6 +353,7 @@
     }
 
     [title, body].forEach((input) => input.addEventListener("input", () => {
+        editRevision += 1;
         dirty = true;
         setStatus("Saving...");
         updateMeta();
@@ -317,80 +366,84 @@
         const files = Array.from(event.clipboardData?.files || []).filter((file) => file.type.startsWith("image/"));
         if (!files.length) return;
         event.preventDefault();
-        if (!flush()) return;
+        if (editorBusy) { notify("Please wait for the current operation to finish."); return; }
         pendingPastes += 1;
         let note;
+        let saved = false;
         try {
-            if (!store) throw new Error("Browser storage is unavailable. The screenshot was not saved.");
-            if (!active) {
-                active = store.save({ title: title.value, body: body.value });
-                refresh();
-            }
-            note = active;
-            setStatus("Saving screenshot...");
-            await imageStore.prune();
-            await imageStore.add(note, files);
-            // The note may have been deleted in another tab while the image was being decoded.
-            if (!store.prune().some((item) => item.id === note.id)) {
-                await imageStore.removeNote(note.id);
-                refresh();
-                throw new Error("The note expired or was deleted before the screenshot was saved.");
-            }
-            if (active?.id === note.id) {
-                await loadImages();
-                byId("note-images").lastElementChild?.scrollIntoView({ block: "nearest" });
-            }
-            notify(files.length === 1 ? "Screenshot saved." : "Screenshots saved.");
+            saved = await withSavedDraft(async () => {
+                if (!store) throw new Error("Browser storage is unavailable. The screenshot was not saved.");
+                if (!active) {
+                    active = await store.save({ title: title.value, body: body.value });
+                    await refresh();
+                }
+                note = active;
+                setStatus("Saving screenshot...");
+                await imageStore.prune();
+                await imageStore.add(note, files);
+                store.announce();
+                // The note may have been deleted in another tab while the image was being decoded.
+                if (!(await store.prune()).some((item) => item.id === note.id)) {
+                    await imageStore.removeNote(note.id);
+                    await refresh();
+                    throw new Error("The note expired or was deleted before the screenshot was saved.");
+                }
+                if (active?.id === note.id) {
+                    await loadImages();
+                    byId("note-images").lastElementChild?.scrollIntoView({ block: "nearest" });
+                }
+                notify(files.length === 1 ? "Screenshot saved." : "Screenshots saved.");
+            });
         } catch (error) {
             notify(error.message || "The screenshot could not be saved.");
         } finally {
             pendingPastes -= 1;
-            if (active?.id === note?.id) setStatus(dirty ? "Saving..." : "Saved");
+            if (saved && note && active?.id === note.id) setStatus(dirty ? "Saving..." : "Saved");
         }
     });
-    byId("new-note").addEventListener("click", () => {
-        if (!flush()) return;
+    byId("new-note").addEventListener("click", () => withSavedDraft(async () => {
         search.value = "";
         openNote();
         if (mobile.matches) showSidebar(false);
         title.focus();
-    });
+    }));
     byId("import-note").addEventListener("click", () => {
-        if (flush()) byId("import-file").click();
+        if (!editorBusy) byId("import-file").click();
     });
     byId("import-file").addEventListener("change", async (event) => {
         const input = event.target;
         const file = input.files[0];
         if (!file) return;
-        byId("import-note").disabled = true;
+        if (editorBusy) { input.value = ""; return; }
         try {
-            if (!/\.md$/i.test(file.name)) throw new Error("Choose a Markdown (.md) file.");
-            if (file.size > 320 * 1024) throw new Error("Choose a Markdown file no larger than 320 KB.");
-            let text;
-            try {
-                text = new TextDecoder("utf-8", { fatal: true }).decode(await file.arrayBuffer());
-            } catch {
-                throw new Error("This file could not be read as UTF-8 text.");
-            }
-            if (text.includes("\0")) throw new Error("Choose a text Markdown file, not a binary file.");
-            if (text.length > body.maxLength) throw new Error("Markdown files must contain 80,000 characters or fewer.");
-            if (!flush()) return;
-            if (!store) throw new Error("Browser storage is unavailable. The file was not imported.");
-            // Save a separate note before switching the editor, so failure cannot replace a draft.
-            const imported = store.save({
-                title: file.name.replace(/\.md$/i, "").trim().slice(0, title.maxLength) || "Untitled",
-                body: text,
+            await withSavedDraft(async () => {
+                if (!/\.md$/i.test(file.name)) throw new Error("Choose a Markdown (.md) file.");
+                if (file.size > 320 * 1024) throw new Error("Choose a Markdown file no larger than 320 KB.");
+                let text;
+                try {
+                    text = new TextDecoder("utf-8", { fatal: true }).decode(await file.arrayBuffer());
+                } catch {
+                    throw new Error("This file could not be read as UTF-8 text.");
+                }
+                if (text.includes("\0")) throw new Error("Choose a text Markdown file, not a binary file.");
+                if (text.length > body.maxLength) throw new Error("Markdown files must contain 80,000 characters or fewer.");
+                if (!store) throw new Error("Browser storage is unavailable. The file was not imported.");
+                // Save a separate note before switching the editor, so failure cannot replace a draft.
+                const imported = await store.save({
+                    title: file.name.replace(/\.md$/i, "").trim().slice(0, title.maxLength) || "Untitled",
+                    body: text,
+                });
+                notes = await store.prune();
+                search.value = "";
+                openNote(imported);
+                if (mobile.matches) showSidebar(false);
+                notify(`Opened ${file.name}.`);
             });
-            notes = store.prune();
-            search.value = "";
-            openNote(imported);
-            if (mobile.matches) showSidebar(false);
-            notify(`Opened ${file.name}.`);
         } catch (error) {
             notify(error.message || "The file could not be opened. Your current note is unchanged.");
         } finally {
             input.value = "";
-            byId("import-note").disabled = false;
+            byId("import-note").disabled = editorBusy;
         }
     });
     byId("toggle-notes").addEventListener("click", () => {
@@ -414,25 +467,23 @@
         preferences = { ...DEFAULT_PREFERENCES };
         savePreferences();
     });
-    byId("delete-note").addEventListener("click", () => {
-        if (flush()) byId("delete-dialog").showModal();
-    });
-    byId("delete-dialog").addEventListener("close", () => {
+    byId("delete-note").addEventListener("click", () => withSavedDraft(async () => byId("delete-dialog").showModal()));
+    byId("delete-dialog").addEventListener("close", async () => {
         if (byId("delete-dialog").returnValue !== "delete") return;
-        try {
-            if (active) store.remove(active.id);
+        await withSavedDraft(async () => {
+            if (active) await store.remove(active.id);
             openNote();
-            refresh();
+            await refresh();
             notify("Note deleted.");
-        } catch (error) { setStatus(error.message, true); }
+        });
     });
     byId("download-note").addEventListener("click", () => {
-        if (active && active.expiresAt <= Date.now()) { refresh(); return; }
+        if (active && active.expiresAt <= Date.now()) { safeRefresh(); return; }
         byId("download-dialog").showModal();
     });
     byId("download-form").addEventListener("submit", (event) => {
         if (event.submitter?.value !== "download") return;
-        if (active && active.expiresAt <= Date.now()) { refresh(); return; }
+        if (active && active.expiresAt <= Date.now()) { safeRefresh(); return; }
         if (!title.value.trim() && !body.value.trim()) return;
         const markdown = byId("download-format").value === "md";
         const extension = markdown ? "md" : "txt";
@@ -445,44 +496,50 @@
     });
 
     // A browser cannot run timers while closed; prune on return as well as periodically.
-    window.setInterval(() => { try { refresh(); } catch (error) { setStatus(error.message, true); } }, 15000);
-    window.addEventListener("focus", () => { try { refresh(); } catch (error) { setStatus(error.message, true); } });
-    window.addEventListener("pagehide", flush);
+    window.setInterval(() => safeRefresh(), 15000);
+    window.addEventListener("focus", () => safeRefresh(true));
+    window.addEventListener("pagehide", () => { void flush(); });
     document.addEventListener("visibilitychange", () => {
-        if (document.hidden) flush();
-        else { try { refresh(); } catch (error) { setStatus(error.message, true); } }
+        if (document.hidden) void flush();
+        else safeRefresh(true);
     });
     window.addEventListener("beforeunload", (event) => {
-        if (!flush() || pendingPastes) { event.preventDefault(); event.returnValue = ""; }
+        if (dirty || pendingSave || pendingPastes || editorBusy) {
+            void flush(); event.preventDefault(); event.returnValue = "";
+        }
     });
     window.addEventListener("storage", (event) => {
         if (event.key === PREFERENCES_KEY || event.key === null) loadPreferences();
-        if (event.key !== STORAGE_KEY && event.key !== null) return;
-        try {
-            const selectedId = active?.id;
-            refresh();
-            if (!dirty && selectedId && active) openNote(notes.find((note) => note.id === selectedId));
-        } catch (error) { setStatus(error.message, true); }
+        if (event.key === STORAGE_KEY && event.newValue) notify("Another tab is using old Daynotes storage. Close it and use this version.");
     });
     window.addEventListener("resize", sizeBody);
     mobile.addEventListener("change", () => showSidebar(!mobile.matches));
     document.addEventListener("keydown", (event) => {
         if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
             event.preventDefault();
-            flush();
+            void flush();
         }
         if (event.key === "Escape" && mobile.matches) showSidebar(false);
     });
 
     loadPreferences();
+    lockEditor(true);
+    setStatus("Opening browser database...");
     try {
-        store = new NotesStore(window.localStorage);
-        notes = store.prune();
+        store = new NotesStore();
+        await store.init();
+        notes = await store.prune();
         openNote(notes[0]);
+        store.onchange = () => safeRefresh(true);
     } catch (error) {
+        if (store) store.close();
+        store = null;
         openNote();
         setStatus(error.message || "Browser storage unavailable. Download before leaving.", true);
     }
+    editorBusy = false;
+    lockEditor(false);
+    renderList();
     showSidebar(!mobile.matches);
-    imageStore.prune().catch(imageError);
+    if (store) await imageStore.prune().catch(imageError);
 })();

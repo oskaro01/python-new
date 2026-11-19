@@ -6,8 +6,9 @@ and a plain-text editor based on your screenshot. Markdown stays as text:
 
 ## Open It
 
-Open [index.html](index.html) in your browser. No installation, database, API
-key, or server is needed. All icons are bundled locally. Nothing is uploaded
+Open [index.html](index.html) in your browser. No installation, external database,
+API key, or server is needed. The browser supplies IndexedDB. All icons are
+bundled locally. Nothing is uploaded
 or published by this app.
 
 - Use the plus button for a new note; typing saves automatically.
@@ -16,7 +17,7 @@ or published by this app.
 - Use the upload icon to open a UTF-8 `.md` file as a new editable note. The
   filename becomes its title, and the Markdown stays as plain text. This does
   not overwrite the open note, modify the original file, or upload anything to
-  a server. Imported notes get their own 24-hour lifetime starting at import.
+  a server. Imported notes get their own 3-day lifetime starting at import.
   Files must be at most 320 KB and contain at most 80,000 characters.
 - The side panel lists notes and searches their titles and text.
 - Use the download icon, choose **Plain text (.txt)** or **Markdown (.md)**,
@@ -48,11 +49,11 @@ Screenshots are attachments below the text, not inline rich-text content.
 PNG, JPEG, and WebP are supported, with limits of 5 MB and 16 megapixels per
 image, 5 images per note, and 25 MB of screenshots across the app.
 
-Image blobs are stored in the browser's local IndexedDB database
-`daynotes-images`, separate from text in `localStorage`. This is NOT a server
+Image blobs and text notes are stored in separate object stores in the same
+browser IndexedDB database, `daynotes-images`. This is NOT a server
 database or cloud sync. Screenshots survive refreshes in the same browser
 profile, subject to browser storage availability/eviction. They expire with
-their parent note, not 24 hours after each paste. Cleanup removes the image
+their parent note, not 3 days after each paste. Cleanup removes the image
 blobs, not just their previews, when the app runs. The same closed-browser
 cleanup limitation described below applies.
 
@@ -67,7 +68,7 @@ Create a separate **Static Site**, not a Web Service. No database, API keys,
 start command, or changes to the repository's existing `render.yaml` are needed.
 
 1. In VS Code Source Control, commit the new `daynotes` folder and this README,
-   then push/sync to GitHub. Suggested message: `Add Daynotes with 24-hour expiry`.
+   then push/sync to GitHub. Suggested message: `Move Daynotes to IndexedDB with 3-day expiry`.
 2. Open the [Render dashboard](https://dashboard.render.com/) and choose
    **New > Static Site**.
 3. Connect the existing `python-new` repository.
@@ -101,7 +102,7 @@ URL and normal browser profile for persistent local notes.
 
 After deployment, try a short note and refresh the page to confirm it stays.
 Close and reopen the same URL to check persistence. Future deploys at the
-same URL do not intentionally clear notes or change their 24-hour clock.
+same URL do not intentionally clear notes or restart their 3-day clock.
 
 References: [Render static sites](https://render.com/docs/static-sites) and
 [root-directory settings](https://render.com/docs/monorepo-support).
@@ -121,16 +122,17 @@ on the same trusted Wi-Fi. If Windows Firewall asks, allow access only on your
 private network. The PC and terminal must stay running for this preview;
 press `Ctrl+C` to stop it. This is not a public internet URL.
 
-## The 24-Hour Rule
+## The 3-Day Rule
 
 Each note gets its creation timestamp on its first nonempty save.
 
 ```text
-expiresAt = createdAt + 24 hours
+expiresAt = createdAt + 72 hours
 ```
 
-Editing does not reset this clock. Expired notes are removed from the stored
-JSON, not just hidden. Cleanup runs when opening or returning to the app,
+Editing and pasting screenshots do not reset this clock. Expired notes and
+their screenshot blobs are deleted from IndexedDB, not just hidden.
+Cleanup runs when opening or returning to the app,
 before saves, and every 15 seconds while the page is running.
 
 A closed or suspended browser cannot run cleanup. Expired data can remain on
@@ -140,7 +142,21 @@ the device clock and is not a suitable retention guarantee for sensitive data.
 
 ## Storage and Privacy
 
-Notes use `localStorage` under `daynotes.v1`, only on this browser and device.
+Notes use the browser's IndexedDB database `daynotes-images` (version 2).
+The existing database name is retained so old screenshots can migrate too:
+
+| Object store | Contains |
+| --- | --- |
+| `notes` | Titles, bodies, IDs, creation/update times and expiry |
+| `images` | Screenshot blobs and their parent note IDs/expiry |
+| `meta` | A migration marker to prevent duplicate imports |
+
+Appearance settings still use `localStorage`; note text no longer does.
+IndexedDB writes are asynchronous. **Wait for Saved before closing the page.**
+The app attempts to save when hidden/leaving and warns about pending work,
+but a forced close or crash can interrupt an unfinished write.
+
+This storage is only on this browser and device.
 There is no account, cloud backup, sync, encryption, or backend database.
 Clearing site/browser data, using private browsing, changing browsers, or
 moving the app to a different origin may lose access to the notes.
@@ -150,18 +166,36 @@ same file in the same normal browser profile. Download important notes.
 There are limits of 100 notes, 80,000 characters per body, and one million
 characters total to keep local storage bounded. If saving fails or storage
 is blocked, the editor warns you and still lets you download your text.
-Downloads are ordinary files and are NOT automatically deleted after 24 hours.
-Multiple tabs share the list; simultaneous edits to the same note use the
-last successful save.
+Downloads are ordinary files and are NOT automatically deleted after 3 days.
+In browsers supporting BroadcastChannel, other open tabs refresh after changes.
+Writes use transactions so adding different notes from two tabs does not
+overwrite the whole list. Simultaneous edits to the same note still use the
+last successful save; this is not collaborative editing.
+
+### Existing Notes
+
+On first opening this version, the app imports old `daynotes.v1` text records
+from localStorage and upgrades the screenshot database. It preserves IDs,
+text and creation times. Records still present get a deadline of **original
+creation + 3 days**; older records and their screenshots are removed. Screenshots
+inherit the parent's deadline. Already-deleted notes cannot be recovered.
+
+The old text copy is removed only after the migration transaction commits,
+and only if that copy has not changed meanwhile. Invalid data stops migration
+and leaves the source untouched. A committed marker prevents leftover old data
+from re-importing deleted notes. If source removal failed or an older tab writes
+again, its leftover copy is retained but not automatically re-imported. Close
+old-version tabs before upgrading; export their drafts first.
 
 ## Code Map
 
 - `index.html`: the editor and accessible controls.
 - `styles.css`: screenshot-inspired colors and responsive layout.
 - `app.js`: autosave, selection, search, downloads, and cleanup scheduling.
-- `storage.js`: local persistence and expiry rules, isolated from the UI.
+- `storage.js`: shared IndexedDB connection, atomic note writes, migration and expiry rules.
 - `image-storage.js`: IndexedDB screenshot blobs, limits, and expiry cleanup.
-- `tests/store.test.cjs`: small storage tests using Node's built-in test runner.
+- `tests/store.test.cjs`: expiry, validation and migration-policy unit tests using Node.
+- `tests/database_smoke.py`: real IndexedDB migration, asynchronous saves and cross-tab checks.
 - `tests/screenshots_smoke.py`: an optional isolated-browser screenshot check.
 - `tests/editing_scroll_smoke.py`: long-note Space/Backspace, caret, autosave
   and auto-height regression checks on desktop and mobile sizes.
@@ -183,11 +217,12 @@ to use Daynotes itself.
 ```powershell
 .\.venv\Scripts\python.exe my_python_work/side_quests/daynotes/tests/screenshots_smoke.py
 .\.venv\Scripts\python.exe my_python_work/side_quests/daynotes/tests/editing_scroll_smoke.py
+.\.venv\Scripts\python.exe my_python_work/side_quests/daynotes/tests/database_smoke.py
 ```
 
 The editing check writes ignored viewport screenshots to `output/`.
 
-## Later: Database Storage
+## Later: Server Database and Sync
 
 Replace the storage adapter with authenticated API requests and a database
 record containing `id`, `owner`, `title`, `body`, `created_at`, `updated_at`, and

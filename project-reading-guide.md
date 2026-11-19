@@ -64,7 +64,7 @@ Keep guesses separate from facts:
 | Claim | Evidence | What is still unknown? |
 | --- | --- | --- |
 | Daynotes loads browser JavaScript | Script tags in `index.html` | Whether those scripts call a server. |
-| Text notes are saved locally | `NotesStore.write()` calls `storage.setItem()` | Whether saving succeeds in this browser profile. |
+| Text notes are saved locally | `NotesStore.save()` puts a record in an IndexedDB transaction | Whether the transaction commits in this browser profile. |
 | This Chat Lab deployment uses Redis | Not established just by finding Redis code | Which settings branch the running service selects. |
 
 "The code supports this" and "I observed this happening" are different claims.
@@ -88,7 +88,7 @@ Safety rules:
 - Read install/build/start scripts before executing an unfamiliar repository.
 - Use disposable browser notes, sample PDFs and test accounts for exercises.
 - Use a disposable browser profile for Daynotes practice, not important notes.
-- Daynotes notes expire after 24 hours. Download anything you need to keep.
+- Daynotes notes expire after 3 days. Download anything you need to keep.
 - Do not clear site storage to debug a display problem.
 - Inspect `.env.example` for configuration names, not real `.env` secrets.
 - Do not run migrations, cleanup commands or test payments against production.
@@ -159,6 +159,12 @@ The scripts are `storage.js`, `image-storage.js`, then `app.js`, with `defer`.
 These classic deferred scripts execute in document order after HTML parsing.
 The textarea is created from the HTML. `app.js` finds it and connects behavior
 to it. The storage scripts define APIs that `app.js` expects to exist.
+
+The application starts an async function and exposes its promise as
+`window.DaynotesReady`. At the bottom of `app.js`, follow `await store.init()`
+(including migration), then `await store.prune()`, then `openNote(...)`.
+The editor is unlocked after this startup work. Loading the scripts and
+finishing database initialization are different milestones.
 
 The HTML defines the surface; JavaScript supplies behavior. CSS changes the
 appearance and layout, not the persistence rules. Missing a required script
@@ -272,7 +278,7 @@ an input event. A normal user edit and assigning a property are not identical.
 
 </details>
 
-Follow `flush()`, then `NotesStore.save()`, then `write()` in
+Follow `flush()`, then `NotesStore.save()`, then `prepareNote()` and `transaction()` in
 [storage.js](my_python_work/side_quests/daynotes/storage.js). Do not read all
 other UI handlers you pass along the way.
 
@@ -284,8 +290,9 @@ other UI handlers you pass along the way.
 | `dirty` | Whether the current draft needs saving | No; in-memory state. |
 | `active` | Current saved note object, or no note yet | The variable does not; the note can be reconstructed. |
 | `notes` | Current in-memory list | Rebuilt from storage. |
-| `daynotes.v1` in localStorage | Serialized saved note records | Normally, until expiry/clearing/eviction; not a permanent backup. |
+| IndexedDB `notes` store | Saved text records | Normally, until expiry/clearing/eviction; not a permanent backup. |
 | IndexedDB screenshot store | Image blobs associated with note IDs | Normally, subject to cleanup and browser storage limits. |
+| `daynotes.v1` in localStorage | Legacy source imported on upgrade | Removed after a successful import; no longer the active note store. |
 
 **Predict:** after typing but before the scheduled save, can the displayed text
 and stored text temporarily differ? What should `dirty` indicate?
@@ -294,12 +301,20 @@ and stored text temporarily differ? What should `dirty` indicate?
 <summary>Checkpoint: state versus persistence</summary>
 
 Yes. The editor can show new text while storage still holds the previous
-successful save. `dirty` becomes true. Successful `flush()` updates `active`,
-clears dirty, reports Saved and refreshes the list.
+successful save. `dirty` becomes true. `flush()` awaits `store.save(...)`, then
+updates `active`, reports Saved and refreshes the list. If another edit arrived
+during the write, the revision check keeps `dirty` true for the next save.
 
 `NotesStore.save()` preserves an existing note's creation time. Editing updates
-its text/update time, not its original 24-hour lifetime. `write()` serializes
-records with `JSON.stringify()` and writes localStorage.
+its text/update time, not its original 3-day lifetime. `prepareNote()` validates
+the draft and builds the record. `notes.put(saved)` queues the IndexedDB write;
+`transaction()` resolves only when the entire transaction completes.
+
+This gives you two asynchronous boundaries: the debounce timer and the database
+transaction. `await` pauses this function's continuation, not the whole browser.
+It is not proof that we created our own worker or server. Compare a request's
+success callback with `tx.oncomplete`: one operation succeeding is not enough
+to claim the whole transaction has committed.
 
 </details>
 
@@ -312,9 +327,9 @@ User changes textarea
 -> clear previous timer; schedule flush()
 -> timer callback runs later
 -> flush() checks whether saving is needed/possible
--> NotesStore.save({ id, title, body })
+-> await NotesStore.save({ id, title, body })
 -> validation, expiry checks, record creation/update
--> write() -> localStorage.setItem(...)
+-> notes.put(saved) -> IndexedDB transaction completes
 -> updated note returns to flush()
 -> Saved status and refreshed list
 ```
@@ -332,8 +347,8 @@ Optional: use only disposable notes in a disposable browser profile.
 3. Set another breakpoint where `flush()` calls `store.save(...)`.
 4. Type one letter. Inspect `body.value`, `dirty` and `active` while paused.
 5. Step over executes a line without descending into every function. Step into enters a function you deliberately want to inspect.
-6. Resume, observe the timer breakpoint, then follow `save()` and `write()`.
-7. In Application, inspect the `daynotes.v1` localStorage entry for this practice profile.
+6. Resume, observe the timer breakpoint, then follow `save()`, `prepareNote()` and `tx.oncomplete`.
+7. In Application > IndexedDB, inspect `daynotes-images` > `notes` for this practice profile. Refresh the DevTools table if necessary.
 8. Reload; locate the startup calls that read/prune notes and open one.
 
 These read-only Console expressions help:

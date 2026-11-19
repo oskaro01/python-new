@@ -16,16 +16,26 @@ def position(page):
     return page.locator("#writing-surface").evaluate("surface => surface.scrollTop")
 
 
+def expiry(page):
+    return page.evaluate("""async () => {
+        const store = new DaynotesStorage.NotesStore();
+        try { return (await store.read())[0].expiresAt; }
+        finally { store.close(); }
+    }""")
+
+
 def exercise(page, width, height, name):
     page.set_viewport_size({"width": width, "height": height})
     page.goto((ROOT / "index.html").as_uri())
+    page.evaluate("window.DaynotesReady")
     page.locator("#new-note").click()
+    expect(page.locator("#save-status")).to_have_text("New note")
     lines = [f"Line {index:03}: keep this note." for index in range(240)]
     text = "\n".join(lines)
     body = page.locator("#note-body")
     body.fill(text)
     expect(page.locator("#save-status")).to_have_text("Saved")
-    clock = page.evaluate("() => JSON.parse(localStorage.getItem('daynotes.v1')).notes[0].expiresAt")
+    clock = expiry(page)
     page.evaluate("""() => {
         const body = document.getElementById('note-body');
         const surface = document.getElementById('writing-surface');
@@ -47,7 +57,7 @@ def exercise(page, width, height, name):
         expect(page.locator("#save-status")).to_have_text("Saved")
         assert abs(position(page) - before) <= 2, f"{name}: autosave moved the editor"
     expect(body).to_have_value(text)
-    assert page.evaluate("() => JSON.parse(localStorage.getItem('daynotes.v1')).notes[0].expiresAt") == clock
+    assert expiry(page) == clock
     output = ROOT / "output"
     output.mkdir(exist_ok=True)
     page.screenshot(path=str(output / f"editing-{name}.png"))

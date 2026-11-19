@@ -3,110 +3,77 @@ const { test } = require("node:test");
 const { readFileSync } = require("node:fs");
 const { join } = require("node:path");
 const { runInNewContext } = require("node:vm");
-const { NotesStore, ExpiredNoteError, DAY_MS, STORAGE_KEY } = require("../storage.js");
+const { ExpiredNoteError, DAY_MS, NOTE_TTL_MS, prepareNote, parseLegacy, liveNotes } = require("../storage.js");
 
-function fixture() {
-    const data = new Map();
-    let time = 1700000000000;
-    let nextId = 0;
-    const storage = {
-        getItem: (key) => data.has(key) ? data.get(key) : null,
-        setItem: (key, value) => data.set(key, value),
-        removeItem: (key) => data.delete(key),
-    };
-    const store = new NotesStore(storage, { now: () => time, makeId: () => `note-${++nextId}` });
-    return { store, storage, advance: (milliseconds) => { time += milliseconds; } };
-}
+const NOW = 1700000000000;
+const create = (draft = {}, notes = [], now = NOW) => prepareNote(notes,
+    { title: "A note", body: "Some text", ...draft }, { now, makeId: () => "new-id" });
 
-test("notes persist and editing never extends the original expiry", () => {
-    const { store, storage, advance } = fixture();
-    const note = store.save({ title: "A note", body: "## Raw Markdown\nA little text." });
-    advance(DAY_MS / 2);
-    const changed = store.save({ ...note, body: "Edited" });
-    assert.equal(changed.expiresAt, note.createdAt + DAY_MS);
-    assert.equal(changed.createdAt, note.createdAt);
-    assert.equal(store.prune()[0].body, "Edited");
-    assert.equal(JSON.parse(storage.getItem(STORAGE_KEY)).notes.length, 1);
+test("notes last 72 hours and edits preserve the original creation and expiry", () => {
+    assert.equal(NOTE_TTL_MS, 3 * DAY_MS);
+    const note = create();
+    const edited = create({ id: note.id, body: "Changed" }, [note], NOW + 2 * DAY_MS);
+    assert.equal(edited.createdAt, NOW);
+    assert.equal(edited.expiresAt, NOW + NOTE_TTL_MS);
+    assert.equal(edited.updatedAt, NOW + 2 * DAY_MS);
+    assert.equal(note.body, "Some text");
 });
 
-test("expired notes are physically removed at the boundary and cannot be revived", () => {
-    const { store, storage, advance } = fixture();
-    const note = store.save({ title: "Temporary", body: "Gone tomorrow" });
-    advance(DAY_MS - 1);
-    assert.equal(store.prune().length, 1);
-    advance(1);
-    assert.deepEqual(store.prune(), []);
-    assert.equal(storage.getItem(STORAGE_KEY), null);
-    assert.throws(() => store.save({ ...note, body: "Late edit" }), ExpiredNoteError);
+test("expiry is exact, cannot be extended by stored expiresAt, and cannot revive a deleted note", () => {
+    const note = create();
+    assert.equal(liveNotes([note], NOW + NOTE_TTL_MS - 1).length, 1);
+    assert.deepEqual(liveNotes([{ ...note, expiresAt: Infinity }], NOW + NOTE_TTL_MS), []);
+    assert.throws(() => create({ id: note.id }, [note], NOW + NOTE_TTL_MS), ExpiredNoteError);
+    assert.throws(() => create({ id: note.id }), ExpiredNoteError);
 });
 
-test("a later note survives cleanup and deletion does not affect other notes", () => {
-    const { store, advance } = fixture();
-    const first = store.save({ title: "First", body: "One" });
-    advance(1000);
-    const second = store.save({ title: "Second", body: "Two" });
-    advance(DAY_MS - 1000);
-    assert.deepEqual(store.prune().map((note) => note.id), [second.id]);
-    store.remove(first.id);
-    assert.equal(store.prune().length, 1);
-    store.remove(second.id);
-    assert.deepEqual(store.prune(), []);
+test("legacy migration keeps IDs and clocks, extends remaining records to three days, and drops expired ones", () => {
+    const old = create({}, [], NOW - 2 * DAY_MS);
+    const expired = { ...old, id: "expired", createdAt: NOW - 4 * DAY_MS };
+    const migrated = parseLegacy(JSON.stringify({ version: 1, notes: [
+        { ...old, expiresAt: old.createdAt + DAY_MS }, expired,
+    ] }), NOW);
+    assert.deepEqual(migrated, [{ ...old, expiresAt: old.createdAt + NOTE_TTL_MS }]);
+    assert.deepEqual(parseLegacy(null, NOW), []);
 });
 
-test("expired records are cleaned up after closing and reopening", () => {
-    const { store, storage, advance } = fixture();
-    store.save({ title: "Old", body: "Something" });
-    advance(DAY_MS);
-    const reopened = new NotesStore(storage, { now: () => 1700000000000 + DAY_MS });
-    assert.deepEqual(reopened.prune(), []);
-    assert.equal(storage.getItem(STORAGE_KEY), null);
+test("malformed legacy data is rejected rather than silently discarded", () => {
+    const note = create();
+    for (const value of ["not json", "null", JSON.stringify({ version: 2, notes: [] }),
+        JSON.stringify({ version: 1, notes: [note, note] }),
+        JSON.stringify({ version: 1, notes: [{ ...note, createdAt: "yesterday" }] }),
+        JSON.stringify({ version: 1, notes: [{ ...note, body: null }] })]) {
+        assert.throws(() => parseLegacy(value, NOW));
+    }
 });
 
-test("the store preserves raw text, Unicode, and HTML without rendering", () => {
-    const { store } = fixture();
+test("raw Markdown, Unicode, and HTML remain data", () => {
     const body = "<script>alert('text only')</script>\n## Notes\n\u09ac\u09be\u0982\u09b2\u09be";
-    store.save({ title: "Text", body });
-    assert.equal(store.prune()[0].body, body);
+    const note = create({ body });
+    assert.equal(note.body, body);
+    assert.equal(parseLegacy(JSON.stringify({ version: 1, notes: [note] }), NOW)[0].body, body);
 });
 
-test("new saves reread storage so other notes from another tab are not overwritten", () => {
-    const { store, storage } = fixture();
-    store.save({ title: "First tab", body: "A" });
-    const other = new NotesStore(storage, { now: () => 1700000000000, makeId: () => "other-tab" });
-    other.save({ title: "Second tab", body: "B" });
-    store.save({ title: "Back to first", body: "C" });
-    assert.equal(store.prune().length, 3);
+test("limits bound individual notes, note count, and total text without blocking edits", () => {
+    assert.throws(() => create({ body: "x".repeat(80001) }), /too long/);
+    assert.throws(() => create({ title: "x".repeat(121) }), /too long/);
+    const notes = Array.from({ length: 100 }, (_, index) => ({ ...create(), id: `note-${index}` }));
+    assert.throws(() => create({}, notes), /100 notes/);
+    assert.doesNotThrow(() => create({ id: notes[0].id, body: "Edit existing" }, notes));
+    const full = notes.slice(0, 13).map(note => ({ ...note, body: "x".repeat(76000) }));
+    assert.throws(() => create({ body: "x".repeat(20000) }, full), /storage is full/);
 });
 
-test("corrupt storage is not silently overwritten", () => {
-    const { store, storage } = fixture();
-    storage.setItem(STORAGE_KEY, "not json");
-    assert.throws(() => store.prune(), /could not be read/);
-    assert.throws(() => store.save({ title: "Draft", body: "Text" }));
-    assert.equal(storage.getItem(STORAGE_KEY), "not json");
+test("live notes are sorted without mutating their source", () => {
+    const first = { ...create(), id: "first" };
+    const second = { ...create(), id: "second", updatedAt: NOW + 1000 };
+    const records = [first, second];
+    assert.deepEqual(liveNotes(records, NOW).map(note => note.id), ["second", "first"]);
+    assert.equal(records[0], first);
 });
 
-test("quota errors are reported without pretending a note was saved", () => {
-    const { store, storage } = fixture();
-    storage.setItem = () => { throw new Error("QuotaExceededError"); };
-    assert.throws(() => store.save({ title: "Draft", body: "Keep me" }), /Cannot save/);
-});
-
-test("limits prevent unlimited growth", () => {
-    const { store } = fixture();
-    assert.throws(() => store.save({ title: "Long", body: "x".repeat(80001) }), /too long/);
-    for (let index = 0; index < 100; index += 1) store.save({ title: String(index), body: "Text" });
-    assert.throws(() => store.save({ title: "101", body: "Text" }), /100 notes/);
-    const note = store.prune()[0];
-    assert.doesNotThrow(() => store.save({ ...note, body: "Edit existing" }));
-});
-
-test("notes can be created over LAN HTTP without crypto.randomUUID", () => {
-    const { storage } = fixture();
-    const browser = { crypto: { getRandomValues: (bytes) => bytes.fill(7) } };
+test("LAN HTTP can generate IDs without crypto.randomUUID", () => {
+    const browser = { crypto: { getRandomValues: bytes => bytes.fill(7) } };
     runInNewContext(readFileSync(join(__dirname, "../storage.js"), "utf8"), browser);
-    const store = new browser.DaynotesStorage.NotesStore(storage);
-    const note = store.save({ title: "From a phone", body: "Saved on the local network" });
-    assert.equal(note.id, "07".repeat(16));
-    assert.equal(store.prune()[0].body, "Saved on the local network");
+    assert.equal(browser.DaynotesStorage.makeNoteId(), "07".repeat(16));
 });

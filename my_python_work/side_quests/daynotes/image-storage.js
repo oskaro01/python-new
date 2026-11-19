@@ -6,37 +6,14 @@
     const TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
 
     class ScreenshotStore {
-        constructor() {
-            this.database = null;
-        }
-
         open() {
-            if (!this.database) {
-                this.database = new Promise((resolve, reject) => {
-                    const request = root.indexedDB.open("daynotes-images", 1);
-                    request.onupgradeneeded = () => {
-                        const images = request.result.createObjectStore("images", { keyPath: "id" });
-                        images.createIndex("noteId", "noteId");
-                        images.createIndex("expiresAt", "expiresAt");
-                    };
-                    request.onerror = () => {
-                        this.database = null;
-                        reject(new Error("Screenshot storage is unavailable in this browser."));
-                    };
-                    request.onsuccess = () => {
-                        const database = request.result;
-                        database.onversionchange = () => { database.close(); this.database = null; };
-                        resolve(database);
-                    };
-                });
-            }
-            return this.database;
+            return root.DaynotesStorage.openDatabase();
         }
 
-        async transaction(mode, action) {
+        async transaction(mode, action, includeNotes = false) {
             const database = await this.open();
             return new Promise((resolve, reject) => {
-                const transaction = database.transaction("images", mode);
+                const transaction = database.transaction(includeNotes ? ["images", "notes"] : ["images"], mode);
                 let result;
                 let failure;
                 transaction.oncomplete = () => resolve(result);
@@ -45,7 +22,7 @@
                     action(transaction.objectStore("images"), (value) => { result = value; }, (message) => {
                         failure = new Error(message);
                         transaction.abort();
-                    });
+                    }, includeNotes ? transaction.objectStore("notes") : null);
                 } catch (error) {
                     failure = error;
                     transaction.abort();
@@ -70,27 +47,32 @@
                 bitmap.close();
                 if (tooLarge) throw new Error("Screenshots must be 16 megapixels or smaller.");
             }
-            return this.transaction("readwrite", (images, done, fail) => {
-                const request = images.getAll();
-                request.onsuccess = () => {
-                    const now = Date.now();
-                    if (note.expiresAt <= now) { fail("This note expired before the screenshot was saved."); return; }
-                    const live = request.result.filter((image) => image.expiresAt > now);
-                    if (live.filter((image) => image.noteId === note.id).length + files.length > 5) {
-                        fail("You can attach up to 5 screenshots per note."); return;
-                    }
-                    const bytes = live.reduce((total, image) => total + image.blob.size, 0)
-                        + files.reduce((total, file) => total + file.size, 0);
-                    if (bytes > MAX_TOTAL_BYTES) { fail("Screenshot storage is full (25 MB). Remove some images first."); return; }
-                    const added = files.map((file, index) => ({
-                        id: root.DaynotesStorage.makeNoteId(), noteId: note.id,
-                        blob: file, name: file.name || "Screenshot", createdAt: now, expiresAt: note.expiresAt,
-                        ...dimensions[index],
-                    }));
-                    added.forEach((image) => images.add(image));
-                    done(added);
+            return this.transaction("readwrite", (images, done, fail, notes) => {
+                const parentRequest = notes.get(note.id);
+                parentRequest.onsuccess = () => {
+                    const parent = parentRequest.result;
+                    if (!parent || parent.expiresAt <= Date.now()) { fail("This note expired or was deleted before the screenshot was saved."); return; }
+                    const request = images.getAll();
+                    request.onsuccess = () => {
+                        const now = Date.now();
+                        if (parent.expiresAt <= now) { fail("This note expired before the screenshot was saved."); return; }
+                        const live = request.result.filter((image) => image.expiresAt > now);
+                        if (live.filter((image) => image.noteId === note.id).length + files.length > 5) {
+                            fail("You can attach up to 5 screenshots per note."); return;
+                        }
+                        const bytes = live.reduce((total, image) => total + image.blob.size, 0)
+                            + files.reduce((total, file) => total + file.size, 0);
+                        if (bytes > MAX_TOTAL_BYTES) { fail("Screenshot storage is full (25 MB). Remove some images first."); return; }
+                        const added = files.map((file, index) => ({
+                            id: root.DaynotesStorage.makeNoteId(), noteId: note.id,
+                            blob: file, name: file.name || "Screenshot", createdAt: now, expiresAt: parent.expiresAt,
+                            ...dimensions[index],
+                        }));
+                        added.forEach((image) => images.add(image));
+                        done(added);
+                    };
                 };
-            });
+            }, true);
         }
 
         list(noteId) {

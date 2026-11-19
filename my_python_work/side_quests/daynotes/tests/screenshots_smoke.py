@@ -37,7 +37,7 @@ def expect_no_stored_images(page):
 
 def main():
     with sync_playwright() as playwright:
-        browser = playwright.chromium.launch(channel="msedge", headless=True)
+        browser = playwright.chromium.launch(channel="msedge", headless=True, chromium_sandbox=True)
         try:
             page = browser.new_page(accept_downloads=True)
             errors = []
@@ -47,17 +47,21 @@ def main():
                 Date.now = () => originalNow() + window.testClockOffset;
             """)
             page.goto((Path(__file__).resolve().parents[1] / "index.html").as_uri())
+            page.evaluate("window.DaynotesReady")
             assert paste_screenshot(page)
             expect(page.locator(".screenshot")).to_have_count(1)
             expect(page.locator("#save-status")).to_have_text("Saved")
             expect(page.locator("#download-note")).to_be_disabled()
             images = page.evaluate("""async () => {
-                const note = JSON.parse(localStorage.getItem('daynotes.v1')).notes[0];
+                const store = new DaynotesStorage.NotesStore();
+                const note = (await store.read())[0];
+                store.close();
                 const images = await new DaynotesImages.ScreenshotStore().list(note.id);
                 return images.map(image => ({sameExpiry: image.expiresAt === note.expiresAt}));
             }""")
             assert images == [{"sameExpiry": True}]
             page.reload()
+            page.evaluate("window.DaynotesReady")
             expect(page.locator(".screenshot")).to_have_count(1)
             page.get_by_role("button", name="View screenshot 1", exact=True).click()
             expect(page.get_by_role("dialog", name="Screenshot preview", exact=True)).to_be_visible()
@@ -76,9 +80,13 @@ def main():
             expect_no_stored_images(page)
             paste_screenshot(page)
             expect(page.locator(".screenshot")).to_have_count(1)
-            page.evaluate("window.testClockOffset = 86401000; window.dispatchEvent(new Event('focus'));")
+            page.evaluate("window.testClockOffset = 3 * 86400000 + 1000; window.dispatchEvent(new Event('focus'));")
             expect(page.locator(".screenshot")).to_have_count(0)
             expect_no_stored_images(page)
+            assert page.evaluate("""async () => {
+                const store = new DaynotesStorage.NotesStore();
+                try { return (await store.read()).length; } finally { store.close(); }
+            }""") == 0
             assert page.evaluate("localStorage.getItem('daynotes.v1')") is None
             assert not errors, errors
             print("PASS: screenshot paste, persistence, preview, download, limits, deletion, and expiry.")
